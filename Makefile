@@ -1,11 +1,11 @@
 ORG = pickaguidedockercloud
-NAME = pickaguide_backendApi
+NAME = pickaguide_backendapi
 CONTAINER = container_backApi
 REPOSITORY = $(ORG)/$(NAME)
 SHA1 = $(shell git log -1 --pretty=oneline | cut -c-10)
 BRANCH = $(shell git branch -a --contains $(SHA1) | egrep '(remotes/|\*)' | egrep -v "(HEAD|detached)" | head -1 | sed -e "s/\* //" -e "s/.*\///")
 VERSION = $(BRANCH)-$(SHA1)
-PORT = 80
+PORT = 3000
 EXPOSE = 3000
 
 all: build
