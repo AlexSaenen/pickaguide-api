@@ -2,9 +2,8 @@
 
 ## Run Api
 
-    npm install
-    npm run start
-    
+    make start
+
 ## Run test
 
-    npm run test
+    make test-api

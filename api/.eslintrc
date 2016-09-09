@@ -1,0 +1,13 @@
+// Use this file as a starting point for your project .eslintrc.
+// Copy this file, and add rule overrides as needed.
+{
+    'extends': 'airbnb',
+    'rules': {
+        'indent': [2, 4],
+        'no-underscore-dangle': 0,
+        'no-console': 0,
+        'strict': 0,
+        'no-caller': 0,
+        'import/no-unresolved': ['error', { ignore: ['^components*', '^actions*', '^stores*', '^services*', '^config*', '^scss*'] }],
+    }
+}
