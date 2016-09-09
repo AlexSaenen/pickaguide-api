@@ -1,29 +1,32 @@
-var express = require('express');
-var config = require('config');
+'use strict';
 
-var app = express();
-var server;
+const express = require('express');
+const config = require('config');
 
-function run(next) {
+const app = express();
+let server;
 
-  app.use('/', require('./api/routes/public'));
+const publicRoutes = require('./api/routes/public');
 
-  app.set('port', config.port);
-  server = app.listen(app.get('port'), function () {
-    console.log('Express server listening on %d', app.get('port'));
-    if (next) return next(app);
-  });
-}
+const run = (next) => {
+    app.use('/', publicRoutes);
+
+    app.set('port', config.port);
+    server = app.listen(app.get('port'), () => {
+        console.log(`Express server listening on ${app.get('port')}`);
+        return (next ? next(app) : null);
+    });
+};
 
 if (require.main === module) {
-  run();
+    run();
 }
 
-var stop = function (next) {
-  if (server) {
-    console.log('Stop server');
-    server.close(next);
-  }
+const stop = (next) => {
+    if (server) {
+        console.log('Stop server');
+        server.close(next);
+    }
 };
 
 module.exports.start = run;

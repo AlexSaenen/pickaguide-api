@@ -1,33 +1,32 @@
-var request = require('supertest');
+'use strict';
 
-var expect = require('chai').expect;
-var server = require('../index');
+const request = require('supertest');
 
-describe('Public', function () {
+const expect = require('chai').expect;
+const server = require('../index');
 
-  var app;
+describe('Public', () => {
+    let app;
 
-  before(function (done) {
-    server.start(function (_app) {
-      app = _app;
-      done();
-    });
-  });
-
-  after(function (done) {
-    server.stop(done);
-  });
-
-  describe('GET /', function () {
-    it('should return json', function (done) {
-      request(app)
-        .get('/')
-        .expect(200, function (err, res) {
-          expect(res.body.json).to.equal('json');
-          done(err);
+    before((done) => {
+        server.start((_app) => {
+            app = _app;
+            done();
         });
-
     });
-  });
 
+    after((done) => {
+        server.stop(done);
+    });
+
+    describe('GET /', () => {
+        it('should return json', (done) => {
+            request(app)
+            .get('/')
+            .expect(200, (err, res) => {
+                expect(res.body.json).to.equal('json');
+                done(err);
+            });
+        });
+    });
 });
