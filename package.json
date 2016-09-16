@@ -1,7 +1,9 @@
 {
   "name": "pickaguide-api",
   "version": "1.0.0",
+  "private": "true",
   "description": "Public and Client API for Pickaguide",
+  "author": "PickaGuideTeam",
   "main": "index.js",
   "engines": {
     "node": "4.1.1",
