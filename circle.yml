@@ -13,7 +13,7 @@ dependencies:
     - docker login -e "alexander.saenen@epitech.eu" -u "pickaguidedockercloud" -p "lucasanstoast6"
 
   override:
-    - npm install mocha
+    - npm install mocha supertest chai
 
 deployment:
   production:
