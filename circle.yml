@@ -1,3 +1,8 @@
+general:
+  branches:
+    only:
+      - master dev
+
 machine:
   services:
     - docker
@@ -7,7 +12,7 @@ dependencies:
     - docker login -e "alexander.saenen@epitech.eu" -u "pickaguidedockercloud" -p "lucasanstoast6"
 
   override:
-    - echo "Overriding default dependencies"
+    - npm install mocha
 
 deployment:
   production:
