@@ -1,7 +1,9 @@
 {
   "name": "pickaguide-api",
   "version": "1.0.0",
+  "private": "true",
   "description": "Public and Client API for Pickaguide",
+  "author": "PickaGuideTeam",
   "main": "index.js",
   "engines": {
     "node": "4.1.1",
@@ -22,7 +24,8 @@
     "supertest": "^2.0.0"
   },
   "scripts": {
-    "start": "node ./index.js",
+    "start:dev": "NODE_ENV=dev node ./index.js",
+    "start:prod": "NODE_ENV=production node ./index.js",
     "test": "PORT=3001 ./node_modules/.bin/mocha test/**/*.test.js --timeout 10000"
   },
   "repository": {

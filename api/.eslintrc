@@ -7,6 +7,7 @@
         'no-underscore-dangle': 0,
         'no-console': 0,
         'strict': 0,
+        'new-cap': 0,
         'no-caller': 0,
         'import/no-unresolved': ['error', { ignore: ['^components*', '^actions*', '^stores*', '^services*', '^config*', '^scss*'] }],
     }
