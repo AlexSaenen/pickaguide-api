@@ -1,5 +1,5 @@
 ORG = pickaguidedockercloud
-NAME = pickaguide_backendapi
+NAME = pickaguide-api
 CONTAINER = container_backApi
 REPOSITORY = $(ORG)/$(NAME)
 SHA1 = $(shell git log -1 --pretty=oneline | cut -c-10)
@@ -16,15 +16,21 @@ build:
 push:
 	docker push $(REPOSITORY)
 
+pull:
+	docker pull $(REPOSITORY) || true
+
 clean:
 	docker stop $(CONTAINER) && docker rm $(CONTAINER)
 
 run:
 	docker run --name $(CONTAINER) -p $(EXPOSE):$(PORT) -d $(REPOSITORY)
 
-start:
+prod:
+	npm run start:prod
+
+dev:
 	npm install
-	npm start
+	npm run start:dev
 
 test-api:
 	npm install
