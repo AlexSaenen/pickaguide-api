@@ -16,6 +16,9 @@ build:
 push:
 	docker push $(REPOSITORY)
 
+pull:
+	docker pull $(REPOSITORY) || true
+
 clean:
 	docker stop $(CONTAINER) && docker rm $(CONTAINER)
 

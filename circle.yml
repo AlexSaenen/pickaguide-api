@@ -1,0 +1,23 @@
+machine:
+  services:
+    - docker
+
+dependencies:
+  pre:
+    - docker login -e "alexander.saenen@epitech.eu" -u "pickaguidedockercloud" -p "lucasanstoast6"
+
+  override:
+    - echo "Overriding default dependencies"
+
+deployment:
+  production:
+    branch: master
+    commands:
+      - ssh root@82.223.82.41 "bash -ic deploy-api-production"
+  staging:
+    branch: dev
+    commands:
+      - make pull
+      - make build
+      - make push
+      - ssh root@82.223.82.41 "bash -ic deploy-api-staging"
