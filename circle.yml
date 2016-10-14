@@ -19,11 +19,11 @@ deployment:
   production:
     branch: master
     commands:
-      - ssh root@82.223.82.41 "bash -ic deploy-api-production"
+      - ssh root@82.223.82.41 "bash -ic deploy-web-production"
   staging:
     branch: dev
     commands:
       - make pull
       - make build
       - make push
-      - ssh root@82.223.82.41 "bash -ic deploy-api-staging"
+      - ssh root@82.223.82.41 "bash -ic deploy-web-staging"
