@@ -1,7 +1,8 @@
 general:
   branches:
     only:
-      - master dev
+      - master
+      - dev
 
 machine:
   services:
