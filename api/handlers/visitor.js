@@ -1,6 +1,6 @@
 'use strict';
 
-const db = require('../database/database');
+const db = require('../database');
 const Handler = require('./_handler').Handler;
 
 class Visitor extends Handler {
