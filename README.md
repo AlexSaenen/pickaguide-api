@@ -22,28 +22,28 @@ Après que `dev` soit mergée avec `master` et que vous avez reçu dans slack da
 
 ### Account
 
-`/signup` crée un nouveau compte
+#### `/signup` crée un nouveau compte
 
-Besoin de:
+**Besoin de:**
 - `pseudo`
 - `password`
 - `passwordConfirmation`
 - `email`
 
-Erreurs:
+**Erreurs:**
 - `pseudo` existe déjà
 - Profil avec `email` existe déjà ou `email` pas valide
 - Manque input ou input corrompu
 - `password` ou `pseudo` trop court (0) ou trop long (>50)
 - `password` et `passwordConfirmation` pas pareils
 
-`/findByPseudo` trouve un compte avec un pseudo
+#### `/findByPseudo` trouve un compte avec un pseudo
 
-Retourne:
+**Retourne:**
 Le compte s'il a été crée, sinon une erreur
 
-Besoin de:
+**Besoin de:**
 - `pseudo`
 
-Retourne:
+**Retourne:**
 Le compte s'il a été trouvé, sinon une erreur mongo
