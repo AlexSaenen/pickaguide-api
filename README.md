@@ -22,8 +22,7 @@ Après que `dev` soit mergée avec `master` et que vous avez reçu dans slack da
 
 ### Account
 
-`/signup` crée un nouveau compte
-======
+#### `/signup` crée un nouveau compte
 
 **Besoin de:**
 - `pseudo`
@@ -38,8 +37,7 @@ Après que `dev` soit mergée avec `master` et que vous avez reçu dans slack da
 - `password` ou `pseudo` trop court (0) ou trop long (>50)
 - `password` et `passwordConfirmation` pas pareils
 
-`/findByPseudo` trouve un compte avec un pseudo
-======
+#### `/findByPseudo` trouve un compte avec un pseudo
 
 **Retourne:**
 Le compte s'il a été crée, sinon une erreur
