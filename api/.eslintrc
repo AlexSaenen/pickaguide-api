@@ -9,6 +9,9 @@
         'strict': 0,
         'new-cap': 0,
         'no-caller': 0,
+        'arrow-body-style': 0,
+        'no-param-reassign': 0,
+        'max-len': 0,
         'import/no-unresolved': ['error', { ignore: ['^components*', '^actions*', '^stores*', '^services*', '^config*', '^scss*'] }],
     }
 }
