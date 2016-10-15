@@ -1,6 +1,6 @@
 ORG = pickaguidedockercloud
 NAME = pickaguide-mongo
-CONTAINER = container_mongo
+CONTAINER = container_databaseMongo
 REPOSITORY = $(ORG)/$(NAME)
 SHA1 = $(shell git log -1 --pretty=oneline | cut -c-10)
 BRANCH = $(shell git branch -a --contains $(SHA1) | egrep '(remotes/|\*)' | egrep -v "(HEAD|detached)" | head -1 | sed -e "s/\* //" -e "s/.*\///")
