@@ -1,4 +1,4 @@
 {
   "port": "3030",
-  "mongoPort": "27040"
+  "mongoPort": "27017"
 }
