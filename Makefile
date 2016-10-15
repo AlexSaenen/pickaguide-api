@@ -23,7 +23,7 @@ clean:
 	docker stop $(CONTAINER) && docker rm $(CONTAINER)
 
 run:
-	docker run --name $(CONTAINER) -p $(EXPOSE):$(PORT) -d $(REPOSITORY)
+	docker run --link container_databaseMongo:mongo --name $(CONTAINER) -p $(EXPOSE):$(PORT) -d $(REPOSITORY)
 
 prod:
 	npm run start:prod
