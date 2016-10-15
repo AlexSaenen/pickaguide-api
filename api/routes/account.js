@@ -25,4 +25,14 @@ router.post('/logout', (req, res) => {
     res.status(200).send({ json: 'logout' });
 });
 
+router.post('/findByPseudo', (req, res) => {
+    accountHandler.findByPseudo(req.body)
+    .then((result) => {
+        res.status(200).send({ result });
+    })
+    .catch((err) => {
+        res.status(500).send({ err });
+    });
+});
+
 module.exports = router;
