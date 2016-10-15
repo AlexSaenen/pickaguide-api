@@ -6,7 +6,7 @@ mongoose.Promise = global.Promise;
 
 const init = () => {
     return new Promise((resolve) => {
-        mongoose.connect('mongodb://localhost/myapp');
+        mongoose.connect('mongo:27017/pickaguideDB');
         resolve();
     });
 };

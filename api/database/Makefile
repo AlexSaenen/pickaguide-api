@@ -1,5 +1,5 @@
 ORG = pickaguidedockercloud
-NAME = pickaguide-api
+NAME = pickaguide-mongo
 CONTAINER = container_mongo
 REPOSITORY = $(ORG)/$(NAME)
 SHA1 = $(shell git log -1 --pretty=oneline | cut -c-10)
