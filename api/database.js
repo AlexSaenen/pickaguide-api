@@ -1,12 +1,13 @@
 'use strict';
 
 const mongoose = require('mongoose');
+const config = require('config');
 
 mongoose.Promise = global.Promise;
 
 const init = () => {
     return new Promise((resolve) => {
-        mongoose.connect('mongo:27017/pickaguideDB');
+        mongoose.connect(`mongo:${config.mongoPort}/pickaguideDB`);
         resolve();
     });
 };

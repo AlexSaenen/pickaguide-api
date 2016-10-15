@@ -3,7 +3,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const config = require('config');
-const db = require('./api/database/database');
+const db = require('./api/database');
 
 const app = express();
 let server;
