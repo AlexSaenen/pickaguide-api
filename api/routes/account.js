@@ -3,6 +3,16 @@ const accountHandler = require('../handlers/account').Account;
 
 const router = express.Router();
 
+router.get('/', (req,res) => {
+  accountHandler.findAll()
+    .then((result) => {
+    res.status(200).send({result});
+    })
+    .catch((err) => {
+      res.status(500).send({err});
+    });
+});
+
 router.post('/signup', (req, res) => {
     accountHandler.signup(req.body)
     .then((result) => {
@@ -15,10 +25,6 @@ router.post('/signup', (req, res) => {
 
 router.post('/signout', (req, res) => {
     res.status(200).send({ json: 'signout' });
-});
-
-router.post('/login', (req, res) => {
-    res.status(200).send({ json: 'login' });
 });
 
 router.post('/logout', (req, res) => {

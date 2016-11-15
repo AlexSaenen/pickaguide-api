@@ -4,31 +4,38 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const config = require('config');
 const db = require('./api/database/database');
+const morgan = require('morgan');
 
 const app = express();
 let server;
 
 const publicRoutes = require('./api/routes/public');
 const accountRoutes = require('./api/routes/account');
+const tokensMiddleWare = require('./api/middleware-service');
 
 const run = (next) => {
-    app.use(bodyParser.json());
+  db.init()
+    .then((err) => {
+      if (err) console.error('Could not connect to mongo db', err);
+      app.use(bodyParser.json());
+      app.use(bodyParser.urlencoded({extended: false}));
 
-    app.use('/', publicRoutes);
-    app.use('/account', accountRoutes);
+      app.use(morgan('dev')); //log request
 
-    app.set('port', config.port);
-    server = app.listen(app.get('port'), () => {
-        console.log(`Express server listening on ${app.get('port')}`);
+      app.use('/public', publicRoutes);
+      app.use('/', tokensMiddleWare);
+      app.use('/account', accountRoutes);
+
+      app.set('port', config.port);
+      server = app.listen(app.get('port'), () => {
+        console.log('Express server listening on %d, in %s mode', app.get('port'), app.get('env'));
         return (next ? next(app) : null);
+      });
     });
 };
 
 if (require.main === module) {
-    db.init()
-    .then(() => {
-        run();
-    });
+  run();
 }
 
 const stop = (next) => {

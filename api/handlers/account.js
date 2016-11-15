@@ -4,6 +4,8 @@ const db = require('../database/database');
 const Handler = require('./_handler').Handler;
 const visitorHandler = require('./visitor').Visitor;
 const profileHandler = require('./profile').Profile;
+const jwt = require('jsonwebtoken');
+const config = require('config');
 
 class Account extends Handler {
     static signup(reqBody) {
@@ -80,6 +82,39 @@ class Account extends Handler {
                 });
             }
         });
+    }
+
+    static findAll() {
+      return new Promise((resolve) => {
+        db.Accounts
+          .find()
+          .lean()
+          .exec((err, accounts) => {
+            if (err) { throw err.message; } else {
+              resolve(accounts);
+            }
+          })
+      });
+    }
+
+    static authenticate(pseudo, password) {
+      return new Promise((resolve, reject) => {
+        this.findByPseudo({"pseudo": pseudo})
+          .then((result) => {
+            console.log(result);
+            console.log(result.password);
+            console.log(password);
+            if (result.password != password) {
+              reject('Invalid password');
+            } else {
+              var token = jwt.sign({ foo: 'bar' }, config.jwtSecret);
+              resolve({"token": token});
+            }
+          })
+          .catch((err) => {
+            reject(err);
+          });
+      })
     }
 }
 
