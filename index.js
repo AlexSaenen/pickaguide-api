@@ -12,6 +12,12 @@ const publicRoutes = require('./api/routes/public');
 const accountRoutes = require('./api/routes/account');
 
 const run = (next) => {
+    app.use(function (req, res, next) {
+
+        // Website you wish to allow to connect
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        next();
+    });
     app.use(bodyParser.json());
 
     app.use('/', publicRoutes);
