@@ -13,16 +13,6 @@ router.get('/', (req,res) => {
     });
 });
 
-router.post('/signup', (req, res) => {
-    accountHandler.signup(req.body)
-    .then((result) => {
-        res.status(200).send({ result });
-    })
-    .catch((err) => {
-        res.status(500).send({ err });
-    });
-});
-
 router.post('/signout', (req, res) => {
     res.status(200).send({ json: 'signout' });
 });
