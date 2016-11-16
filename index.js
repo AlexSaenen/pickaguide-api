@@ -9,10 +9,6 @@ const morgan = require('morgan');
 const app = express();
 let server;
 
-const publicRoutes = require('./api/routes/public');
-const accountRoutes = require('./api/routes/account');
-const tokensMiddleWare = require('./api/middleware-service');
-
 const run = (next) => {
   db.init()
     .then((err) => {
@@ -20,11 +16,12 @@ const run = (next) => {
       app.use(bodyParser.json());
       app.use(bodyParser.urlencoded({extended: false}));
 
-      app.use(morgan('dev')); //log request
+      app.use(morgan('dev'));
 
-      app.use('/public', publicRoutes);
-      app.use('/', tokensMiddleWare);
-      app.use('/account', accountRoutes);
+      app.use('/public', require('./api/routes/public'));
+      app.use('/', require('./api/middleware-service'));
+      app.use('/profiles', require('./api/routes/profiles'));
+      app.use('/account', require('./api/routes/accounts'));
 
       app.set('port', config.port);
       server = app.listen(app.get('port'), () => {
