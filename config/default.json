@@ -1,5 +1,7 @@
 {
   "port": "3000",
   "jwtSecret": "Pick a Guide secret",
-  "database": "mongodb://localhost/myapp"
+  "mongo": {
+    "url": "localhost:27017/pickaguideDB"
+  }
 }

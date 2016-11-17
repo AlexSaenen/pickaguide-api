@@ -1,6 +1,6 @@
 'use strict';
 
-const db = require('../database/database');
+const db = require('../database');
 const Handler = require('./_handler').Handler;
 const visitorHandler = require('./visitor').Visitor;
 const profileHandler = require('./profile').Profile;
@@ -94,22 +94,6 @@ class Account extends Handler {
             }
           })
       });
-    }
-
-    /*
-     check error param
-     add other filter
-     */
-  static find(reqQuery) {
-      return  new Promise((resolve) => {
-        db.Accounts
-          .findOne({pseudo: reqQuery.pseudo})
-          .exec((err, account) => {
-            if (err) { throw err.message; } else {
-              resolve(account);
-            }
-          });
-      })
     }
 
     static authenticate(pseudo, password) {

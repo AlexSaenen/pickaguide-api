@@ -9,8 +9,10 @@ describe('Account', () => {
   let app;
 
   before((done) => {
-    server.start((_app) => {
+    server.start((err, _app) => {
+      if (err) return done(err);
       app = _app;
+
       done();
     });
   });

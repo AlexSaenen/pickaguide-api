@@ -1,6 +1,6 @@
 'use strict';
 
-const db = require('../database/database');
+const db = require('../database');
 const Handler = require('./_handler').Handler;
 
 class Profile extends Handler {
@@ -20,6 +20,22 @@ class Profile extends Handler {
                 });
             }
         });
+    }
+
+    /*
+     check error param
+     add other filter
+     */
+    static find(reqQuery) {
+        return  new Promise((resolve) => {
+            db.Profiles
+              .findOne({email: reqQuery.email})
+              .exec((err, account) => {
+                  if (err) { throw err.message; } else {
+                      resolve(account);
+                  }
+              });
+        })
     }
 }
 

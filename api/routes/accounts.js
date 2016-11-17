@@ -31,14 +31,5 @@ router.post('/findByPseudo', (req, res) => {
     });
 });
 
-router.get('/find', (req, res) => {
-  accountHandler.find(req.query)
-    .then((result) => {
-      res.status(200).send(result);
-    })
-    .catch((err) => {
-      res.status(500).send({err});
-    })
-});
 
 module.exports = router;

@@ -3,7 +3,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const config = require('config');
-const db = require('./api/database/database');
+const db = require('./api/database');
 const morgan = require('morgan');
 
 const app = express();
@@ -26,7 +26,7 @@ const run = (next) => {
       app.set('port', config.port);
       server = app.listen(app.get('port'), () => {
         console.log('Express server listening on %d, in %s mode', app.get('port'), app.get('env'));
-        return (next ? next(app) : null);
+        if (next) next(null, app);
       });
     });
 };
