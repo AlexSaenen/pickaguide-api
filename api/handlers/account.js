@@ -88,7 +88,6 @@ class Account extends Handler {
       return new Promise((resolve) => {
         db.Accounts
           .find()
-          .lean()
           .exec((err, accounts) => {
             if (err) { throw err.message; } else {
               resolve(accounts);
@@ -97,13 +96,26 @@ class Account extends Handler {
       });
     }
 
+    /*
+     check error param
+     add other filter
+     */
+  static find(reqQuery) {
+      return  new Promise((resolve) => {
+        db.Accounts
+          .findOne({pseudo: reqQuery.pseudo})
+          .exec((err, account) => {
+            if (err) { throw err.message; } else {
+              resolve(account);
+            }
+          });
+      })
+    }
+
     static authenticate(pseudo, password) {
       return new Promise((resolve, reject) => {
         this.findByPseudo({"pseudo": pseudo})
           .then((result) => {
-            console.log(result);
-            console.log(result.password);
-            console.log(password);
             if (result.password != password) {
               reject('Invalid password');
             } else {

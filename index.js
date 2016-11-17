@@ -21,7 +21,7 @@ const run = (next) => {
       app.use('/public', require('./api/routes/public'));
       app.use('/', require('./api/middleware-service'));
       app.use('/profiles', require('./api/routes/profiles'));
-      app.use('/account', require('./api/routes/accounts'));
+      app.use('/accounts', require('./api/routes/accounts'));
 
       app.set('port', config.port);
       server = app.listen(app.get('port'), () => {

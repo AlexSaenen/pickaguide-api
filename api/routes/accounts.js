@@ -6,7 +6,7 @@ const router = express.Router();
 router.get('/', (req,res) => {
   accountHandler.findAll()
     .then((result) => {
-    res.status(200).send({result});
+      res.status(200).send(result);
     })
     .catch((err) => {
       res.status(500).send({err});
@@ -24,11 +24,21 @@ router.post('/logout', (req, res) => {
 router.post('/findByPseudo', (req, res) => {
     accountHandler.findByPseudo(req.body)
     .then((result) => {
-        res.status(200).send({ result });
+        res.status(200).send(result);
     })
     .catch((err) => {
         res.status(500).send({ err });
     });
+});
+
+router.get('/find', (req, res) => {
+  accountHandler.find(req.query)
+    .then((result) => {
+      res.status(200).send(result);
+    })
+    .catch((err) => {
+      res.status(500).send({err});
+    })
 });
 
 module.exports = router;
