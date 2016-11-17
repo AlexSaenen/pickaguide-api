@@ -14,7 +14,13 @@ router.post('/', (req, res) => {
 });
 
 router.get('/', (req, res) => {
-  res.status(200).send({ "ok": "ok"});
+  profileHandler.findAll()
+    .then((result) => {
+      res.status(200).send(result);
+    })
+    .catch((err) => {
+      res.status(500).send({err});
+    });
 });
 
 router.get('/find', (req, res) => {

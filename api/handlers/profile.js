@@ -27,15 +27,27 @@ class Profile extends Handler {
      add other filter
      */
     static find(reqQuery) {
-        return  new Promise((resolve) => {
-            db.Profiles
-              .findOne({email: reqQuery.email})
-              .exec((err, account) => {
-                  if (err) { throw err.message; } else {
-                      resolve(account);
-                  }
-              });
-        })
+      return  new Promise((resolve) => {
+        db.Profiles
+          .findOne({email: reqQuery.email})
+          .exec((err, account) => {
+            if (err) { throw err.message; } else {
+              resolve(account);
+            }
+          });
+      });
+    }
+
+    static findAll() {
+      return new Promise((resolve) => {
+        db.Profiles
+          .find()
+          .exec((err, profiles) => {
+            if (err) { throw err.message; } else {
+              resolve(profiles);
+            }
+          });
+      });
     }
 }
 
