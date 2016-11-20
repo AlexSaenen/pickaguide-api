@@ -6,9 +6,6 @@ dependencies:
   pre:
     - docker login -e "alexander.saenen@epitech.eu" -u "pickaguidedockercloud" -p "lucasanstoast6"
 
-  override:
-    - npm install mocha supertest chai express config body-parser mongoose
-
 deployment:
   production:
     branch: master
