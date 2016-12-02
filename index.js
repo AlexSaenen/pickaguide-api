@@ -28,19 +28,19 @@ const run = (next) => {
 };
 
 if (require.main === module) {
-    db.init()
-    .then(() => {
-        run();
-    })
-    .catch((excep) => {
-        console.log(`Could not init the database: ${excep}`);
-    });
+  db.init()
+  .then(() => {
+    run();
+  })
+  .catch((excep) => {
+    console.log(`Could not init the database: ${excep}`);
+  });
 }
 
 const stop = (next) => {
-    if (server) {
-        server.close(next);
-    }
+  if (server) {
+    server.close(next);
+  }
 };
 
 module.exports.start = run;

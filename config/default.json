@@ -1,6 +1,6 @@
 {
   "port": "3000",
-  "jwtSecret": "Pick a Guide secret",
+  "jwtSecret": "PickaGuidesecret",
   "mongo": {
     "url": "mongo:27017/pickaguideDB"
   }
