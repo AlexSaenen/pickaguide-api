@@ -20,4 +20,15 @@ const accountSchema = new Schema({
     unique: true,
 });
 
+accountSchema.post('remove', (account) => {
+    const visitors = mongoose.model('Visitors');
+    visitors.findOne({ _id: account.visitor }, (err, visitor) => {
+        if (visitor == null) {
+            throw new Error(`Visitor ${account.visitor} does not exist`);
+        }
+
+        visitor.remove();
+    });
+});
+
 exports.Accounts = mongoose.model('Accounts', accountSchema);

@@ -5,15 +5,8 @@ const config = require('config').mongo;
 
 mongoose.Promise = global.Promise;
 
-const buildDbUrl = (url) => {
-  return 'mongodb://' + url;
-};
-
 const init = () => {
-  return new Promise((resolve) => {
-    mongoose.connect(buildDbUrl(config.url));
-    resolve();
-  });
+    return mongoose.connect(config.mongo.url);
 };
 
 exports.ObjectId = mongoose.Types.ObjectId;

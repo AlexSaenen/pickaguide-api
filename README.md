@@ -4,6 +4,12 @@
 
     make dev
 
+Il faut aussi cloner le repository `pickaguide-ops` et aller dans `dev`, ensuite:
+
+    make mongo
+
+Ceci lancera en local l'image docker de la base de données vide
+
 ## Launch tests
 
     make test-api

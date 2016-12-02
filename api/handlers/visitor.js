@@ -6,10 +6,7 @@ const Handler = require('./_handler').Handler;
 class Visitor extends Handler {
     static add(reqBody) {
         return new Promise((resolve, reject) => {
-            const requiredInput = ['profile'];
-            const failed = requiredInput.find((requirement) => {
-                return Object.keys(reqBody).indexOf(requirement) === -1 || reqBody[requirement] === null;
-            });
+            const failed = this.assertInput(['profile'], reqBody);
 
             if (failed) { reject(`We need your ${failed}`); } else {
                 const newVisitor = new db.Visitors(reqBody);
