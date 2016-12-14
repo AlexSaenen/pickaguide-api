@@ -4,14 +4,13 @@ const db = require('../database');
 const Handler = require('./_handler').Handler;
 const visitorHandler = require('./visitor').Visitor;
 const profileHandler = require('./profile').Profile;
+const jwt = require('jsonwebtoken');
+const config = require('config');
 
 class Account extends Handler {
     static signup(reqBody) {
         return new Promise((resolve, reject) => {
-            const requiredInput = ['pseudo', 'password', 'passwordConfirmation', 'email'];
-            const failed = requiredInput.find((requirement) => {
-                return Object.keys(reqBody).indexOf(requirement) === -1 || reqBody[requirement] === null;
-            });
+            const failed = this.assertInput(['pseudo', 'password', 'passwordConfirmation', 'email'], reqBody);
 
             if (failed) { reject(`We need your ${failed}`); } else {
                 const emailRegex = /.+@.+/i;
@@ -62,12 +61,46 @@ class Account extends Handler {
         });
     }
 
+    static disableByPseudo(reqBody) {
+        return new Promise((resolve, reject) => {
+            const failed = this.assertInput(['pseudo'], reqBody);
+
+            if (failed) { reject(`We need your ${failed}`); } else {
+                db.Accounts
+                .findOneAndUpdate({ pseudo: reqBody.pseudo }, { accountStatus: 'disabled' }, (err) => {
+                    if (err) { throw err.message; } else {
+                        resolve('Account disabled');
+                    }
+                });
+            }
+        });
+    }
+
+    static removeByPseudo(reqBody) {
+        return new Promise((resolve, reject) => {
+            const failed = this.assertInput(['pseudo'], reqBody);
+
+            if (failed) { reject(`We need your ${failed}`); } else {
+                db.Accounts
+                .findOne({ pseudo: reqBody.pseudo })
+                .exec((err, account) => {
+                    if (err) { throw err.message; } else if (account == null) {
+                        throw new Error(`Account with pseudo ${reqBody.pseudo} does not exist`);
+                    } else {
+                        account.remove((removalErr) => {
+                            if (err) { throw removalErr.message; } else {
+                                resolve('Account deleted');
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
     static findByPseudo(reqBody) {
         return new Promise((resolve, reject) => {
-            const requiredInput = ['pseudo'];
-            const failed = requiredInput.find((requirement) => {
-                return Object.keys(reqBody).indexOf(requirement) === -1 || reqBody[requirement] === null;
-            });
+            const failed = this.assertInput(['pseudo'], reqBody);
 
             if (failed) { reject(`We need your ${failed}`); } else {
                 db.Accounts
@@ -80,6 +113,35 @@ class Account extends Handler {
                 });
             }
         });
+    }
+
+    static findAll() {
+      return new Promise((resolve) => {
+        db.Accounts
+          .find()
+          .exec((err, accounts) => {
+            if (err) { throw err.message; } else {
+              resolve(accounts);
+            }
+          })
+      });
+    }
+
+    static authenticate(pseudo, password) {
+      return new Promise((resolve, reject) => {
+        this.findByPseudo({"pseudo": pseudo})
+          .then((result) => {
+            if (result.password != password) {
+              reject('Invalid password');
+            } else {
+              var token = jwt.sign({ foo: 'bar' }, config.jwtSecret);
+              resolve({"token": token});
+            }
+          })
+          .catch((err) => {
+            reject(err);
+          });
+      })
     }
 }
 

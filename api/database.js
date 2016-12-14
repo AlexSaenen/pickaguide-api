@@ -6,10 +6,7 @@ const config = require('config');
 mongoose.Promise = global.Promise;
 
 const init = () => {
-    return new Promise((resolve) => {
-        mongoose.connect(`mongo:${config.mongoPort}/pickaguideDB`);
-        resolve();
-    });
+    return mongoose.connect(config.mongo.url);
 };
 
 exports.ObjectId = mongoose.Types.ObjectId;

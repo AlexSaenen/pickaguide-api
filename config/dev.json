@@ -1,4 +1,6 @@
 {
   "port": "3030",
-  "mongoPort": "27017"
+  "mongo": {
+    "url": "mongodb://dev.l0cal:27017/pickaguideDB"
+  }
 }

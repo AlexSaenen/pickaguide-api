@@ -12,8 +12,12 @@
   "dependencies": {
     "body-parser": "^1.15.2",
     "config": "^1.21.0",
+    "cors": "^2.8.1",
     "express": "^4.14.0",
-    "mongoose": "^4.6.3"
+    "jsonwebtoken": "^7.1.9",
+    "lodash": "^4.17.2",
+    "mongoose": "^4.6.3",
+    "morgan": "^1.7.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",
@@ -23,10 +27,12 @@
     "eslint-plugin-jsx-a11y": "^2.2.1",
     "eslint-plugin-react": "^6.2.0",
     "mocha": "^3.0.2",
+    "nodemon": "^1.11.0",
     "supertest": "^2.0.0"
   },
   "scripts": {
     "start": "node ./index.js",
+    "start:dev": "NODE_ENV=dev ENVIRONMENT=dev nodemon ./index.js",
     "test": "PORT=3001 ./node_modules/.bin/mocha test/**/*.test.js --timeout 10000"
   },
   "repository": {

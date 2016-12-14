@@ -3,38 +3,46 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const config = require('config');
+const morgan = require('morgan');
+const cors = require('cors');
 const db = require('./api/database');
 
 const app = express();
 let server;
 
-const publicRoutes = require('./api/routes/public');
-const accountRoutes = require('./api/routes/account');
-
 const run = (next) => {
-    app.use(bodyParser.json());
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({extended: false}));
 
-    app.use('/', publicRoutes);
-    app.use('/account', accountRoutes);
+  app.use(morgan('dev'));
 
-    app.set('port', config.port);
-    server = app.listen(app.get('port'), () => {
-        console.log(`Express server listening on ${app.get('port')}`);
-        return (next ? next(app) : null);
-    });
+  app.use(cors());
+  app.use('/public', require('./api/routes/public'));
+  app.use('/', require('./api/middleware-service'));
+  app.use('/profiles', require('./api/routes/profiles'));
+  app.use('/accounts', require('./api/routes/accounts'));
+
+  app.set('port', config.port);
+  server = app.listen(app.get('port'), () => {
+    console.log('Express server listening on %d, in %s mode', app.get('port'), app.get('env'));
+    if (next) next(null, app);
+  });
 };
 
 if (require.main === module) {
-    db.init()
-    .then(() => {
-        run();
-    });
+  db.init()
+  .then(() => {
+    run();
+  })
+  .catch((excep) => {
+    console.log(`Could not init the database: ${excep}`);
+  });
 }
 
 const stop = (next) => {
-    if (server) {
-        server.close(next);
-    }
+  if (server) {
+    server.close(next);
+  }
 };
 
 module.exports.start = run;
