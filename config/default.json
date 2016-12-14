@@ -2,6 +2,6 @@
   "port": "3000",
   "jwtSecret": "PickaGuidesecret",
   "mongo": {
-    "url": "mongo:27017/pickaguideDB"
+    "url": "localhost:27017/pickaguideDB"
   }
 }
