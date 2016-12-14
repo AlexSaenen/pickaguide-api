@@ -31,12 +31,12 @@ const run = (next) => {
 
 if (require.main === module) {
   db.init()
-  .then(() => {
-    run();
-  })
-  .catch((excep) => {
-    console.log(`Could not init the database: ${excep}`);
-  });
+    .then(() => {
+      run();
+    })
+    .catch((excep) => {
+      console.log(`Could not init the database: ${excep}`);
+    });
 }
 
 const stop = (next) => {

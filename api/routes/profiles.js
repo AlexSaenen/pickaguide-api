@@ -14,14 +14,24 @@ router.post('/', (req, res) => {
 });
 
 router.get('/', (req, res) => {
-  profileHandler.findAll()
+  profileHandler.find(req.headers)
     .then((result) => {
       res.status(200).send(result);
     })
     .catch((err) => {
-      res.status(500).send({err});
+      res.status(500).send({ err });
     });
 });
+
+// router.get('/', (req, res) => {
+//   profileHandler.findAll()
+//     .then((result) => {
+//       res.status(200).send(result);
+//     })
+//     .catch((err) => {
+//       res.status(500).send({ err });
+//     });
+// });
 
 router.get('/find', (req, res) => {
   profileHandler.find(req.query)
@@ -29,8 +39,8 @@ router.get('/find', (req, res) => {
       res.status(200).send(result);
     })
     .catch((err) => {
-      res.status(500).send({err});
-    })
+      res.status(500).send({ err });
+    });
 });
 
 module.exports = router;
