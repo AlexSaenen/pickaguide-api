@@ -6,7 +6,7 @@ const config = require('config');
 mongoose.Promise = global.Promise;
 
 const init = () => {
-    return mongoose.connect(config.mongo.url);
+  return mongoose.connect(config.mongo.url);
 };
 
 exports.ObjectId = mongoose.Types.ObjectId;

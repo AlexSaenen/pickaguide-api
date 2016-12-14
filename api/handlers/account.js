@@ -8,141 +8,119 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 
 class Account extends Handler {
-    static signup(reqBody) {
-        return new Promise((resolve, reject) => {
-            const failed = this.assertInput(['pseudo', 'password', 'passwordConfirmation', 'email'], reqBody);
-
-            if (failed) { reject(`We need your ${failed}`); } else {
-                const emailRegex = /.+@.+/i;
-                const email = reqBody.email;
-
-                if (!emailRegex.test(email)) {
-                    reject(`${email} is not a valid email address`);
-                } else {
-                    const pseudo = reqBody.pseudo;
-                    const password = reqBody.password;
-                    const passwordConfirmation = reqBody.passwordConfirmation;
-
-                    if (typeof pseudo !== 'string' || pseudo.length > 50 || pseudo.length === 0) {
-                        reject('Invalid pseudo');
-                    } else if (typeof password !== 'string' || password.length > 50 || password.length === 0) {
-                        reject('Invalid password');
-                    } else if (password !== passwordConfirmation) {
-                        reject('Passwords do not match');
-                    } else {
-                        this.findByPseudo({ pseudo })
-                        .then((account) => {
-                            if (account) { reject(`An account with ${pseudo} already exists`); }
-                        })
-                        .then(() => {
-                            return profileHandler.add({ email });
-                        })
-                        .catch((err) => {
-                            if (err.indexOf('E11000') !== -1) { err = 'This email already exists'; }
-                            reject(err);
-                        })
-                        .then((profile) => {
-                            return visitorHandler.add({ profile: profile._id });
-                        })
-                        .then((visitor) => {
-                            const newAccount = new db.Accounts({ pseudo, password, visitor: visitor._id });
-                            newAccount.save((err) => {
-                                if (err) { throw err.message; } else {
-                                    resolve('Account created');
-                                }
-                            });
-                        })
-                        .catch((err) => {
-                            reject(err);
-                        });
-                    }
-                }
-            }
+  static findAll() {
+    return new Promise((resolve) => {
+      db.Accounts
+        .find()
+        .exec((err, accounts) => {
+          if (err) { throw err.message; } else {
+            resolve(accounts);
+          }
         });
-    }
+    });
+  }
 
-    static disableByPseudo(reqBody) {
-        return new Promise((resolve, reject) => {
-            const failed = this.assertInput(['pseudo'], reqBody);
+  static signup(reqBody) {
+    return new Promise((resolve, reject) => {
+      const failed = this.assertInput(['firstname', 'lastname', 'password', 'email'], reqBody);
 
-            if (failed) { reject(`We need your ${failed}`); } else {
-                db.Accounts
-                .findOneAndUpdate({ pseudo: reqBody.pseudo }, { accountStatus: 'disabled' }, (err) => {
-                    if (err) { throw err.message; } else {
-                        resolve('Account disabled');
-                    }
+      if (failed) { reject(`We need your ${failed}`); } else {
+        const emailRegex = /.+@.+/i;
+        const email = reqBody.email;
+
+        if (!emailRegex.test(email)) {
+          reject(`${email} is not a valid email address`);
+        } else {
+          const firstname = reqBody.firstname;
+          const lastname = reqBody.lastname;
+          const password = reqBody.password;
+
+          if (typeof firstname !== 'string' || firstname.length > 50 || firstname.length === 0) {
+            reject('Invalid firstname');
+          } else if (typeof lastname !== 'string' || lastname.length > 50 || lastname.length === 0) {
+            reject('Invalid lastname');
+          } else if (typeof password !== 'string' || password.length > 50 || password.length === 0) {
+            reject('Invalid password');
+          } else {
+            profileHandler.add({ email, firstname, lastname })
+              .catch((err) => {
+                if (err.indexOf('E11000') !== -1) { err = 'This email already exists'; }
+                reject(err);
+              })
+              .then((profile) => {
+                return visitorHandler.add({ profile: profile._id });
+              })
+              .then((visitor) => {
+                const newAccount = new db.Accounts({ password, visitor: visitor._id });
+                newAccount.save((err) => {
+                  if (err) { throw err.message; } else {
+                    resolve('Account created');
+                  }
                 });
-            }
-        });
-    }
+              })
+              .catch((err) => {
+                reject(err);
+              });
+          }
+        }
+      }
+    });
+  }
 
-    static removeByPseudo(reqBody) {
-        return new Promise((resolve, reject) => {
-            const failed = this.assertInput(['pseudo'], reqBody);
+  // TODO: Alex: When logout is coded, make a call to logout when disabling or removing the account
+  static disable(reqBody) {
+    return new Promise((resolve, reject) => {
+      const failed = this.assertInput(['email', 'password'], reqBody);
 
-            if (failed) { reject(`We need your ${failed}`); } else {
-                db.Accounts
-                .findOne({ pseudo: reqBody.pseudo })
-                .exec((err, account) => {
-                    if (err) { throw err.message; } else if (account == null) {
-                        throw new Error(`Account with pseudo ${reqBody.pseudo} does not exist`);
-                    } else {
-                        account.remove((removalErr) => {
-                            if (err) { throw removalErr.message; } else {
-                                resolve('Account deleted');
-                            }
-                        });
-                    }
-                });
-            }
-        });
-    }
-
-    static findByPseudo(reqBody) {
-        return new Promise((resolve, reject) => {
-            const failed = this.assertInput(['pseudo'], reqBody);
-
-            if (failed) { reject(`We need your ${failed}`); } else {
-                db.Accounts
-                .findOne({ pseudo: reqBody.pseudo })
-                .lean()
-                .exec((err, account) => {
-                    if (err) { throw err.message; } else {
-                        resolve(account);
-                    }
-                });
-            }
-        });
-    }
-
-    static findAll() {
-      return new Promise((resolve) => {
+      if (failed) { reject(`We need your ${failed}`); } else {
         db.Accounts
-          .find()
-          .exec((err, accounts) => {
+          .findOneAndUpdate({ email: reqBody.email, password: reqBody.password }, { accountStatus: 'disabled' }, (err) => {
             if (err) { throw err.message; } else {
-              resolve(accounts);
+              resolve('Account disabled');
             }
-          })
-      });
-    }
-
-    static authenticate(pseudo, password) {
-      return new Promise((resolve, reject) => {
-        this.findByPseudo({"pseudo": pseudo})
-          .then((result) => {
-            if (result.password != password) {
-              reject('Invalid password');
-            } else {
-              var token = jwt.sign({ foo: 'bar' }, config.jwtSecret);
-              resolve({"token": token});
-            }
-          })
-          .catch((err) => {
-            reject(err);
           });
-      })
-    }
+      }
+    });
+  }
+
+  static remove(reqBody) {
+    return new Promise((resolve, reject) => {
+      const failed = this.assertInput(['email', 'password'], reqBody);
+
+      if (failed) { reject(`We need your ${failed}`); } else {
+        db.Accounts
+          .findOne({ email: reqBody.email, password: reqBody.password })
+          .exec((err, account) => {
+            if (err) { throw err.message; } else if (account == null) {
+              throw new Error('Wrong email or password');
+            } else {
+              account.remove((removalErr) => {
+                if (err) { throw removalErr.message; } else {
+                  resolve('Account deleted');
+                }
+              });
+            }
+          });
+      }
+    });
+  }
+
+  static authenticate(email, password) {
+    return new Promise((resolve, reject) => {
+      this.findByPseudo({ email })
+        .then((result) => {
+          if (result.password !== password) {
+            reject('Invalid password');
+          } else {
+            const token = jwt.sign({ foo: 'bar' }, config.jwtSecret);
+            resolve({ token });
+          }
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  }
 }
 
 exports.Account = Account;

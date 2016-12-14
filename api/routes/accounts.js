@@ -3,39 +3,48 @@ const accountHandler = require('../handlers/account').Account;
 
 const router = express.Router();
 
-router.get('/', (req,res) => {
+router.get('/', (req, res) => {
   accountHandler.findAll()
     .then((result) => {
       res.status(200).send(result);
     })
     .catch((err) => {
-      res.status(500).send({err});
+      res.status(500).send({ err });
+    });
+});
+
+router.post('/signup', (req, res) => {
+  accountHandler.signup(req.body)
+    .then((result) => {
+      res.status(200).send(result);
+    })
+    .catch((err) => {
+      res.status(500).send({ err });
     });
 });
 
 router.post('/signout', (req, res) => {
-    accountHandler.disableByPseudo(req.body)
+  accountHandler.disable(req.body)
     .then((result) => {
-        res.status(200).send({ result });
+      res.status(200).send(result);
     })
     .catch((err) => {
-        res.status(500).send({ err });
+      res.status(500).send({ err });
     });
 });
 
 router.post('/logout', (req, res) => {
-    res.status(200).send({ json: 'logout' });
+  res.status(200).send({ json: 'logout' });
 });
 
-router.post('/findByPseudo', (req, res) => {
-    accountHandler.findByPseudo(req.body)
+router.post('/login', (req, res) => {
+  accountHandler.authenticate(req.body.email, req.body.password)
     .then((result) => {
-        res.status(200).send(result);
+      res.status(200).send(result);
     })
     .catch((err) => {
-        res.status(500).send({ err });
+      res.status(500).send({ err });
     });
 });
-
 
 module.exports = router;
