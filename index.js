@@ -3,8 +3,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const config = require('config');
-const db = require('./api/database');
 const morgan = require('morgan');
+const cors = require('cors');
+const db = require('./api/database');
 
 const app = express();
 let server;
@@ -15,6 +16,7 @@ const run = (next) => {
 
   app.use(morgan('dev'));
 
+  app.use(cors());
   app.use('/public', require('./api/routes/public'));
   app.use('/', require('./api/middleware-service'));
   app.use('/profiles', require('./api/routes/profiles'));
