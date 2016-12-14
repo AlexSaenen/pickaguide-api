@@ -1,19 +1,12 @@
 'use strict';
 
 const mongoose = require('mongoose');
-const config = require('config').mongo;
+const config = require('config');
 
 mongoose.Promise = global.Promise;
 
-const buildDbUrl = (url) => {
-  return 'mongodb://' + url;
-};
-
 const init = () => {
-  return new Promise((resolve) => {
-    mongoose.connect(buildDbUrl(config.url));
-    resolve();
-  });
+    return mongoose.connect(config.mongo.url);
 };
 
 exports.ObjectId = mongoose.Types.ObjectId;

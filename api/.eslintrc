@@ -12,6 +12,7 @@
         'arrow-body-style': 0,
         'no-param-reassign': 0,
         'max-len': 0,
+        'consistent-return': 0,
         'import/no-unresolved': ['error', { ignore: ['^components*', '^actions*', '^stores*', '^services*', '^config*', '^scss*'] }],
     }
 }

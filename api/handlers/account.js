@@ -10,10 +10,7 @@ const config = require('config');
 class Account extends Handler {
     static signup(reqBody) {
         return new Promise((resolve, reject) => {
-            const requiredInput = ['pseudo', 'password', 'passwordConfirmation', 'email'];
-            const failed = requiredInput.find((requirement) => {
-                return Object.keys(reqBody).indexOf(requirement) === -1 || reqBody[requirement] === null;
-            });
+            const failed = this.assertInput(['pseudo', 'password', 'passwordConfirmation', 'email'], reqBody);
 
             if (failed) { reject(`We need your ${failed}`); } else {
                 const emailRegex = /.+@.+/i;
@@ -64,12 +61,46 @@ class Account extends Handler {
         });
     }
 
+    static disableByPseudo(reqBody) {
+        return new Promise((resolve, reject) => {
+            const failed = this.assertInput(['pseudo'], reqBody);
+
+            if (failed) { reject(`We need your ${failed}`); } else {
+                db.Accounts
+                .findOneAndUpdate({ pseudo: reqBody.pseudo }, { accountStatus: 'disabled' }, (err) => {
+                    if (err) { throw err.message; } else {
+                        resolve('Account disabled');
+                    }
+                });
+            }
+        });
+    }
+
+    static removeByPseudo(reqBody) {
+        return new Promise((resolve, reject) => {
+            const failed = this.assertInput(['pseudo'], reqBody);
+
+            if (failed) { reject(`We need your ${failed}`); } else {
+                db.Accounts
+                .findOne({ pseudo: reqBody.pseudo })
+                .exec((err, account) => {
+                    if (err) { throw err.message; } else if (account == null) {
+                        throw new Error(`Account with pseudo ${reqBody.pseudo} does not exist`);
+                    } else {
+                        account.remove((removalErr) => {
+                            if (err) { throw removalErr.message; } else {
+                                resolve('Account deleted');
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
     static findByPseudo(reqBody) {
         return new Promise((resolve, reject) => {
-            const requiredInput = ['pseudo'];
-            const failed = requiredInput.find((requirement) => {
-                return Object.keys(reqBody).indexOf(requirement) === -1 || reqBody[requirement] === null;
-            });
+            const failed = this.assertInput(['pseudo'], reqBody);
 
             if (failed) { reject(`We need your ${failed}`); } else {
                 db.Accounts
