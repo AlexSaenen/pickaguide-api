@@ -11,7 +11,6 @@ const accountSchema = new Schema({
   accountStatus: { type: String, default: 'active' },
 
   isConnected: { type: Boolean, default: false },
-  guid: { type: String },
 
   languageCode: { type: Number, default: 0 },
 }).index({

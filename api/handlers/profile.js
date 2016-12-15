@@ -2,14 +2,12 @@
 
 const db = require('../database');
 const Handler = require('./_handler').Handler;
+const _ = require('lodash');
 
 class Profile extends Handler {
   static add(reqBody) {
     return new Promise((resolve, reject) => {
-      const failed = this.assertInput([
-        'firstName', 'lastName', 'birthdate',
-        'gender', 'phone', 'city', 'country',
-        'description', 'interests', 'photoUrl'], reqBody);
+      const failed = this.assertInput(['firstName', 'lastName'], reqBody);
 
       if (failed) { reject(`We need your ${failed}`); } else {
         const newProfile = new db.Profiles(reqBody);
@@ -22,17 +20,47 @@ class Profile extends Handler {
     });
   }
 
-  // TODO: p-h: Add another filter
-  static find(reqHeaders) {
-    return new Promise((resolve) => {
-      const userId = this.getIdFromToken(reqHeaders.authorization);
+  static update(reqBody, userId) {
+    return new Promise((resolve, reject) => {
+      this.find({ userId })
+        .then((profile) => {
+          delete reqBody.userId;
+          _.each(Object.keys(reqBody), (updateKey) => {
+            profile[updateKey] = reqBody[updateKey];
+          });
 
-      console.log(userId);
-      db.Profiles
-        .findById(userId, (err, account) => {
-          if (err) { throw err.message; } else {
-            resolve(account);
-          }
+          profile.save((err) => {
+            if (err) { throw err.message; } else {
+              resolve(profile);
+            }
+          });
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  }
+
+  // TODO: p-h: Add another filter
+  static find(userId) {
+    const accountHandler = require('./account').Account;
+    const visitorHandler = require('./visitor').Visitor;
+
+    return new Promise((resolve, reject) => {
+      accountHandler.find(userId)
+        .then((account) => {
+          visitorHandler.find({ visitorId: account.visitor })
+            .then((visitor) => {
+              db.Profiles
+                .findById(visitor.profile, (err, profile) => {
+                  if (err) { throw err.message; } else {
+                    resolve(profile);
+                  }
+                });
+            });
+        })
+        .catch((err) => {
+          reject(`Failed to get profile: ${err}`);
         });
     });
   }

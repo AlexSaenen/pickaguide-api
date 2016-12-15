@@ -6,7 +6,7 @@ const _ = require('lodash');
 const router = express.Router();
 
 router.use((req, res, next) => {
-  const bearerToken = _.split(req.headers.authorization, ' ', 2);
+  const bearerToken = _.split(req.headers.authorization, ' ');
 
   if (_.startsWith(bearerToken[0], 'Bearer')) {
     jwt.verify(bearerToken[1], config.jwtSecret, (err, decoded) => {
@@ -15,6 +15,7 @@ router.use((req, res, next) => {
       }
 
       req.decoded = decoded;
+      req.userId = decoded.userId;
       next();
     });
   } else {

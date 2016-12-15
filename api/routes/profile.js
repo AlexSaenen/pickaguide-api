@@ -4,7 +4,7 @@ const profileHandler = require('../handlers/profile').Profile;
 const router = express.Router();
 
 router.post('/', (req, res) => {
-  profileHandler.add(req.body)
+  profileHandler.update(req.body, req.userId)
     .then((result) => {
       res.status(200).send(result);
     })
@@ -14,7 +14,7 @@ router.post('/', (req, res) => {
 });
 
 router.get('/', (req, res) => {
-  profileHandler.find(req.headers)
+  profileHandler.find(req.userId)
     .then((result) => {
       res.status(200).send(result);
     })
@@ -22,16 +22,6 @@ router.get('/', (req, res) => {
       res.status(500).send({ err });
     });
 });
-
-// router.get('/', (req, res) => {
-//   profileHandler.findAll()
-//     .then((result) => {
-//       res.status(200).send(result);
-//     })
-//     .catch((err) => {
-//       res.status(500).send({ err });
-//     });
-// });
 
 router.get('/find', (req, res) => {
   profileHandler.find(req.query)

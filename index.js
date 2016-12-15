@@ -19,8 +19,8 @@ const run = (next) => {
   app.use(cors());
   app.use('/public', require('./api/routes/public'));
   app.use('/', require('./api/middleware-service'));
-  app.use('/profiles', require('./api/routes/profiles'));
-  app.use('/accounts', require('./api/routes/accounts'));
+  app.use('/profile', require('./api/routes/profile'));
+  app.use('/account', require('./api/routes/account'));
 
   app.set('port', config.port);
   server = app.listen(app.get('port'), () => {

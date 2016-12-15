@@ -2,8 +2,6 @@
 
 const db = require('../database');
 const Handler = require('./_handler').Handler;
-const visitorHandler = require('./visitor').Visitor;
-const profileHandler = require('./profile').Profile;
 const jwt = require('jsonwebtoken');
 const config = require('config');
 
@@ -15,6 +13,21 @@ class Account extends Handler {
         .exec((err, accounts) => {
           if (err) { throw err.message; } else {
             resolve(accounts);
+          }
+        });
+    });
+  }
+
+  static find(reqBody) {
+    return new Promise((resolve) => {
+      console.log(reqBody.userId);
+      db.Accounts
+        .findById(String(reqBody.userId))
+        .exec((err, account) => {
+          if (err) { throw err.message; } else if (account == null) {
+            throw new Error('No account with this id');
+          } else {
+            resolve(account);
           }
         });
     });
@@ -35,6 +48,9 @@ class Account extends Handler {
   }
 
   static signup(reqBody) {
+    const visitorHandler = require('./visitor').Visitor;
+    const profileHandler = require('./profile').Profile;
+
     return new Promise((resolve, reject) => {
       const failed = this.assertInput(['firstName', 'lastName', 'password', 'email'], reqBody);
 
@@ -125,7 +141,7 @@ class Account extends Handler {
           if (result.password !== password) {
             reject('Invalid password');
           } else {
-            const token = jwt.sign({ foo: 'bar' }, config.jwtSecret);
+            const token = jwt.sign({ userId: result._id }, config.jwtSecret);
             resolve({ token });
           }
         })
