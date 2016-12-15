@@ -6,7 +6,10 @@ const Handler = require('./_handler').Handler;
 class Profile extends Handler {
   static add(reqBody) {
     return new Promise((resolve, reject) => {
-      const failed = this.assertInput(['email'], reqBody);
+      const failed = this.assertInput([
+        'firstName', 'lastName', 'birthdate',
+        'gender', 'phone', 'city', 'country',
+        'description', 'interests', 'photoUrl'], reqBody);
 
       if (failed) { reject(`We need your ${failed}`); } else {
         const newProfile = new db.Profiles(reqBody);
@@ -21,11 +24,12 @@ class Profile extends Handler {
 
   // TODO: p-h: Add another filter
   static find(reqHeaders) {
-    return new Promise((resolve, reject) => {
-      // TODO: Alex: Get email from token
+    return new Promise((resolve) => {
+      const userId = this.getIdFromToken(reqHeaders.authorization);
+
+      console.log(userId);
       db.Profiles
-        .findOne({ email: reqBody.email })
-        .exec((err, account) => {
+        .findById(userId, (err, account) => {
           if (err) { throw err.message; } else {
             resolve(account);
           }

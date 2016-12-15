@@ -13,16 +13,6 @@ router.get('/', (req, res) => {
     });
 });
 
-router.post('/signup', (req, res) => {
-  accountHandler.signup(req.body)
-    .then((result) => {
-      res.status(200).send(result);
-    })
-    .catch((err) => {
-      res.status(500).send({ err });
-    });
-});
-
 router.post('/signout', (req, res) => {
   accountHandler.disable(req.body)
     .then((result) => {
@@ -35,16 +25,6 @@ router.post('/signout', (req, res) => {
 
 router.post('/logout', (req, res) => {
   res.status(200).send({ json: 'logout' });
-});
-
-router.post('/login', (req, res) => {
-  accountHandler.authenticate(req.body.email, req.body.password)
-    .then((result) => {
-      res.status(200).send(result);
-    })
-    .catch((err) => {
-      res.status(500).send({ err });
-    });
 });
 
 module.exports = router;
