@@ -18,6 +18,20 @@ class Visitor extends Handler {
       }
     });
   }
+
+  static find(reqBody) {
+    return new Promise((resolve) => {
+      db.Visitors
+        .findById(reqBody.visitorId)
+        .exec((err, visitor) => {
+          if (err) { throw err.message; } else if (visitor == null) {
+            throw new Error('No visitor with this id');
+          } else {
+            resolve(visitor);
+          }
+        });
+    });
+  }
 }
 
 exports.Visitor = Visitor;

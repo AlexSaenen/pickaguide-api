@@ -2,11 +2,12 @@
 
 const db = require('../database');
 const Handler = require('./_handler').Handler;
+const _ = require('lodash');
 
 class Profile extends Handler {
   static add(reqBody) {
     return new Promise((resolve, reject) => {
-      const failed = this.assertInput(['email'], reqBody);
+      const failed = this.assertInput(['firstName', 'lastName'], reqBody);
 
       if (failed) { reject(`We need your ${failed}`); } else {
         const newProfile = new db.Profiles(reqBody);
@@ -19,16 +20,47 @@ class Profile extends Handler {
     });
   }
 
-  // TODO: p-h: Add another filter
-  static find(reqHeaders) {
+  static update(reqBody, userId) {
     return new Promise((resolve, reject) => {
-      // TODO: Alex: Get email from token
-      db.Profiles
-        .findOne({ email: reqBody.email })
-        .exec((err, account) => {
-          if (err) { throw err.message; } else {
-            resolve(account);
-          }
+      this.find({ userId })
+        .then((profile) => {
+          delete reqBody.userId;
+          _.each(Object.keys(reqBody), (updateKey) => {
+            profile[updateKey] = reqBody[updateKey];
+          });
+
+          profile.save((err) => {
+            if (err) { throw err.message; } else {
+              resolve(profile);
+            }
+          });
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  }
+
+  // TODO: p-h: Add another filter
+  static find(userId) {
+    const accountHandler = require('./account').Account;
+    const visitorHandler = require('./visitor').Visitor;
+
+    return new Promise((resolve, reject) => {
+      accountHandler.find(userId)
+        .then((account) => {
+          visitorHandler.find({ visitorId: account.visitor })
+            .then((visitor) => {
+              db.Profiles
+                .findById(visitor.profile, (err, profile) => {
+                  if (err) { throw err.message; } else {
+                    resolve(profile);
+                  }
+                });
+            });
+        })
+        .catch((err) => {
+          reject(`Failed to get profile: ${err}`);
         });
     });
   }

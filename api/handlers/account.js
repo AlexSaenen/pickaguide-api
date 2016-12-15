@@ -2,8 +2,6 @@
 
 const db = require('../database');
 const Handler = require('./_handler').Handler;
-const visitorHandler = require('./visitor').Visitor;
-const profileHandler = require('./profile').Profile;
 const jwt = require('jsonwebtoken');
 const config = require('config');
 
@@ -20,9 +18,41 @@ class Account extends Handler {
     });
   }
 
+  static find(reqBody) {
+    return new Promise((resolve) => {
+      console.log(reqBody.userId);
+      db.Accounts
+        .findById(String(reqBody.userId))
+        .exec((err, account) => {
+          if (err) { throw err.message; } else if (account == null) {
+            throw new Error('No account with this id');
+          } else {
+            resolve(account);
+          }
+        });
+    });
+  }
+
+  static findByEmail(reqBody) {
+    return new Promise((resolve) => {
+      db.Accounts
+        .findOne({ email: reqBody.email })
+        .exec((err, account) => {
+          if (err) { throw err.message; } else if (account == null) {
+            throw new Error('No account with this email');
+          } else {
+            resolve(account);
+          }
+        });
+    });
+  }
+
   static signup(reqBody) {
+    const visitorHandler = require('./visitor').Visitor;
+    const profileHandler = require('./profile').Profile;
+
     return new Promise((resolve, reject) => {
-      const failed = this.assertInput(['firstname', 'lastname', 'password', 'email'], reqBody);
+      const failed = this.assertInput(['firstName', 'lastName', 'password', 'email'], reqBody);
 
       if (failed) { reject(`We need your ${failed}`); } else {
         const emailRegex = /.+@.+/i;
@@ -31,29 +61,28 @@ class Account extends Handler {
         if (!emailRegex.test(email)) {
           reject(`${email} is not a valid email address`);
         } else {
-          const firstname = reqBody.firstname;
-          const lastname = reqBody.lastname;
+          const firstName = reqBody.firstName;
+          const lastName = reqBody.lastName;
           const password = reqBody.password;
 
-          if (typeof firstname !== 'string' || firstname.length > 50 || firstname.length === 0) {
-            reject('Invalid firstname');
-          } else if (typeof lastname !== 'string' || lastname.length > 50 || lastname.length === 0) {
-            reject('Invalid lastname');
+          if (typeof firstName !== 'string' || firstName.length > 50 || firstName.length === 0) {
+            reject('Invalid firstName');
+          } else if (typeof lastName !== 'string' || lastName.length > 50 || lastName.length === 0) {
+            reject('Invalid lastName');
           } else if (typeof password !== 'string' || password.length > 50 || password.length === 0) {
             reject('Invalid password');
           } else {
-            profileHandler.add({ email, firstname, lastname })
-              .catch((err) => {
-                if (err.indexOf('E11000') !== -1) { err = 'This email already exists'; }
-                reject(err);
-              })
+            profileHandler.add({ firstName, lastName })
               .then((profile) => {
                 return visitorHandler.add({ profile: profile._id });
               })
               .then((visitor) => {
-                const newAccount = new db.Accounts({ password, visitor: visitor._id });
+                const newAccount = new db.Accounts({ email, password, visitor: visitor._id });
                 newAccount.save((err) => {
-                  if (err) { throw err.message; } else {
+                  if (err) {
+                    if (err.indexOf('E11000') !== -1) { err.message = 'This email already exists'; }
+                    throw err.message;
+                  } else {
                     resolve('Account created');
                   }
                 });
@@ -107,12 +136,12 @@ class Account extends Handler {
 
   static authenticate(email, password) {
     return new Promise((resolve, reject) => {
-      this.findByPseudo({ email })
+      this.findByEmail({ email })
         .then((result) => {
           if (result.password !== password) {
             reject('Invalid password');
           } else {
-            const token = jwt.sign({ foo: 'bar' }, config.jwtSecret);
+            const token = jwt.sign({ userId: result._id }, config.jwtSecret);
             resolve({ token });
           }
         })
