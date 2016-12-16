@@ -4,6 +4,7 @@ const db = require('../database');
 const Handler = require('./_handler').Handler;
 const jwt = require('jsonwebtoken');
 const config = require('config');
+const validator = require('validator');
 
 class Account extends Handler {
   static findAll() {
@@ -34,12 +35,12 @@ class Account extends Handler {
   }
 
   static findByEmail(reqBody) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       db.Accounts
         .findOne({ email: reqBody.email })
         .exec((err, account) => {
           if (err) { throw err.message; } else if (account == null) {
-            throw new Error('No account with this email');
+            reject('No account with this email');
           } else {
             resolve(account);
           }
@@ -48,51 +49,58 @@ class Account extends Handler {
   }
 
   static signup(reqBody) {
-    const visitorHandler = require('./visitor').Visitor;
-    const profileHandler = require('./profile').Profile;
-
     return new Promise((resolve, reject) => {
+
       const failed = this.assertInput(['firstName', 'lastName', 'password', 'email'], reqBody);
-
-      if (failed) { reject(`We need your ${failed}`); } else {
-        const emailRegex = /.+@.+/i;
-        const email = reqBody.email;
-
-        if (!emailRegex.test(email)) {
-          reject(`${email} is not a valid email address`);
-        } else {
-          const firstName = reqBody.firstName;
-          const lastName = reqBody.lastName;
-          const password = reqBody.password;
-
-          if (typeof firstName !== 'string' || firstName.length > 50 || firstName.length === 0) {
-            reject('Invalid firstName');
-          } else if (typeof lastName !== 'string' || lastName.length > 50 || lastName.length === 0) {
-            reject('Invalid lastName');
-          } else if (typeof password !== 'string' || password.length > 50 || password.length === 0) {
-            reject('Invalid password');
-          } else {
-            profileHandler.add({ firstName, lastName })
-              .then((profile) => {
-                return visitorHandler.add({ profile: profile._id });
-              })
-              .then((visitor) => {
-                const newAccount = new db.Accounts({ email, password, visitor: visitor._id });
-                newAccount.save((err) => {
-                  if (err) {
-                    if (err.indexOf('E11000') !== -1) { err.message = 'This email already exists'; }
-                    throw err.message;
-                  } else {
-                    resolve('Account created');
-                  }
-                });
-              })
-              .catch((err) => {
-                reject(err);
-              });
-          }
-        }
+      if (failed) {
+        reject({
+          code: 1,
+          message: failed
+        });
       }
+
+      const firstName = reqBody.firstName;
+      const lastName = reqBody.lastName;
+      const password = reqBody.password;
+      const email = reqBody.email;
+
+      //check isExist
+      if (!validator.isEmail(email)) {
+        reject({
+          code: 2,
+          message: 'Invalid email'
+        });
+      } else if(!validator.isLength(firstName, {min:2, max: 50}) ) {
+        reject({
+          code: 3,
+          message: 'Invalid firstName'
+        });
+      } else if(!validator.isLength(lastName, {min:2, max: 50})) {
+        reject({
+          code: 4,
+          message: 'Invalid lastName'
+        });
+      } else if(!validator.isLength(password, {min:4, max: undefined})) {
+        reject({
+          code: 5,
+          message: 'Invalid Password'
+        });
+      }
+
+      const newAccount = new db.Accounts({firstName, lastName, password, email});
+      newAccount.save((err) => {
+        if (err) {
+          reject({
+            code: 6,
+            message: err
+          });
+        } else {
+          resolve({
+            code: 0,
+            message: 'Account created'
+          });
+        }
+      });
     });
   }
 
@@ -137,16 +145,25 @@ class Account extends Handler {
   static authenticate(email, password) {
     return new Promise((resolve, reject) => {
       this.findByEmail({ email })
-        .then((result) => {
-          if (result.password !== password) {
-            reject('Invalid password');
-          } else {
-            const token = jwt.sign({ userId: result._id }, config.jwtSecret);
-            resolve({ token });
-          }
+        .then((account) => {
+          account.comparePassword(password, function (err, isMatch) {
+            if (err) { throw err; }
+            if (!isMatch) {
+              reject({
+                code: 1,
+                message: 'Invalid password'
+              });
+            } else {
+              const token = jwt.sign({ userId: account._id }, config.jwtSecret);
+              resolve({ token });
+            }
+          });
         })
         .catch((err) => {
-          reject(err);
+          reject({
+            code: 2,
+            message: err
+          });
         });
     });
   }

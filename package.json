@@ -10,6 +10,7 @@
     "npm": "2.14.4"
   },
   "dependencies": {
+    "bcrypt": "^1.0.1",
     "body-parser": "^1.15.2",
     "config": "^1.21.0",
     "cors": "^2.8.1",
@@ -17,7 +18,8 @@
     "jsonwebtoken": "^7.1.9",
     "lodash": "^4.17.2",
     "mongoose": "^4.6.3",
-    "morgan": "^1.7.0"
+    "morgan": "^1.7.0",
+    "validator": "^6.2.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",
@@ -31,7 +33,7 @@
     "supertest": "^2.0.0"
   },
   "scripts": {
-    "start": "node ./index.js",
+    "start": "nodemon ./index.js",
     "start:dev": "NODE_ENV=dev ENVIRONMENT=dev nodemon ./index.js",
     "test": "PORT=3001 ./node_modules/.bin/mocha test/**/*.test.js --timeout 10000"
   },
