@@ -28,7 +28,7 @@ Après que `dev` soit mergée avec `master` et que vous avez reçu dans slack da
 
 ### Account
 
-#### `/signup` crée un nouveau compte
+#### `/sign-up` crée un nouveau compte
 
 **Besoin de:**
 - `pseudo`

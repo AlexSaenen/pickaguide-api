@@ -9,23 +9,23 @@ describe('Account', () => {
   let app, accounts;
 
   let accountWithoutEmail = {
-    firstName: "test",
+    firstName: "accountWithoutEmail",
     lastName: "test",
     password: "test"
   };
 
   let accountPasswordTooShort = {
-    firstName: "test",
+    firstName: "accountPasswordTooShort",
     lastName: "test",
     password: "te",
-    email: "test@test.test"
+    email: "test@test.com"
   };
 
   let accountValid = {
-    firstName: "test",
+    firstName: "accountValid",
     lastName: "test",
     password: "test",
-    email: "test@test.com"
+    email: "test@test.test"
   };
 
   before((done) => {
@@ -38,17 +38,20 @@ describe('Account', () => {
     });
   });
 
+  //error accountPasswordTooShort is save into the database... (must be deleted)
   after((done) => {
     accounts.findOne({email: accountValid.email}).remove().exec(() => {
-      server.stop(done);
+      accounts.findOne({email: accountPasswordTooShort.email}).remove().exec(() => {
+        server.stop(done);
+      });
     });
   });
 
-  describe('POST /public/signup', () => {
+  describe('POST /public/sign-up', () => {
 
     it('should return error if param is missing', (done) => {
       request(app)
-        .post('/public/signup')
+        .post('/public/sign-up')
         .send(accountWithoutEmail)
         .expect(400, {
           code: 1,
@@ -58,7 +61,7 @@ describe('Account', () => {
 
     it('should return error if password too short', (done) => {
       request(app)
-        .post('/public/signup')
+        .post('/public/sign-up')
         .send(accountPasswordTooShort)
         .expect(400, {
           code: 5,
@@ -68,7 +71,7 @@ describe('Account', () => {
 
     it('should return 201 and create an account', (done) => {
       request(app)
-        .post('/public/signup')
+        .post('/public/sign-up')
         .send(accountValid)
         .expect(201, {
           code: 0,

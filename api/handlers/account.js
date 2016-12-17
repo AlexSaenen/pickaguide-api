@@ -64,13 +64,12 @@ class Account extends Handler {
       const password = reqBody.password;
       const email = reqBody.email;
 
-      //check isExist
       if (!validator.isEmail(email)) {
         reject({
           code: 2,
           message: 'Invalid email'
         });
-      } else if(!validator.isLength(firstName, {min:2, max: 50}) ) {
+      } else if(!validator.isLength(firstName, {min:2, max: 50})) {
         reject({
           code: 3,
           message: 'Invalid firstName'
@@ -90,11 +89,14 @@ class Account extends Handler {
       const newAccount = new db.Accounts({firstName, lastName, password, email});
       newAccount.save((err) => {
         if (err) {
+          let message;
+          if (err.code === 11000) { message = 'This email already exists'; } else { message = 'Invalid data'; }
           reject({
             code: 6,
-            message: err
+            message: message
           });
         } else {
+          console.log(firstName) // error when test launch display : accountPasswordTooShort and accountValid
           resolve({
             code: 0,
             message: 'Account created'
