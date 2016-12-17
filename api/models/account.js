@@ -16,7 +16,6 @@ accountSchema.pre('save', function (next) {
   const account = this;
 
   bcrypt.hash(account.password, WORK_FORCE).then((hash) => {
-    console.log(hash);
     account.password = hash;
     next();
   });

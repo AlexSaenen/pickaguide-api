@@ -19,7 +19,7 @@ router.post('/login', (req, res) => {
       res.status(200).send(result);
     })
     .catch((err) => {
-      res.status(500).send(err);
+      res.status(400).send(err);
     });
 });
 
