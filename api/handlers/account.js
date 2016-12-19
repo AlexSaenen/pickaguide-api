@@ -84,25 +84,24 @@ class Account extends Handler {
           code: 5,
           message: 'Invalid Password'
         });
+      } else {
+        const newAccount = new db.Accounts({firstName, lastName, password, email});
+        newAccount.save((err) => {
+          if (err) {
+            let message;
+            if (err.code === 11000) { message = 'This email already exists'; } else { message = 'Invalid data'; }
+            reject({
+              code: 6,
+              message: message
+            });
+          } else {
+            resolve({
+              code: 0,
+              message: 'Account created'
+            });
+          }
+        });
       }
-
-      const newAccount = new db.Accounts({firstName, lastName, password, email});
-      newAccount.save((err) => {
-        if (err) {
-          let message;
-          if (err.code === 11000) { message = 'This email already exists'; } else { message = 'Invalid data'; }
-          reject({
-            code: 6,
-            message: message
-          });
-        } else {
-          console.log(firstName) // error when test launch display : accountPasswordTooShort and accountValid
-          resolve({
-            code: 0,
-            message: 'Account created'
-          });
-        }
-      });
     });
   }
 

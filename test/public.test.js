@@ -2,10 +2,10 @@
 
 const request = require('supertest');
 
-const expect = require('chai').expect;
+// const expect = require('chai').expect;
 const server = require('../index');
 
-describe('Account', () => {
+describe('Public Route', () => {
   let app, accounts;
 
   let accountWithoutEmail = {
@@ -38,12 +38,9 @@ describe('Account', () => {
     });
   });
 
-  //error accountPasswordTooShort is save into the database... (must be deleted)
   after((done) => {
     accounts.findOne({email: accountValid.email}).remove().exec(() => {
-      accounts.findOne({email: accountPasswordTooShort.email}).remove().exec(() => {
         server.stop(done);
-      });
     });
   });
 
@@ -79,5 +76,38 @@ describe('Account', () => {
         }, done)
     });
 
+  });
+
+  describe('POST /public/sign-in', () => {
+    it('should return error if email is wrong', (done) => {
+      request(app)
+        .post('/public/sign-in')
+        .send(accountPasswordTooShort)
+        .expect(400, {
+          code: 2,
+          message: 'No account with this email'
+        }, done)
+    });
+
+    it('should return error if password is wrong', (done) => {
+      let singinWrongPassword = {
+        email: "test@test.test",
+        password: "wrong"
+      };
+      request(app)
+        .post('/public/sign-in')
+        .send(singinWrongPassword)
+        .expect(400, {
+          code: 1,
+          message: "Invalid password"
+        }, done);
+    });
+
+    it('should return a token', (done) => {
+      request(app)
+        .post('/public/sign-in')
+        .send(accountValid)
+        .expect(200, done)
+    })
   });
 });
