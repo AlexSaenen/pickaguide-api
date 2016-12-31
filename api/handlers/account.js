@@ -20,7 +20,6 @@ class Account extends Handler {
 
   static find(reqBody) {
     return new Promise((resolve) => {
-      console.log(reqBody.userId);
       db.Accounts
         .findById(String(reqBody.userId))
         .exec((err, account) => {
