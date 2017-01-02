@@ -82,7 +82,7 @@ class Account extends Handler {
                     if (err.indexOf('E11000') !== -1) { err.message = 'This email already exists'; }
                     throw err.message;
                   } else {
-                    resolve('Account created');
+                    resolve({ message: 'Account created' });
                   }
                 });
               })
@@ -104,7 +104,7 @@ class Account extends Handler {
         db.Accounts
           .findOneAndUpdate({ email: reqBody.email, password: reqBody.password }, { accountStatus: 'disabled' }, (err) => {
             if (err) { throw err.message; } else {
-              resolve('Account disabled');
+              resolve({ message: 'Account disabled' });
             }
           });
       }
@@ -124,7 +124,7 @@ class Account extends Handler {
             } else {
               account.remove((removalErr) => {
                 if (err) { throw removalErr.message; } else {
-                  resolve('Account deleted');
+                  resolve({ message: 'Account deleted' });
                 }
               });
             }

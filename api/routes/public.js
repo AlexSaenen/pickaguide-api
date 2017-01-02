@@ -8,8 +8,8 @@ router.post('/signup', (req, res) => {
     .then((result) => {
       res.status(200).send(result);
     })
-    .catch((err) => {
-      res.status(500).send({ err });
+    .catch((error) => {
+      res.status(200).send({ error });
     });
 });
 
