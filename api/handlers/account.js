@@ -11,9 +11,8 @@ class Account extends Handler {
       db.Accounts
         .find()
         .exec((err, accounts) => {
-          if (err) { throw err.message; } else {
-            resolve(accounts);
-          }
+          if (err) { throw err.message; }
+          resolve(accounts);
         });
     });
   }
@@ -25,9 +24,9 @@ class Account extends Handler {
         .exec((err, account) => {
           if (err) { throw err.message; } else if (account == null) {
             throw new Error('No account with this id');
-          } else {
-            resolve(account);
           }
+
+          resolve(account);
         });
     });
   }
@@ -39,9 +38,9 @@ class Account extends Handler {
         .exec((err, account) => {
           if (err) { throw err.message; } else if (account == null) {
             throw new Error('No account with this email');
-          } else {
-            resolve(account);
           }
+
+          resolve(account);
         });
     });
   }
@@ -53,45 +52,40 @@ class Account extends Handler {
     return new Promise((resolve, reject) => {
       const failed = this.assertInput(['firstName', 'lastName', 'password', 'email'], reqBody);
 
-      if (failed) { reject(`We need your ${failed}`); } else {
-        const emailRegex = /.+@.+/i;
-        const email = reqBody.email;
+      if (failed) { reject({ code: 400, error: `We need your ${failed}` }); }
+      const emailRegex = /.+@.+/i;
+      const email = reqBody.email;
 
-        if (!emailRegex.test(email)) {
-          reject(`${email} is not a valid email address`);
-        } else {
-          const firstName = reqBody.firstName;
-          const lastName = reqBody.lastName;
-          const password = reqBody.password;
+      if (!emailRegex.test(email)) { reject({ code: 400, error: `${email} is not a valid email address` }); }
+      const firstName = reqBody.firstName;
+      const lastName = reqBody.lastName;
+      const password = reqBody.password;
 
-          if (typeof firstName !== 'string' || firstName.length > 50 || firstName.length === 0) {
-            reject('Invalid firstName');
-          } else if (typeof lastName !== 'string' || lastName.length > 50 || lastName.length === 0) {
-            reject('Invalid lastName');
-          } else if (typeof password !== 'string' || password.length > 50 || password.length === 0) {
-            reject('Invalid password');
-          } else {
-            profileHandler.add({ firstName, lastName })
-              .then((profile) => {
-                return visitorHandler.add({ profile: profile._id });
-              })
-              .then((visitor) => {
-                const newAccount = new db.Accounts({ email, password, visitor: visitor._id });
-                newAccount.save((err) => {
-                  if (err) {
-                    if (err.indexOf('E11000') !== -1) { err.message = 'This email already exists'; }
-                    throw err.message;
-                  } else {
-                    resolve({ message: 'Account created' });
-                  }
-                });
-              })
-              .catch((err) => {
-                reject(err);
-              });
+      if (typeof firstName !== 'string' || firstName.length > 50 || firstName.length === 0) { reject({ code: 400, error: 'Invalid firstName' }); }
+      if (typeof lastName !== 'string' || lastName.length > 50 || lastName.length === 0) { reject({ code: 400, error: 'Invalid lastName' }); }
+      if (typeof password !== 'string' || password.length > 50 || password.length === 0) { reject({ code: 400, error: 'Invalid password' }); }
+      profileHandler.add({ firstName, lastName })
+        .then((profile) => {
+          return visitorHandler.add({ profile: profile._id });
+        })
+        .then((visitor) => {
+          const newAccount = new db.Accounts({ email, password, visitor: visitor._id });
+          newAccount.save((err) => {
+            if (err) {
+              if (err.name === 'MongoError' && err.message.indexOf('E11000') !== -1) { err = { message: 'This email already exists' }; }
+              reject({ code: 409, error: err.message });
+            }
+
+            resolve({ message: 'Account created' });
+          });
+        })
+        .catch((err) => {
+          if (err.code === undefined) {
+            err = { code: 500, error: 'An error occurred, please try again' };
           }
-        }
-      }
+
+          reject(err);
+        });
     });
   }
 
@@ -100,14 +94,12 @@ class Account extends Handler {
     return new Promise((resolve, reject) => {
       const failed = this.assertInput(['email', 'password'], reqBody);
 
-      if (failed) { reject(`We need your ${failed}`); } else {
-        db.Accounts
-          .findOneAndUpdate({ email: reqBody.email, password: reqBody.password }, { accountStatus: 'disabled' }, (err) => {
-            if (err) { throw err.message; } else {
-              resolve({ message: 'Account disabled' });
-            }
-          });
-      }
+      if (failed) { reject(`We need your ${failed}`); }
+      db.Accounts
+        .findOneAndUpdate({ email: reqBody.email, password: reqBody.password }, { accountStatus: 'disabled' }, (err) => {
+          if (err) { throw err.message; }
+          resolve({ message: 'Account disabled' });
+        });
     });
   }
 
@@ -115,21 +107,19 @@ class Account extends Handler {
     return new Promise((resolve, reject) => {
       const failed = this.assertInput(['email', 'password'], reqBody);
 
-      if (failed) { reject(`We need your ${failed}`); } else {
-        db.Accounts
-          .findOne({ email: reqBody.email, password: reqBody.password })
-          .exec((err, account) => {
-            if (err) { throw err.message; } else if (account == null) {
-              throw new Error('Wrong email or password');
-            } else {
-              account.remove((removalErr) => {
-                if (err) { throw removalErr.message; } else {
-                  resolve({ message: 'Account deleted' });
-                }
-              });
-            }
+      if (failed) { reject(`We need your ${failed}`); }
+      db.Accounts
+        .findOne({ email: reqBody.email, password: reqBody.password })
+        .exec((err, account) => {
+          if (err) { throw err.message; } else if (account == null) {
+            throw new Error('Wrong email or password');
+          }
+
+          account.remove((removalErr) => {
+            if (err) { throw removalErr.message; }
+            resolve({ message: 'Account deleted' });
           });
-      }
+        });
     });
   }
 
@@ -139,10 +129,10 @@ class Account extends Handler {
         .then((result) => {
           if (result.password !== password) {
             reject('Invalid password');
-          } else {
-            const token = jwt.sign({ userId: result._id }, config.jwtSecret);
-            resolve({ token });
           }
+
+          const token = jwt.sign({ userId: result._id }, config.jwtSecret);
+          resolve({ token });
         })
         .catch((err) => {
           reject(err);
