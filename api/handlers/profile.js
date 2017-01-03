@@ -9,14 +9,12 @@ class Profile extends Handler {
     return new Promise((resolve, reject) => {
       const failed = this.assertInput(['firstName', 'lastName'], reqBody);
 
-      if (failed) { reject(`We need your ${failed}`); } else {
-        const newProfile = new db.Profiles(reqBody);
-        newProfile.save((err, profile) => {
-          if (err) { reject(err.message); } else {
-            resolve(profile);
-          }
-        });
-      }
+      if (failed) { reject(`We need your ${failed}`); }
+      const newProfile = new db.Profiles(reqBody);
+      newProfile.save((err, profile) => {
+        if (err) { reject(err.message); }
+        resolve(profile);
+      });
     });
   }
 
@@ -30,9 +28,8 @@ class Profile extends Handler {
           });
 
           profile.save((err) => {
-            if (err) { throw err.message; } else {
-              resolve(profile);
-            }
+            if (err) { throw err.message; }
+            resolve(profile);
           });
         })
         .catch((err) => {
@@ -53,9 +50,8 @@ class Profile extends Handler {
             .then((visitor) => {
               db.Profiles
                 .findById(visitor.profile, (err, profile) => {
-                  if (err) { throw err.message; } else {
-                    resolve(profile);
-                  }
+                  if (err) { throw err.message; }
+                  resolve(profile);
                 });
             });
         })
@@ -70,9 +66,8 @@ class Profile extends Handler {
       db.Profiles
         .find()
         .exec((err, profiles) => {
-          if (err) { throw err.message; } else {
-            resolve(profiles);
-          }
+          if (err) { throw err.message; }
+          resolve(profiles);
         });
     });
   }
