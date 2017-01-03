@@ -19,7 +19,7 @@ router.post('/login', (req, res) => {
       res.status(200).send(result);
     })
     .catch((error) => {
-      res.status(200).send({ error });
+      res.status(200).send(error);
     });
 });
 

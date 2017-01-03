@@ -9,12 +9,14 @@ class Profile extends Handler {
     return new Promise((resolve, reject) => {
       const failed = this.assertInput(['firstName', 'lastName'], reqBody);
 
-      if (failed) { reject(`We need your ${failed}`); }
-      const newProfile = new db.Profiles(reqBody);
-      newProfile.save((err, profile) => {
-        if (err) { reject(err.message); }
-        resolve(profile);
-      });
+      if (failed) { reject(`We need your ${failed}`); } else {
+        const newProfile = new db.Profiles(reqBody);
+        newProfile.save((err, profile) => {
+          if (err) { reject(err.message); } else {
+            resolve(profile);
+          }
+        });
+      }
     });
   }
 
@@ -44,7 +46,7 @@ class Profile extends Handler {
     const visitorHandler = require('./visitor').Visitor;
 
     return new Promise((resolve, reject) => {
-      accountHandler.find(userId)
+      accountHandler.find({ userId })
         .then((account) => {
           visitorHandler.find({ visitorId: account.visitor })
             .then((visitor) => {
