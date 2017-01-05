@@ -30,9 +30,8 @@ class Profile extends Handler {
           });
 
           profile.save((err) => {
-            if (err) { throw err.message; } else {
-              resolve(profile);
-            }
+            if (err) { throw err.message; }
+            resolve(profile);
           });
         })
         .catch((err) => {
@@ -47,15 +46,14 @@ class Profile extends Handler {
     const visitorHandler = require('./visitor').Visitor;
 
     return new Promise((resolve, reject) => {
-      accountHandler.find(userId)
+      accountHandler.find({ userId })
         .then((account) => {
           visitorHandler.find({ visitorId: account.visitor })
             .then((visitor) => {
               db.Profiles
                 .findById(visitor.profile, (err, profile) => {
-                  if (err) { throw err.message; } else {
-                    resolve(profile);
-                  }
+                  if (err) { throw err.message; }
+                  resolve(profile);
                 });
             });
         })
@@ -70,9 +68,8 @@ class Profile extends Handler {
       db.Profiles
         .find()
         .exec((err, profiles) => {
-          if (err) { throw err.message; } else {
-            resolve(profiles);
-          }
+          if (err) { throw err.message; }
+          resolve(profiles);
         });
     });
   }

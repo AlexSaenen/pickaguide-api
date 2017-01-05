@@ -8,25 +8,24 @@ const validator = require('validator');
 
 class Account extends Handler {
   static findAll() {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       db.Accounts
         .find()
         .exec((err, accounts) => {
-          if (err) { throw err.message; } else {
-            resolve(accounts);
-          }
+          if (err) { reject(err.message); } else { resolve(accounts); }
         });
     });
   }
 
   static find(reqBody) {
-    return new Promise((resolve) => {
-      console.log(reqBody.userId);
+    return new Promise((resolve, reject) => {
       db.Accounts
         .findById(String(reqBody.userId))
         .exec((err, account) => {
-          if (err) { throw err.message; } else if (account == null) {
-            throw new Error('No account with this id');
+          if (err) {
+            reject(err.message);
+          } else if (account == null) {
+            reject('No account with this id');
           } else {
             resolve(account);
           }
@@ -39,7 +38,9 @@ class Account extends Handler {
       db.Accounts
         .findOne({ email: reqBody.email })
         .exec((err, account) => {
-          if (err) { throw err.message; } else if (account == null) {
+          if (err) {
+            reject(err.message);
+          } else if (account == null) {
             reject('No account with this email');
           } else {
             resolve(account);
@@ -50,7 +51,6 @@ class Account extends Handler {
 
   static signup(reqBody) {
     return new Promise((resolve, reject) => {
-
       const failed = this.assertInput(['firstName', 'lastName', 'password', 'email'], reqBody);
       if (failed) {
         reject({
@@ -110,12 +110,10 @@ class Account extends Handler {
     return new Promise((resolve, reject) => {
       const failed = this.assertInput(['email', 'password'], reqBody);
 
-      if (failed) { reject(`We need your ${failed}`); } else {
+      if (failed) { reject({ code: 400, error: `We need your ${failed}` }); } else {
         db.Accounts
           .findOneAndUpdate({ email: reqBody.email, password: reqBody.password }, { accountStatus: 'disabled' }, (err) => {
-            if (err) { throw err.message; } else {
-              resolve('Account disabled');
-            }
+            if (err) { reject(err.message); } else { resolve({ message: 'Account disabled' }); }
           });
       }
     });
@@ -125,17 +123,17 @@ class Account extends Handler {
     return new Promise((resolve, reject) => {
       const failed = this.assertInput(['email', 'password'], reqBody);
 
-      if (failed) { reject(`We need your ${failed}`); } else {
+      if (failed) { reject({ code: 400, error: `We need your ${failed}` }); } else {
         db.Accounts
           .findOne({ email: reqBody.email, password: reqBody.password })
           .exec((err, account) => {
-            if (err) { throw err.message; } else if (account == null) {
-              throw new Error('Wrong email or password');
+            if (err) {
+              reject(err.message);
+            } else if (account == null) {
+              reject('Wrong email or password');
             } else {
               account.remove((removalErr) => {
-                if (err) { throw removalErr.message; } else {
-                  resolve('Account deleted');
-                }
+                if (err) { reject(removalErr.message); } else { resolve({ message: 'Account deleted' }); }
               });
             }
           });
