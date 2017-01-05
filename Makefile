@@ -26,12 +26,12 @@ run:
 	docker run --link container_databaseMongo:mongo --name $(CONTAINER) -p $(EXPOSE):$(PORT) -d $(REPOSITORY)
 
 prod:
-	npm run start:prod
+	npm run start
 
 dev:
 	npm install
 	npm run start:dev
 
-test-api:
+test:
 	npm install
 	npm test

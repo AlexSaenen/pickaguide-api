@@ -33,9 +33,9 @@
     "supertest": "^2.0.0"
   },
   "scripts": {
-    "start": "node ./index.js",
+    "start": "NODE_ENV=production ENVIRONMENT=production node ./index.js",
     "start:dev": "NODE_ENV=dev ENVIRONMENT=dev nodemon ./index.js",
-    "test": "PORT=3001 ./node_modules/.bin/mocha test/**/*.test.js --timeout 10000"
+    "test": "./node_modules/.bin/mocha test/**/*.test.js --timeout 10000"
   },
   "repository": {
     "type": "git",
