@@ -2,7 +2,7 @@
 
 const request = require('supertest');
 
-// const expect = require('chai').expect;
+const expect = require('chai').expect;
 const server = require('../index');
 
 describe('Public Route', () => {
@@ -104,10 +104,18 @@ describe('Public Route', () => {
     });
 
     it('should return a token', (done) => {
+      let singinAccountValid = {
+        email: accountValid.email,
+        password: accountValid.password
+      };
       request(app)
         .post('/public/sign-in')
-        .send(accountValid)
-        .expect(200, done)
+        .send(singinAccountValid)
+        .expect(200, function (err, res) {
+          if (err) done(err);
+          expect(res.body).to.have.property('token');
+          done();
+        });
     })
   });
 });

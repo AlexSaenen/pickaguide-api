@@ -35,6 +35,7 @@
   "scripts": {
     "start": "NODE_ENV=production ENVIRONMENT=production node ./index.js",
     "start:dev": "NODE_ENV=dev ENVIRONMENT=dev nodemon ./index.js",
+    "dev": "nodemon ./index.js",
     "test": "./node_modules/.bin/mocha test/**/*.test.js --timeout 10000"
   },
   "repository": {
