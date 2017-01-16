@@ -5,7 +5,7 @@ const request = require('supertest');
 const expect = require('chai').expect;
 const server = require('../index');
 
-describe('Public Route', () => {
+describe('Public Routes', () => {
   let app, accounts;
 
   let accountWithoutEmail = {
@@ -111,7 +111,7 @@ describe('Public Route', () => {
       request(app)
         .post('/public/sign-in')
         .send(singinAccountValid)
-        .expect(200, function (err, res) {
+        .expect(200, (err, res) => {
           if (err) done(err);
           expect(res.body).to.have.property('token');
           done();
