@@ -4,6 +4,7 @@ const db = require('../database');
 const Handler = require('./_handler').Handler;
 const jwt = require('jsonwebtoken');
 const config = require('config');
+const validator = require('validator');
 
 class Account extends Handler {
   static findAll() {
@@ -49,54 +50,57 @@ class Account extends Handler {
   }
 
   static signup(reqBody) {
-    const visitorHandler = require('./visitor').Visitor;
-    const profileHandler = require('./profile').Profile;
-
     return new Promise((resolve, reject) => {
       const failed = this.assertInput(['firstName', 'lastName', 'password', 'email'], reqBody);
+      if (failed) {
+        reject({
+          code: 1,
+          message: failed
+        });
+      }
 
-      if (failed) { reject({ code: 400, error: `We need your ${failed}` }); } else {
-        const emailRegex = /.+@.+/i;
-        const email = reqBody.email;
+      const firstName = reqBody.firstName;
+      const lastName = reqBody.lastName;
+      const password = reqBody.password;
+      const email = reqBody.email;
 
-        if (!emailRegex.test(email)) { reject({ code: 400, error: `${email} is not a valid email address` }); } else {
-          const firstName = reqBody.firstName;
-          const lastName = reqBody.lastName;
-          const password = reqBody.password;
-
-          let fieldFailed = null;
-          const fieldsToValidate = ['firstName', 'lastName', 'password'];
-          fieldsToValidate.every((fieldName) => {
-            const field = reqBody[fieldName];
-            if (typeof field !== 'string' || field.length > 50 || field.length === 0) { fieldFailed = fieldName; }
-            return fieldFailed === null;
-          });
-
-          if (fieldFailed) { reject({ code: 400, error: `Invalid ${fieldFailed}` }); } else {
-            profileHandler.add({ firstName, lastName })
-              .then((profile) => {
-                return visitorHandler.add({ profile: profile._id });
-              })
-              .then((visitor) => {
-                const newAccount = new db.Accounts({ email, password, visitor: visitor._id });
-                newAccount.save((err) => {
-                  if (err) {
-                    if (err.name === 'MongoError' && err.message.indexOf('E11000') !== -1) { err = { message: 'This email already exists' }; }
-                    reject({ code: 409, error: err.message });
-                  } else {
-                    resolve({ message: 'Account created' });
-                  }
-                });
-              })
-              .catch((err) => {
-                if (err.code === undefined) {
-                  err = { code: 500, error: 'An error occurred, please try again' };
-                }
-
-                reject(err);
-              });
+      if (!validator.isEmail(email)) {
+        reject({
+          code: 2,
+          message: 'Invalid email'
+        });
+      } else if(!validator.isLength(firstName, {min:2, max: 50})) {
+        reject({
+          code: 3,
+          message: 'Invalid firstName'
+        });
+      } else if(!validator.isLength(lastName, {min:2, max: 50})) {
+        reject({
+          code: 4,
+          message: 'Invalid lastName'
+        });
+      } else if(!validator.isLength(password, {min:4, max: undefined})) {
+        reject({
+          code: 5,
+          message: 'Invalid Password'
+        });
+      } else {
+        const newAccount = new db.Accounts({firstName, lastName, password, email});
+        newAccount.save((err) => {
+          if (err) {
+            let message;
+            if (err.code === 11000) { message = 'This email already exists'; } else { message = 'Invalid data'; }
+            reject({
+              code: 6,
+              message: message
+            });
+          } else {
+            resolve({
+              code: 0,
+              message: 'Account created'
+            });
           }
-        }
+        });
       }
     });
   }
@@ -140,16 +144,25 @@ class Account extends Handler {
   static authenticate(email, password) {
     return new Promise((resolve, reject) => {
       this.findByEmail({ email })
-        .then((result) => {
-          if (result.password !== password) {
-            reject({ code: 400, error: 'Invalid email or password' });
-          } else {
-            const token = jwt.sign({ userId: result._id }, config.jwtSecret);
-            resolve({ token });
-          }
+        .then((account) => {
+          account.comparePassword(password, function (err, isMatch) {
+            if (err) { throw err; }
+            if (!isMatch) {
+              reject({
+                code: 1,
+                message: 'Invalid password'
+              });
+            } else {
+              const token = jwt.sign({ userId: account._id }, config.jwtSecret);
+              resolve({ token });
+            }
+          });
         })
-        .catch((error) => {
-          reject({ code: 500, error });
+        .catch((err) => {
+          reject({
+            code: 2,
+            message: err
+          });
         });
     });
   }

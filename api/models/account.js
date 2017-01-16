@@ -1,33 +1,42 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+
+const WORK_FORCE = 10;
 
 const Schema = mongoose.Schema;
 const accountSchema = new Schema({
-  email: { type: String, required: true },
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
   password: { type: String, required: true },
-
-  isGuide: { type: Boolean, default: false },
-  guide: { type: Schema.ObjectId, ref: 'Guides' },
-  visitor: { type: Schema.ObjectId, ref: 'Visitors', required: true },
-  accountStatus: { type: String, default: 'active' },
-
-  isConnected: { type: Boolean, default: false },
-
-  languageCode: { type: Number, default: 0 },
-}).index({
-  email: 1,
-}, {
-  unique: true,
+  email: { type: String, required: true, unique: true },
 });
 
-accountSchema.post('remove', (account) => {
-  const visitors = mongoose.model('Visitors');
-  visitors.findOne({ _id: account.visitor }, (err, visitor) => {
-    if (visitor == null) {
-      throw new Error(`Visitor ${account.visitor} does not exist`);
-    }
 
-    visitor.remove();
+accountSchema.pre('save', function (next) {
+  const account = this;
+
+  bcrypt.hash(account.password, WORK_FORCE).then((hash) => {
+    account.password = hash;
+    next();
   });
 });
+
+accountSchema.methods.comparePassword = function(plainPassword, next) {
+  bcrypt.compare(plainPassword, this.password, function(err, isMatch) {
+    if (err) return next(err);
+    next(null, isMatch);
+  });
+};
+
+// accountSchema.post('remove', (account) => {
+//   const visitors = mongoose.model('Visitors');
+//   visitors.findOne({ _id: account.visitor }, (err, visitor) => {
+//     if (visitor == null) {
+//       throw new Error(`Visitor ${account.visitor} does not exist`);
+//     }
+//
+//     visitor.remove();
+//   });
+// });
 
 exports.Accounts = mongoose.model('Accounts', accountSchema);

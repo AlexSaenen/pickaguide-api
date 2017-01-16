@@ -1,5 +1,5 @@
 {
-  "port": "3030",
+  "port": "3001",
   "jwtSecret": "PickaGuidesecret",
   "mongo": {
     "url": "localhost:27017/pickaguideDB"

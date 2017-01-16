@@ -19,7 +19,7 @@ router.use((req, res, next) => {
       next();
     });
   } else {
-    return res.status(403).send({
+    return res.status(401).send({
       success: false,
       message: 'No token provided.',
     });

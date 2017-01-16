@@ -5,20 +5,6 @@ const Handler = require('./_handler').Handler;
 const _ = require('lodash');
 
 class Profile extends Handler {
-  static add(reqBody) {
-    return new Promise((resolve, reject) => {
-      const failed = this.assertInput(['firstName', 'lastName'], reqBody);
-
-      if (failed) { reject(`We need your ${failed}`); } else {
-        const newProfile = new db.Profiles(reqBody);
-        newProfile.save((err, profile) => {
-          if (err) { reject(err.message); } else {
-            resolve(profile);
-          }
-        });
-      }
-    });
-  }
 
   static update(reqBody, userId) {
     return new Promise((resolve, reject) => {
