@@ -3,5 +3,6 @@
   "jwtSecret": "PickaGuidesecret",
   "mongo": {
     "url": "localhost:27017/pickaguideDB"
-  }
+  },
+  "mailgun": {}
 }

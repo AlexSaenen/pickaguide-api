@@ -19,6 +19,8 @@
     "lodash": "^4.17.2",
     "mongoose": "^4.6.3",
     "morgan": "^1.7.0",
+    "nodemailer": "^2.7.0",
+    "nodemailer-mailgun-transport": "^1.2.4",
     "validator": "^6.2.0"
   },
   "devDependencies": {
