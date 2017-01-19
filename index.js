@@ -2,6 +2,7 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
+const expressJwt = require('express-jwt');
 const config = require('config');
 const morgan = require('morgan');
 const cors = require('cors');
@@ -20,7 +21,13 @@ const run = (next) => {
 
       app.use(cors());
       app.use('/public', require('./api/routes/public'));
-      app.use('/', require('./api/middleware-service'));
+      
+      app.use('/', expressJwt({secret: config.jwtSecret}).unless({path: ['/public']}));
+      app.use(function (err, req, res, next) {
+        if (err.name === 'UnauthorizedError') { res.status(401).send('invalid token.'); }
+      });
+      
+      app.use('/', require('./api/handlers/account').Account.isAuthorise);
       // app.use('/profile', require('./api/routes/profile'));
       app.use('/account', require('./api/routes/account'));
 

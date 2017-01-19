@@ -49,7 +49,7 @@ class Account extends Handler {
     });
   }
 
-  static signup(reqBody) {
+  static  signup(reqBody) {
     return new Promise((resolve, reject) => {
       const failed = this.assertInput(['firstName', 'lastName', 'password', 'email'], reqBody);
       if (failed) {
@@ -166,6 +166,21 @@ class Account extends Handler {
         });
     });
   }
+
+  static isAuthorise(req, res, next) {
+    if (!req.user.userId) return res.status(401).send();
+    db.Accounts.findById(String(req.user.userId), function (err, account) {
+
+      if (err) return res.status(500).send();
+      if(!account || ('Bearer ' + account.token) !== req.headers.authorization) {
+        return res.status(401).send({
+          code: 3,
+          message: 'Bad token authentication',
+        });
+      }
+      return next();
+    });
+  };
 }
 
 exports.Account = Account;

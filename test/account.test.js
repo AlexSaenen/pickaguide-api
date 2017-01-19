@@ -8,20 +8,24 @@ const helpers = require('./helpers');
 
 describe('Account Routes', () => {
   let app;
-  let token;
+  let account;
 
   before((done) => {
     server.start((err, _app) => {
       if (err) return done(err);
       app = _app;
-
-      token = helpers.generateToken();
-      done();
+      
+      helpers.createAccount(_account => {
+        account = _account;
+        done();
+      });
     });
   });
 
   after((done) => {
-    server.stop(done);
+    helpers.deleteAccount(account._id, () => {
+      server.stop(done);
+    });
   });
 
   describe('GET /account/', () => {
@@ -36,7 +40,7 @@ describe('Account Routes', () => {
       request(app)
         .get('/account/')
         .set('Content-Type', 'application/json')
-        .set('Authorization', 'Bearer ' + token)
+        .set('Authorization', 'Bearer ' + account.token)
         .expect(200, done);
     });
   });
