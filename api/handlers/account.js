@@ -49,7 +49,7 @@ class Account extends Handler {
     });
   }
 
-  static  signup(reqBody) {
+  static signup(reqBody) {
     return new Promise((resolve, reject) => {
       const failed = this.assertInput(['firstName', 'lastName', 'password', 'email'], reqBody);
       if (failed) {

@@ -7,8 +7,7 @@ const server = require('../index');
 const helpers = require('./helpers');
 
 describe('Account Routes', () => {
-  let app;
-  let account;
+  let app, account;
 
   before((done) => {
     server.start((err, _app) => {

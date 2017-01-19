@@ -23,8 +23,6 @@ accountSchema.pre('save', function (next) {
   });
 });
 
-//post save send email
-
 accountSchema.methods.comparePassword = function(plainPassword, next) {
   bcrypt.compare(plainPassword, this.password, function(err, isMatch) {
     if (err) return next(err);
