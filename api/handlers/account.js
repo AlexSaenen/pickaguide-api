@@ -153,8 +153,7 @@ class Account extends Handler {
                 message: 'Invalid password'
               });
             } else {
-              const token = jwt.sign({ userId: account._id }, config.jwtSecret);
-              resolve({ token });
+              resolve({token: account.token});
             }
           });
         })
