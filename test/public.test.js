@@ -8,20 +8,20 @@ const server = require('../index');
 describe('Public Routes', () => {
   let app, accounts;
 
-  let accountWithoutEmail = {
+  const accountWithoutEmail = {
     firstName: "accountWithoutEmail",
     lastName: "test",
     password: "test"
   };
 
-  let accountPasswordTooShort = {
+  const accountPasswordTooShort = {
     firstName: "accountPasswordTooShort",
     lastName: "test",
     password: "te",
     email: "test@test.com"
   };
 
-  let accountValid = {
+  const accountValid = {
     firstName: "accountValid",
     lastName: "test",
     password: "test",
@@ -90,7 +90,7 @@ describe('Public Routes', () => {
     });
 
     it('should return error if password is wrong', (done) => {
-      let singinWrongPassword = {
+      const singinWrongPassword = {
         email: "test@test.test",
         password: "wrong"
       };
@@ -104,7 +104,7 @@ describe('Public Routes', () => {
     });
 
     it('should return a token', (done) => {
-      let singinAccountValid = {
+      const singinAccountValid = {
         email: accountValid.email,
         password: accountValid.password
       };

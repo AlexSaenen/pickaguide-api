@@ -2,7 +2,23 @@
 
 const jwt = require('jsonwebtoken');
 const config = require('config');
+const db = require('../api/database');
 
-module.exports.generateToken = () => {
-  return jwt.sign({test: "test"}, config.jwtSecret);
+const accountValid = new db.Accounts({
+  firstName: "accountValid",
+  lastName: "test",
+  password: "test",
+  email: "test@test.test"
+});
+
+exports.createAccount = (next) => {
+  accountValid.save((err, account) => {
+    return next(account);
+  });
+};
+
+exports.deleteAccount = (idAccount, next) => {
+  db.Accounts.findByIdAndRemove(idAccount, () => {
+    return next();
+  });
 };
