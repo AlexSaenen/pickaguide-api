@@ -23,4 +23,14 @@ router.post('/sign-in', (req, res) => {
     });
 });
 
+router.get('/verify/:id', (req, res) => {
+  accountHandler.confirmEmailAccount(req.params.id)
+    .then((result) => {
+      res.status(200).send(result);
+    })
+    .catch((err) => {
+      res.status(404).send(err);
+    });
+});
+
 module.exports = router;

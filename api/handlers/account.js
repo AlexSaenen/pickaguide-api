@@ -180,6 +180,25 @@ class Account extends Handler {
       return next();
     });
   };
+  
+  static confirmEmailAccount(id) {
+    return new Promise((resolve, reject) => {
+      console.log(id);
+      db.Accounts.findByIdAndUpdate(id, {$set: {emailConfirmation: true}}, function(err, model) {
+        if (err) {
+          reject({
+            code: 1,
+            message: err
+          });
+        } else {
+          resolve({
+            code: 0,
+            message: 'Email verified'
+          });
+        }
+      });
+    });
+  }
 }
 
 exports.Account = Account;
