@@ -2,7 +2,6 @@
 
 const db = require('../database');
 const Handler = require('./_handler').Handler;
-const jwt = require('jsonwebtoken');
 const config = require('config');
 const validator = require('validator');
 
@@ -166,7 +165,8 @@ class Account extends Handler {
     });
   }
 
-  static isAuthorise(req, res, next) {
+  static isAuthorise(err, req, res, next) {
+    if (err.name === 'UnauthorizedError') return res.status(401).send('Token is not provided');
     if (!req.user.userId) return res.status(401).send();
     db.Accounts.findById(String(req.user.userId), function (err, account) {
 
