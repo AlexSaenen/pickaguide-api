@@ -5,25 +5,17 @@ const router = express.Router();
 
 router.get('/', (req, res) => {
   accountHandler.findAll()
-    .then((result) => {
-      res.status(200).send(result);
-    })
-    .catch((err) => {
-      res.status(500).send({ err });
-    });
+    .then(result => res.status(200).send(result))
+    .catch(error => res.status(400).send(error));
 });
 
 router.post('/signout', (req, res) => {
-  accountHandler.disable(req.body)
-    .then((result) => {
-      res.status(200).send(result);
-    })
-    .catch((err) => {
-      res.status(500).send({ err });
-    });
+  accountHandler.remove(req.body)
+    .then(result => res.status(200).send(result))
+    .catch(error => res.status(400).send(error));
 });
 
-router.post('/logout', (req, res) => {
+router.get('/logout', (req, res) => {
   res.status(200).send({ json: 'logout' });
 });
 

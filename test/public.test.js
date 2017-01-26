@@ -6,7 +6,7 @@ const expect = require('chai').expect;
 const server = require('../index');
 
 describe('Public Routes', () => {
-  let app, accounts;
+  let app, users;
 
   const accountWithoutEmail = {
     firstName: "accountWithoutEmail",
@@ -32,15 +32,15 @@ describe('Public Routes', () => {
     server.start((err, _app) => {
       if (err) return done(err);
       app = _app;
-      accounts = require('../api/database').Accounts;
+      users = require('../api/database').Users;
 
       done();
     });
   });
 
   after((done) => {
-    accounts.findOne({email: accountValid.email}).remove().exec(() => {
-        server.stop(done);
+    users.findOne({ 'account.email': accountValid.email}).remove().exec(() => {
+      server.stop(done);
     });
   });
 
@@ -52,7 +52,7 @@ describe('Public Routes', () => {
         .send(accountWithoutEmail)
         .expect(400, {
           code: 1,
-          message: 'email'
+          message: 'We need your email'
         }, done);
     });
 
@@ -61,7 +61,7 @@ describe('Public Routes', () => {
         .post('/public/sign-up')
         .send(accountPasswordTooShort)
         .expect(400, {
-          code: 5,
+          code: 3,
           message: 'Invalid Password'
         }, done);
     });
@@ -73,7 +73,7 @@ describe('Public Routes', () => {
         .expect(201, {
           code: 0,
           message: 'Account created'
-        }, done)
+        }, done);
     });
 
   });
@@ -90,27 +90,29 @@ describe('Public Routes', () => {
     });
 
     it('should return error if password is wrong', (done) => {
-      const singinWrongPassword = {
+      const signinWrongPassword = {
         email: "test@test.test",
         password: "wrong"
       };
+
       request(app)
         .post('/public/sign-in')
-        .send(singinWrongPassword)
+        .send(signinWrongPassword)
         .expect(400, {
-          code: 1,
+          code: 2,
           message: "Invalid password"
         }, done);
     });
 
     it('should return a token', (done) => {
-      const singinAccountValid = {
+      const signinAccountValid = {
         email: accountValid.email,
         password: accountValid.password
       };
+
       request(app)
         .post('/public/sign-in')
-        .send(singinAccountValid)
+        .send(signinAccountValid)
         .expect(200, (err, res) => {
           if (err) done(err);
           expect(res.body).to.have.property('token');

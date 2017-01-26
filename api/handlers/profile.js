@@ -1,62 +1,44 @@
 'use strict';
 
-const db = require('../database');
-const Handler = require('./_handler').Handler;
+const User = require('./user').User;
+
 const _ = require('lodash');
 
-class Profile extends Handler {
+class Profile extends User {
 
-  static update(reqBody, userId) {
+  static find(userId, updatable = false) {
     return new Promise((resolve, reject) => {
-      this.find({ userId })
-        .then((profile) => {
-          delete reqBody.userId;
-          _.each(Object.keys(reqBody), (updateKey) => {
-            profile[updateKey] = reqBody[updateKey];
-          });
-
-          profile.save((err) => {
-            if (err) { throw err.message; }
-            resolve(profile);
-          });
-        })
-        .catch((err) => {
-          reject(err);
-        });
-    });
-  }
-
-  // TODO: p-h: Add another filter
-  static find(userId) {
-    const accountHandler = require('./account').Account;
-    const visitorHandler = require('./visitor').Visitor;
-
-    return new Promise((resolve, reject) => {
-      accountHandler.find({ userId })
-        .then((account) => {
-          visitorHandler.find({ visitorId: account.visitor })
-            .then((visitor) => {
-              db.Profiles
-                .findById(visitor.profile, (err, profile) => {
-                  if (err) { throw err.message; }
-                  resolve(profile);
-                });
-            });
-        })
-        .catch((err) => {
-          reject(`Failed to get profile: ${err}`);
-        });
+      super.find(userId, 'profile', updatable)
+        .then(res => resolve({ code: 0, profile: updatable ? res.user : res.user.profile }))
+        .catch(err => reject(err));
     });
   }
 
   static findAll() {
-    return new Promise((resolve) => {
-      db.Profiles
-        .find()
-        .exec((err, profiles) => {
-          if (err) { throw err.message; }
-          resolve(profiles);
-        });
+    return new Promise((resolve, reject) => {
+      super.findAll('profile')
+        .then(res => resolve({ code: 0, profiles: res.users.map(user => user.profile) }))
+        .catch(err => reject(err));
+    });
+  }
+
+  static update(reqBody, userId) {
+    return new Promise((resolve, reject) => {
+      this.find(userId, true)
+        .then((res) => {
+          const user = res.user;
+
+          _.each(Object.keys(reqBody), (updateKey) => {
+            user.profile[updateKey] = reqBody[updateKey];
+          });
+
+          user.save((err) => {
+            if (err) { return reject({ code: 1, message: err.message }); }
+
+            resolve({ code: 0, profile: user.profile });
+          });
+        })
+        .catch(err => reject(err));
     });
   }
 }
