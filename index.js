@@ -38,7 +38,7 @@ const run = (next) => {
       });
     })
     .catch((err) => {
-      console.error('Could not init the database:', err);
+      console.error('Could not init the database:', Object.keys(err));
     });
 };
 
