@@ -1,185 +1,77 @@
 'use strict';
 
-const db = require('../database');
-const Handler = require('./_handler').Handler;
-const jwt = require('jsonwebtoken');
-const config = require('config');
+const User = require('./user').User;
 const validator = require('validator');
 
-class Account extends Handler {
+class Account extends User {
+
+  static find(userId, updatable = false) {
+    return new Promise((resolve, reject) => {
+      super.find(userId, 'account', updatable)
+        .then(res => resolve({ code: 0, account: updatable ? res.user : res.user.account }))
+        .catch(err => reject(err));
+    });
+  }
+
   static findAll() {
     return new Promise((resolve, reject) => {
-      db.Accounts
-        .find()
-        .exec((err, accounts) => {
-          if (err) { reject(err.message); } else { resolve(accounts); }
-        });
-    });
-  }
-
-  static find(reqBody) {
-    return new Promise((resolve, reject) => {
-      db.Accounts
-        .findById(String(reqBody.userId))
-        .exec((err, account) => {
-          if (err) {
-            reject(err.message);
-          } else if (account == null) {
-            reject('No account with this id');
-          } else {
-            resolve(account);
-          }
-        });
-    });
-  }
-
-  static findByEmail(reqBody) {
-    return new Promise((resolve, reject) => {
-      db.Accounts
-        .findOne({ email: reqBody.email })
-        .exec((err, account) => {
-          if (err) {
-            reject(err.message);
-          } else if (account == null) {
-            reject('No account with this email');
-          } else {
-            resolve(account);
-          }
-        });
+      super.findAll('account')
+        .then(res => resolve({ code: 0, accounts: res.users.map(user => user.account) }))
+        .catch(err => reject(err));
     });
   }
 
   static signup(reqBody) {
     return new Promise((resolve, reject) => {
       const failed = this.assertInput(['firstName', 'lastName', 'password', 'email'], reqBody);
-      if (failed) {
-        reject({
-          code: 1,
-          message: failed
-        });
-      }
 
-      const firstName = reqBody.firstName;
-      const lastName = reqBody.lastName;
-      const password = reqBody.password;
-      const email = reqBody.email;
+      if (failed) { return reject({ code: 1, message: `We need your ${failed}` }); }
 
-      if (!validator.isEmail(email)) {
-        reject({
-          code: 2,
-          message: 'Invalid email'
-        });
-      } else if(!validator.isLength(firstName, {min:2, max: 50})) {
-        reject({
-          code: 3,
-          message: 'Invalid firstName'
-        });
-      } else if(!validator.isLength(lastName, {min:2, max: 50})) {
-        reject({
-          code: 4,
-          message: 'Invalid lastName'
-        });
-      } else if(!validator.isLength(password, {min:4, max: undefined})) {
-        reject({
-          code: 5,
-          message: 'Invalid Password'
-        });
-      } else {
-        const newAccount = new db.Accounts({firstName, lastName, password, email});
-        newAccount.save((err) => {
-          if (err) {
-            let message;
-            if (err.code === 11000) { message = 'This email already exists'; } else { message = 'Invalid data'; }
-            reject({
-              code: 6,
-              message: message
-            });
-          } else {
-            resolve({
-              code: 0,
-              message: 'Account created'
-            });
-          }
-        });
-      }
-    });
-  }
+      const account = { password: reqBody.password, email: reqBody.email };
+      const profile = { firstName: reqBody.firstName, lastName: reqBody.lastName };
 
-  // TODO: Alex: When logout is coded, make a call to logout when disabling or removing the account
-  static disable(reqBody) {
-    return new Promise((resolve, reject) => {
-      const failed = this.assertInput(['email', 'password'], reqBody);
+      if (!validator.isEmail(account.email)) { return reject({ code: 2, message: 'Invalid email' }); }
+      if (!validator.isLength(account.password, { min: 4, max: undefined })) { return reject({ code: 3, message: 'Invalid Password' }); }
+      if (!validator.isLength(profile.firstName, { min: 2, max: 50 })) { return reject({ code: 4, message: 'Invalid firstName' }); }
+      if (!validator.isLength(profile.lastName, { min: 2, max: 50 })) { return reject({ code: 5, message: 'Invalid lastName' }); }
 
-      if (failed) { reject({ code: 400, error: `We need your ${failed}` }); } else {
-        db.Accounts
-          .findOneAndUpdate({ email: reqBody.email, password: reqBody.password }, { accountStatus: 'disabled' }, (err) => {
-            if (err) { reject(err.message); } else { resolve({ message: 'Account disabled' }); }
-          });
-      }
-    });
-  }
-
-  static remove(reqBody) {
-    return new Promise((resolve, reject) => {
-      const failed = this.assertInput(['email', 'password'], reqBody);
-
-      if (failed) { reject({ code: 400, error: `We need your ${failed}` }); } else {
-        db.Accounts
-          .findOne({ email: reqBody.email, password: reqBody.password })
-          .exec((err, account) => {
-            if (err) {
-              reject(err.message);
-            } else if (account == null) {
-              reject('Wrong email or password');
-            } else {
-              account.remove((removalErr) => {
-                if (err) { reject(removalErr.message); } else { resolve({ message: 'Account deleted' }); }
-              });
-            }
-          });
-      }
+      super.add({ account, profile })
+        .then(res => resolve(res))
+        .catch(err => reject(err));
     });
   }
 
   static authenticate(email, password) {
     return new Promise((resolve, reject) => {
-      this.findByEmail({ email })
-        .then((account) => {
-          account.comparePassword(password, function (err, isMatch) {
-            if (err) { throw err; }
-            if (!isMatch) {
-              reject({
-                code: 1,
-                message: 'Invalid password'
-              });
-            } else {
-              resolve({token: account.token});
-            }
+      super.findByEmail(email)
+        .then((res) => {
+          res.user.comparePassword(password, (err, isMatch) => {
+            if (err) { return reject({ code: 1, message: err.message }); }
+            if (!isMatch) { return reject({ code: 2, message: 'Invalid password' }); }
+
+            resolve({ code: 0, token: res.user.account.token });
           });
         })
-        .catch((err) => {
-          reject({
-            code: 2,
-            message: err
-          });
-        });
+        .catch(err => reject(err));
     });
   }
 
   static isAuthorise(req, res, next) {
     if (!req.user.userId) return res.status(401).send();
-    db.Accounts.findById(String(req.user.userId), function (err, account) {
 
-      if (err) return res.status(500).send();
-      if(!account || ('Bearer ' + account.token) !== req.headers.authorization) {
-        return res.status(401).send({
-          code: 3,
-          message: 'Bad token authentication',
-        });
-      }
-      return next();
-    });
-  };
+    super.find(req.user.userId)
+      .then((userRes) => {
+        if (`Bearer ${userRes.user.account.token}` !== req.headers.authorization) {
+          return res.status(401).send({ code: 1, message: 'Bad token authentication' });
+        }
+
+        return next();
+      })
+      .catch((err) => {
+        if (err.code === 1) return res.status(500).send();
+        return res.status(401).send({ code: 1, message: 'Bad token authentication' });
+      });
+  }
 }
 
 exports.Account = Account;
