@@ -13,7 +13,7 @@ describe('Account Routes', () => {
     server.start((err, _app) => {
       if (err) return done(err);
       app = _app;
-      
+
       helpers.createAccount(_account => {
         account = _account;
         done();

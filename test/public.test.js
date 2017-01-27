@@ -94,6 +94,7 @@ describe('Public Routes', () => {
         email: "test@test.test",
         password: "wrong"
       };
+      
       request(app)
         .post('/public/sign-in')
         .send(singinWrongPassword)
@@ -108,6 +109,7 @@ describe('Public Routes', () => {
         email: accountValid.email,
         password: accountValid.password
       };
+
       request(app)
         .post('/public/sign-in')
         .send(singinAccountValid)

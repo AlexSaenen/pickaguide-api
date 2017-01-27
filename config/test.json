@@ -1,0 +1,5 @@
+{
+  "mongo": {
+    "url": "localhost:27017/pickaguideDB"
+  }
+}
