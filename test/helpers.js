@@ -12,6 +12,7 @@ const accountValid = new db.Accounts({
 });
 
 exports.createAccount = (next) => {
+  accountValid.token = jwt.sign({ userId: accountValid._id }, config.jwtSecret);
   accountValid.save((err, account) => {
     return next(account);
   });

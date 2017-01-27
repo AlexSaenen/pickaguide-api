@@ -65,7 +65,6 @@ exports.sendEmailPasswordReset = (account) => {
   const subject = 'Reset password Pickaguide';
   const url = config.host + '/public/reset/' + account.resetPasswordToken;
   const urlName = 'Cliquez pour changer votre mot de passe';
-  console.log(account)
   return new Promise((resolve, reject) => {
     sendEmail(account, subject, url, urlName)
       .then((result) => {

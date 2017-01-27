@@ -95,7 +95,6 @@ class Account extends Handler {
       } else {
         const newAccount = new db.Accounts({firstName, lastName, password, email});
         newAccount.hash(password, function (hash) {
-          console.log(hash);
           newAccount.token = jwt.sign({ userId: newAccount._id }, config.jwtSecret);
           newAccount.password = hash;
           newAccount.save((err) => {
@@ -179,7 +178,7 @@ class Account extends Handler {
         .catch((err) => {
           reject({
             code: 2,
-            message: err
+            message: 'No account with this email'
           });
         });
     });
@@ -304,7 +303,6 @@ class Account extends Handler {
         } else {
           account.password = password; //hash
           account.resetPasswordToken = undefined;
-          console.log(account);
           account.save((err) => {
             if (err) {
               reject({
