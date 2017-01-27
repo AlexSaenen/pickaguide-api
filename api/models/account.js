@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const config = require('config');
 const jwt = require('jsonwebtoken');
+const emailService = require('../email-service');
 
 const WORK_FORCE = 10;
 
@@ -11,17 +12,17 @@ const accountSchema = new Schema({
   lastName: { type: String, required: true },
   password: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  token: { type: String, unique: true}
+  emailConfirmation: { type: Boolean, default: false},
+  token: { type: String, unique: true},
+  resetPasswordToken: { type: String, unique: true}
 });
 
-accountSchema.pre('save', function (next) {
-  const account = this;
-  bcrypt.hash(account.password, WORK_FORCE).then((hash) => {
-    account.password = hash;
-    account.token = jwt.sign({ userId: account._id }, config.jwtSecret);
-    next();
+accountSchema.methods.hash = function (plainPassword, next) {
+  bcrypt.hash(plainPassword, WORK_FORCE).then((hash) => {
+    next(hash);
   });
-});
+};
+
 
 accountSchema.methods.comparePassword = function(plainPassword, next) {
   bcrypt.compare(plainPassword, this.password, function(err, isMatch) {

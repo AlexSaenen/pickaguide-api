@@ -2,9 +2,11 @@
 
 const db = require('../database');
 const Handler = require('./_handler').Handler;
-const jwt = require('jsonwebtoken');
 const config = require('config');
 const validator = require('validator');
+const emailService = require('../email-service');
+const jwt = require('jsonwebtoken');
+
 
 class Account extends Handler {
   static findAll() {
@@ -33,15 +35,21 @@ class Account extends Handler {
     });
   }
 
-  static findByEmail(reqBody) {
+  static findByEmail(email) {
     return new Promise((resolve, reject) => {
       db.Accounts
-        .findOne({ email: reqBody.email })
+        .findOne({ email: email })
         .exec((err, account) => {
           if (err) {
-            reject(err.message);
+            reject({
+              code: 1,
+              message: err
+            });
           } else if (account == null) {
-            reject('No account with this email');
+            reject({
+              code: 2,
+              message: 'No account with this email'
+            });
           } else {
             resolve(account);
           }
@@ -86,20 +94,30 @@ class Account extends Handler {
         });
       } else {
         const newAccount = new db.Accounts({firstName, lastName, password, email});
-        newAccount.save((err) => {
-          if (err) {
-            let message;
-            if (err.code === 11000) { message = 'This email already exists'; } else { message = 'Invalid data'; }
-            reject({
-              code: 6,
-              message: message
-            });
-          } else {
-            resolve({
-              code: 0,
-              message: 'Account created'
-            });
-          }
+        newAccount.hash(password, function (hash) {
+          newAccount.token = jwt.sign({ userId: newAccount._id }, config.jwtSecret);
+          newAccount.password = hash;
+          newAccount.save((err) => {
+            if (err) {
+              let message;
+              if (err.code === 11000) { message = 'This email already exists'; } else { message = 'Invalid data'; }
+              reject({
+                code: 6,
+                message: message
+              });
+            } else {
+              emailService.sendEmailConfirmation(newAccount)
+                .then((result) => {
+                  resolve({
+                    code: 0,
+                    message: 'Account created'
+                  });
+                })
+                .catch((err) => {
+                  reject(err);
+                });
+            }
+          });
         });
       }
     });
@@ -143,7 +161,7 @@ class Account extends Handler {
 
   static authenticate(email, password) {
     return new Promise((resolve, reject) => {
-      this.findByEmail({ email })
+      this.findByEmail(email)
         .then((account) => {
           account.comparePassword(password, function (err, isMatch) {
             if (err) { throw err; }
@@ -160,13 +178,14 @@ class Account extends Handler {
         .catch((err) => {
           reject({
             code: 2,
-            message: err
+            message: 'No account with this email'
           });
         });
     });
   }
 
-  static isAuthorise(req, res, next) {
+  static isAuthorise(err, req, res, next) {
+    if (err.name === 'UnauthorizedError') return res.status(401).send('Token is not provided');
     if (!req.user.userId) return res.status(401).send();
     db.Accounts.findById(String(req.user.userId), function (err, account) {
 
@@ -179,6 +198,127 @@ class Account extends Handler {
       }
       return next();
     });
+  };
+  
+  static sendConfirmEmailAccount(id) {
+    return new Promise((resolve, reject) => {
+      db.Accounts.findByIdAndUpdate(id, {$set: {emailConfirmation: true}}, function(err, model) {
+        if (err) {
+          reject({
+            code: 1,
+            message: err
+          });
+        } else {
+          resolve({
+            code: 0,
+            message: 'Email verified'
+          });
+        }
+      });
+    });
+  };
+  
+  static resendEmail(id) {
+    return new Promise((resolve, reject) => {
+      db.Accounts.findById(id, function (err, account) {
+        if (err) {
+          reject({
+            code: 1,
+            message: err
+          });
+        } else {
+          emailService.sendEmailConfirmation(account)
+            .then((result) => {
+              resolve({
+                code: 0,
+                message: 'Confirmation email has been resent'
+              });
+            })
+            .catch((err) => {
+              reject(err);
+            });
+        }
+      });
+      
+    });
+  };
+  
+  static sendResetPassword(email) {
+    return new Promise((resolve, reject) => {
+      this.findByEmail(email)
+        .then((account) => {
+          account.resetPasswordToken = jwt.sign({ issuer: 'www.pickaguide.com'}, config.jwtSecret);
+          account.save((err) => {
+            if (err) {
+              reject({
+                code: 1,
+                message: err
+              });
+            } else {
+              emailService.sendEmailPasswordReset(account)
+                .then((result) => {
+                  resolve({
+                    code: 0,
+                    message: 'Reset password email has been sent'
+                  });
+                })
+                .catch((err) => {
+                  reject(err);
+                });
+            }
+          });
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  };
+  
+  static validateToken(token) {
+    return new Promise((resolve, reject) => {
+      db.Accounts.findOne({ resetPasswordToken: token }, function (err, account) {
+        if (err) {
+          reject({
+            code: 1,
+            message: 'Password reset token is invalid'
+          });
+        } else {
+          resolve({
+            code: 0,
+            message: 'Password reset token is valid'
+          })
+        }
+      });
+    });
+  };
+  
+  static resetPassword(token, password) {
+    return new Promise((resolve, reject) => {
+      db.Accounts.findOne({ resetPasswordToken: token }, function (err, account) {
+        if (err) {
+          reject({
+            code: 1,
+            message: 'Password reset token is invalid'
+          });
+        } else {
+          account.password = password; //hash
+          account.resetPasswordToken = undefined;
+          account.save((err) => {
+            if (err) {
+              reject({
+                code: 2,
+                message: err
+              });
+            } else {
+              resolve({
+                code: 0,
+                message: 'Password reset token is valid'
+              });
+            }
+          });
+        }
+      });
+    })
   };
 }
 
