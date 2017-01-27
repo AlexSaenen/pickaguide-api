@@ -8,7 +8,7 @@ class Account extends User {
   static find(userId, updatable = false) {
     return new Promise((resolve, reject) => {
       super.find(userId, 'account', updatable)
-        .then(res => resolve({ code: 0, account: updatable ? res.user : res.user.account }))
+        .then(user => resolve(updatable ? user : user.account))
         .catch(err => reject(err));
     });
   }
@@ -16,7 +16,7 @@ class Account extends User {
   static findAll() {
     return new Promise((resolve, reject) => {
       super.findAll('account')
-        .then(res => resolve({ code: 0, accounts: res.users.map(user => user.account) }))
+        .then(users => resolve(users.map(user => user.account)))
         .catch(err => reject(err));
     });
   }
@@ -44,12 +44,12 @@ class Account extends User {
   static authenticate(email, password) {
     return new Promise((resolve, reject) => {
       super.findByEmail(email)
-        .then((res) => {
-          res.user.comparePassword(password, (err, isMatch) => {
+        .then((user) => {
+          user.comparePassword(password, (err, isMatch) => {
             if (err) { return reject({ code: 1, message: err.message }); }
             if (!isMatch) { return reject({ code: 2, message: 'Invalid password' }); }
 
-            resolve({ code: 0, token: res.user.account.token });
+            resolve(user.account.token);
           });
         })
         .catch(err => reject(err));
@@ -60,8 +60,8 @@ class Account extends User {
     if (!req.user.userId) return res.status(401).send();
 
     super.find(req.user.userId)
-      .then((userRes) => {
-        if (`Bearer ${userRes.user.account.token}` !== req.headers.authorization) {
+      .then((user) => {
+        if (`Bearer ${user.account.token}` !== req.headers.authorization) {
           return res.status(401).send({ code: 1, message: 'Bad token authentication' });
         }
 

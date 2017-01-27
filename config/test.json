@@ -1,5 +1,4 @@
 {
-  "port": "3030",
   "mongo": {
     "url": "localhost:27017/pickaguideDB"
   }

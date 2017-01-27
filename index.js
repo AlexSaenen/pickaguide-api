@@ -22,7 +22,7 @@ const run = (next) => {
       app.use(cors());
       app.use('/public', require('./api/routes/public'));
 
-      app.use('/', expressJwt({secret: config.jwtSecret}).unless({ path: ['/public'] }));
+      app.use('/', expressJwt({ secret: config.jwtSecret }).unless({ path: ['/public'] }));
       app.use((err, req, res, next) => {
         if (err.name === 'UnauthorizedError') { res.status(401).send('invalid token.'); }
       });

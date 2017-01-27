@@ -33,7 +33,7 @@ class User extends Handler {
         if (err) { return reject({ code: 1, message: err.message }); }
         if (user === null) { return reject({ code: 2, message: 'No user with this id' }); }
 
-        resolve({ code: 0, user });
+        resolve(user);
       });
     });
   }
@@ -46,7 +46,7 @@ class User extends Handler {
         .exec((err, users) => {
           if (err) { return reject({ code: 1, message: err.message }); }
 
-          resolve({ code: 0, users });
+          resolve(users);
         });
     });
   }
@@ -59,7 +59,19 @@ class User extends Handler {
           if (err) { return reject({ code: 1, message: err.message }); }
           if (user == null) { return reject({ code: 2, message: 'No account with this email' }); }
 
-          resolve({ code: 0, user });
+          resolve(user);
+        });
+    });
+  }
+
+  static update(reqBody, userId) {
+    return new Promise((resolve, reject) => {
+      db.Users
+        .findByIdAndUpdate(userId, reqBody)
+        .exec((err) => {
+          if (err) { return reject({ code: 1, message: err.message }); }
+
+          resolve({ code: 0, message: 'User information updated' });
         });
     });
   }
