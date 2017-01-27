@@ -13,21 +13,23 @@ const auth = {
 
 const nodemailerMailgun = nodemailer.createTransport(mg(auth));
 let send = nodemailerMailgun.templateSender({
-  subject: 'Confirmation email Pickaguide',
+  subject: '{{subject}}',
   html: 'Bonjour {{firstname}} {{lastname}}<br><br>' +
-  '<a href="{{url}}">Cliquez pour confirmer votre adresse email</a>'
+  '<a href="{{url}}">{{urlName}}</a>'
 }, {
   from: 'equipe@pickaguide.fr',
 });
 
-let sendEmail = (account, url) => {
+let sendEmail = (account, subject, url, urlName) => {
   return new Promise((resolve, reject) => {
     send({
       to: account.email,
     },{
+      subject: subject,
       firstname: account.firstName,
       lastname: account.lastName,
-      url: url
+      url: url,
+      urlName: urlName
     }, (err, info) => {
       if (err) {
         reject(err);
@@ -39,12 +41,44 @@ let sendEmail = (account, url) => {
 };
 
 exports.sendEmailConfirmation = (account) => {
-  let url = config.host + '/public/verify/' + account._id;
-  sendEmail(account, url)
-    .then((result) => {
-      console.log('Confirmation email has been sent')
-    })
-    .catch((err) => {
-      console.log('Error :', err);
-    });
+  const subject = 'Confirmation email Pickaguide';
+  const url = config.host + '/public/verify/' + account._id;
+  const urlName = 'Cliquez pour confirmer votre adresse email';
+  return new Promise((resolve, reject) => {
+    sendEmail(account, subject, url, urlName)
+      .then((result) => {
+        resolve({
+          code: 0,
+          message: result
+        });
+      })
+      .catch((err) => {
+        reject({
+          code: 1,
+          message: err
+        });
+      });
+  });
+};
+
+exports.sendEmailPasswordReset = (account) => {
+  const subject = 'Reset password Pickaguide';
+  const url = config.host + '/public/reset/' + account.resetPasswordToken;
+  const urlName = 'Cliquez pour changer votre mot de passe';
+  console.log(account)
+  return new Promise((resolve, reject) => {
+    sendEmail(account, subject, url, urlName)
+      .then((result) => {
+        resolve({
+          code: 0,
+          message: result
+        });
+      })
+      .catch((err) => {
+        reject({
+          code: 1,
+          message: err
+        });
+      });
+  });
 };

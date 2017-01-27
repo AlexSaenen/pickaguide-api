@@ -13,22 +13,16 @@ const accountSchema = new Schema({
   password: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   emailConfirmation: { type: Boolean, default: false},
-  token: { type: String, unique: true}
+  token: { type: String, unique: true},
+  resetPasswordToken: { type: String, unique: true}
 });
 
-accountSchema.pre('save', function (next) {
-  const account = this;
-  bcrypt.hash(account.password, WORK_FORCE).then((hash) => {
-    account.password = hash;
-    account.token = jwt.sign({ userId: account._id }, config.jwtSecret);
-    next();
+accountSchema.methods.hash = function (plainPassword, next) {
+  bcrypt.hash(plainPassword, WORK_FORCE).then((hash) => {
+    next(hash);
   });
-});
+};
 
-accountSchema.post('save', function(account, next) {
-  emailService.sendEmailConfirmation(account);
-  next();
-});
 
 accountSchema.methods.comparePassword = function(plainPassword, next) {
   bcrypt.compare(plainPassword, this.password, function(err, isMatch) {
