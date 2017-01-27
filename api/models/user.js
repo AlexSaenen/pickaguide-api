@@ -4,8 +4,8 @@ const config = require('config');
 const jwt = require('jsonwebtoken');
 
 const WORK_FORCE = 10;
-
 const Schema = mongoose.Schema;
+
 const userSchema = new Schema({
   account: {
     password: { type: String, required: true },
