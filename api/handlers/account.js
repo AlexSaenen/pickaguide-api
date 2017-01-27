@@ -2,6 +2,11 @@
 
 const User = require('./user').User;
 const validator = require('validator');
+const emailService = require('../email-service');
+const jwt = require('jsonwebtoken');
+const config = require('config');
+const db = require('../database');
+
 
 class Account extends User {
 
@@ -56,7 +61,8 @@ class Account extends User {
     });
   }
 
-  static isAuthorise(req, res, next) {
+  static isAuthorise(err, req, res, next) {
+    if (err.name === 'UnauthorizedError') return res.status(401).send('Token is not provided');
     if (!req.user.userId) return res.status(401).send();
 
     super.find(req.user.userId)
@@ -67,10 +73,82 @@ class Account extends User {
 
         return next();
       })
-      .catch((err) => {
-        if (err.code === 1) return res.status(500).send();
+      .catch((findErr) => {
+        if (findErr.code === 1) return res.status(500).send();
+
         return res.status(401).send({ code: 1, message: 'Bad token authentication' });
       });
+  }
+
+  static sendConfirmEmailAccount(userId) {
+    return new Promise((resolve, reject) => {
+      super.update({ emailConfirmation: true }, userId)
+        .then(() => resolve({ code: 0, message: 'Email verified' }))
+        .catch(err => reject(err));
+    });
+  }
+
+  static resendEmail(userId) {
+    return new Promise((resolve, reject) => {
+      super.find(userId, 'account')
+        .then((account) => {
+          emailService.sendEmailConfirmation(account)
+            .then(() => resolve({ code: 0, message: 'Confirmation email has been resent' }))
+            .catch(err => reject(err));
+        })
+        .catch(err => reject(err));
+    });
+  }
+
+  static sendResetPassword(email) {
+    return new Promise((resolve, reject) => {
+      super.findByEmail(email)
+        .then((user) => {
+          user.account.resetPasswordToken = jwt.sign({ issuer: 'www.pickaguide.com' }, config.jwtSecret);
+          user.save((err) => {
+            if (err) {
+              reject({ code: 1, message: err.message });
+            } else {
+              emailService.sendEmailPasswordReset(user.account)
+                .then(() => resolve({ code: 0, message: 'Reset password email has been sent' }))
+                .catch(emailErr => reject(emailErr));
+            }
+          });
+        })
+        .catch(err => reject(err));
+    });
+  }
+
+  static validateToken(token) {
+    return new Promise((resolve, reject) => {
+      db.Users.findOne({ 'account.resetPasswordToken': token }, 'account', (err) => {
+        if (err) {
+          reject({ code: 1, message: 'Password reset token is invalid' });
+        } else {
+          resolve({ code: 0, message: 'Password reset token is valid' });
+        }
+      });
+    });
+  }
+
+  static resetPassword(token, password) {
+    return new Promise((resolve, reject) => {
+      db.Users.findOne({ 'account.resetPasswordToken': token }, 'account', (err, account) => {
+        if (err) {
+          reject({ code: 1, message: 'Password reset token is invalid' });
+        } else {
+          account.password = password; // hash
+          account.resetPasswordToken = undefined;
+          account.save((saveErr) => {
+            if (saveErr) {
+              reject({ code: 2, message: saveErr.message });
+            } else {
+              resolve({ code: 0, message: 'Password reset token is valid' });
+            }
+          });
+        }
+      });
+    });
   }
 }
 

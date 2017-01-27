@@ -3,6 +3,7 @@
 const db = require('../database');
 const Handler = require('./_handler').Handler;
 
+
 class User extends Handler {
 
   static add(fields) {

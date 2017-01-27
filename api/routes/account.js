@@ -19,4 +19,10 @@ router.get('/logout', (req, res) => {
   res.status(200).send({ json: 'logout' });
 });
 
+router.get('/:id/resend-email', (req, res) => {
+  accountHandler.resendEmail(req.params.id)
+    .then(result => res.status(200).send(result))
+    .catch(err => res.status(500).send(err));
+});
+
 module.exports = router;

@@ -23,9 +23,6 @@ const run = (next) => {
       app.use('/public', require('./api/routes/public'));
 
       app.use('/', expressJwt({ secret: config.jwtSecret }).unless({ path: ['/public'] }));
-      app.use((err, req, res, next) => {
-        if (err.name === 'UnauthorizedError') { res.status(401).send('invalid token.'); }
-      });
 
       app.use('/', require('./api/handlers/account').Account.isAuthorise);
       app.use('/profile', require('./api/routes/profile'));
