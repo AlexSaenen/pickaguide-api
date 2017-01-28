@@ -2,6 +2,8 @@
 
 const db = require('../database');
 const Handler = require('./_handler').Handler;
+const jwt = require('jsonwebtoken');
+const config = require('config');
 
 
 class User extends Handler {
@@ -9,15 +11,20 @@ class User extends Handler {
   static add(fields) {
     return new Promise((resolve, reject) => {
       const newUser = new db.Users(fields);
-      newUser.save((err) => {
-        if (err) {
-          let message;
-          if (err.code === 11000) { message = 'This account already exists'; } else { message = 'Invalid data'; }
+      newUser.hash(fields.account.password, (hashed) => {
+        newUser.account.token = jwt.sign({ userId: newUser._id }, config.jwtSecret);
+        newUser.account.password = hashed;
 
-          return reject({ code: 1, message });
-        }
+        newUser.save((err) => {
+          if (err) {
+            let message;
+            if (err.code === 11000) { message = 'This account already exists'; } else { message = 'Invalid data'; }
 
-        resolve({ code: 0, message: 'Account created' });
+            return reject({ code: 1, message });
+          }
+
+          resolve({ code: 0, message: 'Account created' });
+        });
       });
     });
   }

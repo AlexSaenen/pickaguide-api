@@ -12,7 +12,7 @@ class Account extends User {
 
   static find(userId, updatable = false) {
     return new Promise((resolve, reject) => {
-      super.find(userId, 'account', updatable)
+      super.find(userId, 'account.email', updatable)
         .then(user => resolve(updatable ? user : user.account))
         .catch(err => reject(err));
     });
@@ -20,7 +20,7 @@ class Account extends User {
 
   static findAll() {
     return new Promise((resolve, reject) => {
-      super.findAll('account')
+      super.findAll('account.email')
         .then(users => resolve(users.map(user => user.account)))
         .catch(err => reject(err));
     });
@@ -54,7 +54,7 @@ class Account extends User {
             if (err) { return reject({ code: 1, message: err.message }); }
             if (!isMatch) { return reject({ code: 2, message: 'Invalid password' }); }
 
-            resolve(user.account.token);
+            resolve({ token: user.account.token, id: user._id });
           });
         })
         .catch(err => reject(err));
@@ -65,7 +65,7 @@ class Account extends User {
     if (err.name === 'UnauthorizedError') return res.status(401).send('Token is not provided');
     if (!req.user.userId) return res.status(401).send();
 
-    super.find(req.user.userId)
+    super.find(req.user.userId, 'account.token')
       .then((user) => {
         if (`Bearer ${user.account.token}` !== req.headers.authorization) {
           return res.status(401).send({ code: 1, message: 'Bad token authentication' });
@@ -82,7 +82,7 @@ class Account extends User {
 
   static sendConfirmEmailAccount(userId) {
     return new Promise((resolve, reject) => {
-      super.update({ emailConfirmation: true }, userId)
+      super.update({ 'account.emailConfirmation': true }, userId)
         .then(() => resolve({ code: 0, message: 'Email verified' }))
         .catch(err => reject(err));
     });
@@ -90,9 +90,9 @@ class Account extends User {
 
   static resendEmail(userId) {
     return new Promise((resolve, reject) => {
-      super.find(userId, 'account')
-        .then((account) => {
-          emailService.sendEmailConfirmation(account)
+      super.find(userId)
+        .then((user) => {
+          emailService.sendEmailConfirmation(user)
             .then(() => resolve({ code: 0, message: 'Confirmation email has been resent' }))
             .catch(err => reject(err));
         })
@@ -109,7 +109,7 @@ class Account extends User {
             if (err) {
               reject({ code: 1, message: err.message });
             } else {
-              emailService.sendEmailPasswordReset(user.account)
+              emailService.sendEmailPasswordReset(user)
                 .then(() => resolve({ code: 0, message: 'Reset password email has been sent' }))
                 .catch(emailErr => reject(emailErr));
             }

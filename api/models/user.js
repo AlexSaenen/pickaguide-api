@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
+const WORK_FORCE = 10;
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
@@ -27,6 +28,12 @@ const userSchema = new Schema({
     photoUrl: { type: String, default: 'https://www.soundstream.tv/assets/default_profile-e08597880fc222202f22984a4f1966a29b108e856a3fb935072bfbbc302a4b73.png' },
   },
 });
+
+userSchema.methods.hash = function hash(plainPassword, next) {
+  bcrypt.hash(plainPassword, WORK_FORCE).then((hashed) => {
+    next(hashed);
+  });
+};
 
 userSchema.methods.comparePassword = function comparePassword(plainPassword, next) {
   bcrypt.compare(plainPassword, this.account.password, (err, isMatch) => {
