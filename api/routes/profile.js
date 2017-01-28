@@ -3,7 +3,7 @@ const profileHandler = require('../handlers/profile').Profile;
 
 const router = express.Router();
 
-router.post('/', (req, res) => {
+router.put('/', (req, res) => {
   profileHandler.update(req.body, req.userId)
     .then(result => res.status(200).send(result))
     .catch(error => res.status(400).send(error));

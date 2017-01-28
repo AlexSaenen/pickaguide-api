@@ -3,6 +3,12 @@ const accountHandler = require('../handlers/account').Account;
 
 const router = express.Router();
 
+router.get('/:id', (req, res) => {
+  accountHandler.find(req.params.id)
+    .then(result => res.status(200).send(result))
+    .catch(error => res.status(400).send(error));
+});
+
 router.get('/', (req, res) => {
   accountHandler.findAll()
     .then(result => res.status(200).send(result))
