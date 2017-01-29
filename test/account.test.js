@@ -2,7 +2,6 @@
 
 const request = require('supertest');
 
-const expect = require('chai').expect;
 const server = require('../index');
 const helpers = require('./helpers');
 
