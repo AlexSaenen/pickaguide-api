@@ -4,22 +4,22 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 const db = require('../api/database');
 
-const accountValid = new db.Accounts({
-  firstName: "accountValid",
-  lastName: "test",
-  password: "test",
-  email: "test@test.test"
+const userValid = new db.Users({
+  'profile.firstName': 'userValid',
+  'profile.lastName': 'test',
+  'account.password': 'test',
+  'account.email': 'test@test.test'
 });
 
-exports.createAccount = (next) => {
-  accountValid.token = jwt.sign({ userId: accountValid._id }, config.jwtSecret);
-  accountValid.save((err, account) => {
-    return next(account);
+exports.createUser = (next) => {
+  userValid.account.token = jwt.sign({ userId: userValid._id }, config.jwtSecret);
+  userValid.save((err, user) => {
+    return next(user);
   });
 };
 
-exports.deleteAccount = (idAccount, next) => {
-  db.Accounts.findByIdAndRemove(idAccount, () => {
+exports.deleteUser = (idUser, next) => {
+  db.Users.findByIdAndRemove(idUser, () => {
     return next();
   });
 };

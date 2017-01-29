@@ -7,22 +7,22 @@ const server = require('../index');
 const helpers = require('./helpers');
 
 describe('Account Routes', () => {
-  let app, account;
+  let app, user;
 
   before((done) => {
     server.start((err, _app) => {
       if (err) return done(err);
       app = _app;
 
-      helpers.createAccount(_account => {
-        account = _account;
+      helpers.createUser(_user => {
+        user = _user;
         done();
       });
     });
   });
 
   after((done) => {
-    helpers.deleteAccount(account._id, () => {
+    helpers.deleteUser(user._id, () => {
       server.stop(done);
     });
   });
@@ -39,7 +39,7 @@ describe('Account Routes', () => {
       request(app)
         .get('/account/')
         .set('Content-Type', 'application/json')
-        .set('Authorization', 'Bearer ' + account.token)
+        .set('Authorization', 'Bearer ' + user.account.token)
         .expect(200, done);
     });
   });

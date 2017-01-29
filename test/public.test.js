@@ -6,40 +6,47 @@ const expect = require('chai').expect;
 const server = require('../index');
 
 describe('Public Routes', () => {
-  let app, accounts;
+  let app, users;
 
-  const accountWithoutEmail = {
-    firstName: "accountWithoutEmail",
-    lastName: "test",
-    password: "test"
+  const userWithoutEmail = {
+    firstName: 'userWithoutEmail',
+    lastName: 'test',
+    password: 'test'
   };
 
-  const accountPasswordTooShort = {
-    firstName: "accountPasswordTooShort",
-    lastName: "test",
-    password: "te",
-    email: "test@test.com"
+  const userPasswordTooShort = {
+    firstName: 'userPasswordTooShort',
+    lastName: 'test',
+    password: 'te',
+    email: 'test@test.com'
   };
 
-  const accountValid = {
-    firstName: "accountValid",
-    lastName: "test",
-    password: "test",
-    email: "test@test.test"
+  const userEmailInvalid = {
+    firstName: 'userPasswordTooShort',
+    lastName: 'test',
+    password: 'test',
+    email: 'test@test'
+  };
+
+  const userValid = {
+    firstName: 'userValid',
+    lastName: 'test',
+    password: 'test',
+    email: 'test@test.test'
   };
 
   before((done) => {
     server.start((err, _app) => {
       if (err) return done(err);
       app = _app;
-      accounts = require('../api/database').Accounts;
+      users = require('../api/database').Users;
 
       done();
     });
   });
 
   after((done) => {
-    accounts.findOne({email: accountValid.email}).remove().exec(() => {
+    users.findOne({'account.email': userValid.email}).remove().exec(() => {
         server.stop(done);
     });
   });
@@ -49,30 +56,51 @@ describe('Public Routes', () => {
     it('should return error if param is missing', (done) => {
       request(app)
         .post('/public/sign-up')
-        .send(accountWithoutEmail)
+        .send(userWithoutEmail)
         .expect(400, {
           code: 1,
-          message: 'email'
+          message: 'We need your email'
+        }, done);
+    });
+
+    it('should return error if email is invalid', (done) => {
+      request(app)
+        .post('/public/sign-up')
+        .send(userEmailInvalid)
+        .expect(400, {
+          code: 2,
+          message: 'Invalid email'
         }, done);
     });
 
     it('should return error if password too short', (done) => {
       request(app)
         .post('/public/sign-up')
-        .send(accountPasswordTooShort)
+        .send(userPasswordTooShort)
         .expect(400, {
-          code: 5,
+          code: 3,
           message: 'Invalid Password'
         }, done);
     });
 
-    it('should return 201 and create an account', (done) => {
+
+    it('should return 201 and create an user', (done) => {
       request(app)
         .post('/public/sign-up')
-        .send(accountValid)
+        .send(userValid)
         .expect(201, {
           code: 0,
           message: 'Account created'
+        }, done)
+    });
+
+    it('should return error if user already exist', (done) => {
+      request(app)
+        .post('/public/sign-up')
+        .send(userValid)
+        .expect(400, {
+          code: 1,
+          message: 'This account already exists'
         }, done)
     });
 
@@ -82,7 +110,7 @@ describe('Public Routes', () => {
     it('should return error if email is wrong', (done) => {
       request(app)
         .post('/public/sign-in')
-        .send(accountPasswordTooShort)
+        .send(userPasswordTooShort)
         .expect(400, {
           code: 2,
           message: 'No account with this email'
@@ -91,31 +119,32 @@ describe('Public Routes', () => {
 
     it('should return error if password is wrong', (done) => {
       const singinWrongPassword = {
-        email: "test@test.test",
-        password: "wrong"
+        email: 'test@test.test',
+        password: 'wrong'
       };
-      
+
       request(app)
         .post('/public/sign-in')
         .send(singinWrongPassword)
         .expect(400, {
-          code: 1,
-          message: "Invalid password"
+          code: 2,
+          message: 'Invalid password'
         }, done);
     });
 
     it('should return a token', (done) => {
-      const singinAccountValid = {
-        email: accountValid.email,
-        password: accountValid.password
+      const singinuserValid = {
+        email: userValid.email,
+        password: userValid.password
       };
 
       request(app)
         .post('/public/sign-in')
-        .send(singinAccountValid)
+        .send(singinuserValid)
         .expect(200, (err, res) => {
           if (err) done(err);
           expect(res.body).to.have.property('token');
+          expect(res.body).to.have.property('id');
           done();
         });
     })
