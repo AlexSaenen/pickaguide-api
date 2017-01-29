@@ -27,7 +27,9 @@ const run = (next) => {
       app.use('/', require('./api/handlers/account').Account.isAuthorise);
       app.use('/profile', require('./api/routes/profile'));
       app.use('/account', require('./api/routes/account'));
-
+  
+      app.use('/', require('./api/middleware-service').errorsTokenMissing);
+      
       app.set('port', config.port);
       server = app.listen(app.get('port'), () => {
         console.log('Express server listening on %d, in %s mode', app.get('port'), app.get('env'));

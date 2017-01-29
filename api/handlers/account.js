@@ -61,8 +61,7 @@ class Account extends User {
     });
   }
 
-  static isAuthorise(err, req, res, next) {
-    if (err.name === 'UnauthorizedError') return res.status(401).send('Token is not provided');
+  static isAuthorise(req, res, next) {
     if (!req.user.userId) return res.status(401).send();
 
     super.find(req.user.userId, 'account.token')
