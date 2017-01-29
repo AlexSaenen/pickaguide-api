@@ -13,6 +13,7 @@ describe('Account Routes', () => {
       if (err) return done(err);
       app = _app;
 
+      console.log('BEFORE createUser')
       helpers.createUser(_user => {
         user = _user;
         done();
