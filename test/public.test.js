@@ -189,4 +189,43 @@ describe('Public Routes', () => {
         });
     });
   });
+  
+  describe('POST /public/forgot', () => {
+    
+    it('should return error if email does not exist', (done) => {
+      request(app)
+        .post('/public/forgot/')
+        .send(userEmailInvalid.email)
+        .expect(404, {
+          code: 2,
+          message: 'No account with this email'
+        }, done)
+    });
+    
+    it('should send an email and create resetPasswordToken', (done) => {
+      let body;
+      let emailSent = nock('https://api.mailgun.net/v3/mg.pickaguide.fr')
+        .post(/messages/, function (b) {
+          body = b;
+          return true;
+        })
+        .reply(200, {status: 'sent'});
+      
+      request(app)
+        .post('/public/forgot/')
+        .send({'email': userValid.email})
+        .expect(200, (err, res) => {
+          expect(res.body.code).to.equal(0);
+          expect(res.body.message).to.eql('Reset password email has been sent');
+          expect(emailSent.isDone()).to.be.true;
+          db.Users.findOne({'account.email': userValid.email}, (err, user) => {
+            if (err) return done(err);
+            expect(user.account.resetPasswordToken).to.exist;
+            done()
+          });
+        });
+    });
+    
+  });
+  
 });
