@@ -30,7 +30,7 @@ const sendEmail = (user, subject, url, urlName) => {
       lastname: user.profile.lastName,
       url,
       urlName,
-    }, (err, info) => (err ? reject(err) : resolve(info)));
+    }, (err, info) => (err ? reject(err.message) : resolve(info)));
   });
 };
 
