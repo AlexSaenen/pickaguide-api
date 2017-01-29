@@ -79,7 +79,7 @@ class Account extends User {
       });
   }
 
-  static sendConfirmEmailAccount(userId) {
+  static verifyEmailAccount(userId) {
     return new Promise((resolve, reject) => {
       super.update({ 'account.emailConfirmation': true }, userId)
         .then(() => resolve({ code: 0, message: 'Email verified' }))
@@ -120,7 +120,7 @@ class Account extends User {
 
   static validateToken(token) {
     return new Promise((resolve, reject) => {
-      db.Users.findOne({ 'account.resetPasswordToken': token }, 'account', (err) => {
+      db.Users.findOne({ 'account.resetPasswordToken': token }, (err) => {
         if (err) {
           reject({ code: 1, message: 'Password reset token is invalid' });
         } else {
@@ -132,13 +132,14 @@ class Account extends User {
 
   static resetPassword(token, password) {
     return new Promise((resolve, reject) => {
-      db.Users.findOne({ 'account.resetPasswordToken': token }, 'account', (err, account) => {
+      db.Users.findOne({ 'account.resetPasswordToken': token }, (err, user) => {
         if (err) {
           reject({ code: 1, message: 'Password reset token is invalid' });
         } else {
-          account.password = password; // hash
-          account.resetPasswordToken = undefined;
-          account.save((saveErr) => {
+          user.account.password = password; // hash
+          user.account.resetPasswordToken = undefined;
+          console.log(user)
+          user.save((saveErr) => {
             if (saveErr) {
               reject({ code: 2, message: saveErr.message });
             } else {

@@ -10,7 +10,7 @@ const userSchema = new Schema({
     email: { type: String, required: true, unique: true, index: true },
     emailConfirmation: { type: Boolean, default: false },
     token: { type: String, unique: true },
-    resetPasswordToken: { type: String, unique: true },
+    resetPasswordToken: { type: String },
   },
   profile: {
     firstName: { type: String, required: true },
@@ -18,7 +18,7 @@ const userSchema = new Schema({
 
     birthdate: { type: Date, default: 0 },
     gender: { type: String, default: 'm' },
-    phone: { type: String, unique: true },
+    phone: { type: String, },
 
     city: { type: String },
     country: { type: String },

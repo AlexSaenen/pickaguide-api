@@ -4,6 +4,7 @@ const db = require('../database');
 const Handler = require('./_handler').Handler;
 const jwt = require('jsonwebtoken');
 const config = require('config');
+const emailService = require('../email-service');
 
 
 class User extends Handler {
@@ -19,11 +20,11 @@ class User extends Handler {
           if (err) {
             let message;
             if (err.code === 11000) { message = 'This account already exists'; } else { message = 'Invalid data'; }
-
             return reject({ code: 1, message });
           }
-
-          resolve({ code: 0, message: 'Account created' });
+          emailService.sendEmailConfirmation(newUser)
+            .then(result => resolve({ code: 0, message: 'Account created' }))
+            .catch(err => reject(err));
         });
       });
     });
