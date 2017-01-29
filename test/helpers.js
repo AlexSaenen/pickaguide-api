@@ -12,11 +12,8 @@ const userValid = new db.Users({
 });
 
 exports.createUser = (next) => {
-  console.log('IN createUser')
   userValid.account.token = jwt.sign({ userId: userValid._id }, config.jwtSecret);
   userValid.save((err, user) => {
-    console.log('IN SAVE')
-    console.log(user);
     return next(user);
   });
 };

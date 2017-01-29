@@ -12,7 +12,6 @@ const app = express();
 let server;
 
 const run = (next) => {
-  console.log(process.env)
   db.init()
     .then(() => {
       app.use(bodyParser.json());
