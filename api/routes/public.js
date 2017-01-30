@@ -36,7 +36,7 @@ router.get('/reset/:token', (req, res) => {
 router.post('/reset/:token', (req, res) => {
   accountHandler.resetPassword(req.params.token, req.body.password)
     .then(result => res.status(200).send(result))
-    .catch(() => res.status(500));
+    .catch((err) => res.status(404).send(err));
 });
 
 module.exports = router;

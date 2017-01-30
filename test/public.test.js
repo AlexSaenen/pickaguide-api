@@ -8,7 +8,7 @@ const nock = require('nock');
 const db = require('../api/database');
 
 describe('Public Routes', () => {
-  let app, users, userId;
+  let app, userId, userTokenResetPassword;
 
   const userWithoutEmail = {
     firstName: 'userWithoutEmail',
@@ -41,14 +41,13 @@ describe('Public Routes', () => {
     server.start((err, _app) => {
       if (err) return done(err);
       app = _app;
-      users = require('../api/database').Users;
 
       done();
     });
   });
 
   after((done) => {
-    users.findOne({'account.email': userValid.email}).remove().exec(() => {
+    db.Users.findOne({'account.email': userValid.email}).remove().exec(() => {
         server.stop(done);
     });
   });
@@ -221,11 +220,65 @@ describe('Public Routes', () => {
           db.Users.findOne({'account.email': userValid.email}, (err, user) => {
             if (err) return done(err);
             expect(user.account.resetPasswordToken).to.exist;
+            userTokenResetPassword = user.account.resetPasswordToken;
             done()
           });
         });
     });
     
+  });
+  
+  describe('GET /public/reset/:token', () => {
+    
+    it('should return error if wrong token', (done) => {
+      request(app)
+        .get('/public/reset/12345')
+        .expect(404, {
+          code: 1,
+          message: 'Password reset token is invalid'
+        }, done)
+    });
+    
+    it('should return status 200 and validate the token reset password', (done) => {
+      request(app)
+        .get('/public/reset/' + userTokenResetPassword)
+        .expect(200, {
+          code: 0,
+          message: 'Password reset token is valid'
+        }, done);
+    });
+    
+  });
+  
+  describe('POST /public/reset/:token', () => {
+    
+    it('should return error if wrong token', (done) => {
+      request(app)
+        .post('/public/reset/12345')
+        .send({'password': 'test'})
+        .expect(404, {
+          code: 1,
+          message: 'Password reset token is invalid'
+        }, done)
+    });
+    // add test with password shorter.
+    it('should update password of the user', (done) => {
+      request(app)
+        .post('/public/reset/' + userTokenResetPassword)
+        .send({'password': 'newpasswordtest'})
+        .expect(200, (err, res) => {
+          expect(res.body.code).to.equal(0);
+          expect(res.body.message).to.eql('Password reset token is valid');
+          db.Users.findOne({'account.email': userValid.email}, (err, user) => {
+           if(err) return done(err);
+           expect(user.account.password).to.be.eql('newpasswordtest');
+           expect(user.account.resetPasswordToken).to.be.undefined;
+           
+            done();
+          });
+        });
+    });
+  
   });
   
 });

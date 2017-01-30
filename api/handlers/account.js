@@ -120,8 +120,8 @@ class Account extends User {
 
   static validateToken(token) {
     return new Promise((resolve, reject) => {
-      db.Users.findOne({ 'account.resetPasswordToken': token }, (err) => {
-        if (err) {
+      db.Users.findOne({ 'account.resetPasswordToken': token }, (err, user) => {
+        if (err || user === null) {
           reject({ code: 1, message: 'Password reset token is invalid' });
         } else {
           resolve({ code: 0, message: 'Password reset token is valid' });
@@ -133,15 +133,14 @@ class Account extends User {
   static resetPassword(token, password) {
     return new Promise((resolve, reject) => {
       db.Users.findOne({ 'account.resetPasswordToken': token }, (err, user) => {
-        if (err) {
+        if (err || user === null) {
           reject({ code: 1, message: 'Password reset token is invalid' });
         } else {
-          user.account.password = password; // hash
+          user.account.password = password; // hash + new password need to be valid -> not too short.
           user.account.resetPasswordToken = undefined;
-          console.log(user)
-          user.save((saveErr) => {
-            if (saveErr) {
-              reject({ code: 2, message: saveErr.message });
+          user.save((err) => {
+            if (err) {
+              reject({ code: 2, message: err.message });
             } else {
               resolve({ code: 0, message: 'Password reset token is valid' });
             }
