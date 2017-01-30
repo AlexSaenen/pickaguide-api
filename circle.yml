@@ -1,6 +1,7 @@
 machine:
   services:
     - docker
+    - mongo
 
 dependencies:
   pre:
