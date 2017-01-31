@@ -1,7 +1,7 @@
 const express = require('express');
 
 const router = express.Router();
-const accountHandler = require('../handlers/account').Account;
+const accountHandler = require('../../handlers/account').Account;
 
 router.post('/sign-up', (req, res) => {
   accountHandler.signup(req.body)
