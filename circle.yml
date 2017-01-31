@@ -1,11 +1,11 @@
 machine:
   services:
     - docker
-    - mongo
 
 dependencies:
   pre:
     - docker login -e "alexander.saenen@epitech.eu" -u "pickaguidedockercloud" -p "lucasanstoast6"
+    - sudo service mongodb stop && curl -L -O https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1204-3.0.2.tgz && tar xvzf mongodb-linux-x86_64-ubuntu1204-3.0.2.tgz && sudo mv mongodb-linux-x86_64-ubuntu1204-3.0.2/bin/* /usr/bin/ && sudo service mongodb start
 
 deployment:
   production:
