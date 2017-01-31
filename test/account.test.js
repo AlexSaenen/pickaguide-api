@@ -6,6 +6,7 @@ const expect = require('chai').expect;
 const server = require('../index');
 const helpers = require('./helpers');
 const nock = require('nock');
+const db = require('../api/database');
 
 describe('Account Routes', () => {
   let app, user;
@@ -69,6 +70,29 @@ describe('Account Routes', () => {
           expect(emailSent.isDone()).to.be.true;
           done();
         });
+    });
+    
+  });
+  
+  describe('POST /account/logout', () => {
+    
+    it('should logout a user deleting his token', (done) => {
+  
+      request(app)
+        .post('/account/logout')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', 'Bearer ' + user.account.token)
+        .expect(200, (err, res) => {
+          if (err) done(err);
+          expect(res.body.code).to.be.equal(0);
+          expect(res.body.message).to.be.eql('User logout');
+          db.Users.findById(user._id, (err, user) => {
+            if (err) return done(err);
+            expect(user.account.token).to.be.null;
+            done();
+          });
+        });
+      
     });
     
   });

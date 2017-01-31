@@ -73,7 +73,7 @@ class User extends Handler {
     });
   }
 
-  static update(reqBody, userId) {
+  static update(userId, reqBody) {
     return new Promise((resolve, reject) => {
       db.Users
         .findByIdAndUpdate(userId, reqBody)

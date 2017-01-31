@@ -21,8 +21,10 @@ router.post('/signout', (req, res) => {
     .catch(error => res.status(400).send(error));
 });
 
-router.get('/logout', (req, res) => {
-  res.status(200).send({ json: 'logout' });
+router.post('/logout', (req, res) => {
+  accountHandler.logout(req.user.userId)
+    .then(result => res.status(200).send(result))
+    .catch(error => res.status(400).send(error));
 });
 
 router.get('/:id/resend-email', (req, res) => {

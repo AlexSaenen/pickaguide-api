@@ -146,7 +146,7 @@ describe('Public Routes', () => {
         }, done);
     });
 
-    it('should return a token', (done) => {
+    it('should return a token and an id', (done) => {
       const singinuserValid = {
         email: userValid.email,
         password: userValid.password
@@ -162,7 +162,33 @@ describe('Public Routes', () => {
           userId = res.body.id;
           done();
         });
-    })
+    });
+  
+    it('should return a token created after a logout', (done) => {
+      const singinuserValid = {
+        email: userValid.email,
+        password: userValid.password
+      };
+      
+      db.Users.findByIdAndUpdate(userId, { 'account.token': undefined }, {new: true},(err, user) => {
+        if (err) return done(err);
+        expect(user.account.token).to.be.null;
+        request(app)
+          .post('/public/sign-in')
+          .send(singinuserValid)
+          .expect(200, (err, res) => {
+            if (err) done(err);
+            expect(res.body).to.have.property('token');
+            expect(res.body).to.have.property('id');
+            db.Users.findById(userId, (err, user) => {
+              if (err) return done(err);
+              expect(user.account.token).to.exist;
+              done();
+            });
+          });
+      });
+    });
+    
   });
   
   describe('GET /public/verify/:id', () => {
@@ -273,7 +299,6 @@ describe('Public Routes', () => {
            if(err) return done(err);
            expect(user.account.password).to.be.eql('newpasswordtest');
            expect(user.account.resetPasswordToken).to.be.undefined;
-           
             done();
           });
         });
