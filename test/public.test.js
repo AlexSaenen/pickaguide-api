@@ -34,7 +34,7 @@ describe('Public Routes', () => {
     firstName: 'userValid',
     lastName: 'test',
     password: 'test',
-    email: 'ph.gousse@gmail.com'
+    email: 'test.test@test.com'
   };
 
   before((done) => {
