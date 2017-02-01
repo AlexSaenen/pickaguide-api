@@ -9,16 +9,16 @@ const userSchema = new Schema({
     password: { type: String, required: true },
     email: { type: String, required: true, unique: true, index: true },
     emailConfirmation: { type: Boolean, default: false },
-    token: { type: String, unique: true },
-    resetPasswordToken: { type: String, unique: true },
+    token: { type: String, unique: true, sparse: true, index: true },
+    resetPasswordToken: { type: String, unique: true, sparse: true, index: true },
   },
   profile: {
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
 
-    birthdate: { type: Date, default: 0 },
+    birthdate: { type: Date, default: Date.now() },
     gender: { type: String, default: 'm' },
-    phone: { type: String, unique: true },
+    phone: { type: String, unique: true, sparse: true, index: true },
 
     city: { type: String },
     country: { type: String },
