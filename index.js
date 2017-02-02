@@ -30,11 +30,11 @@ const run = function run(next) {
       // app.use('/profile', require('./api/routes/profile'));
       // app.use('/account', require('./api/routes/account'));
 
-      // app.set('port', config.port);
-      // server = app.listen(app.get('port'), function handler() {
-      //   console.log('Express server listening on %d, in %s mode', app.get('port'), app.get('env'));
-      //   if (next) next(null, app);
-      // });
+      app.set('port', config.port);
+      server = app.listen(app.get('port'), function handler() {
+        console.log('Express server listening on %d, in %s mode', app.get('port'), app.get('env'));
+        if (next) next(null, app);
+      });
     })
     .catch(function error(err) {
       console.error('Could not init the database:', err, Object.keys(err));
