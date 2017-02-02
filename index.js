@@ -11,9 +11,9 @@ const db = require('./api/database');
 const app = express();
 let server;
 
-const run = (next) => {
+const run = function run(next) {
   db.init()
-    .then(() => {
+    .then(function then() {
       app.use(bodyParser.json());
       app.use(bodyParser.urlencoded({extended: false}));
 
@@ -32,12 +32,12 @@ const run = (next) => {
 
 
       app.set('port', config.port);
-      server = app.listen(app.get('port'), () => {
+      server = app.listen(app.get('port'), function handler() {
         console.log('Express server listening on %d, in %s mode', app.get('port'), app.get('env'));
         if (next) next(null, app);
       });
     })
-    .catch((err) => {
+    .catch(function error(err) {
       console.error('Could not init the database:', err);
     });
 };
@@ -46,7 +46,7 @@ if (require.main === module) {
   run();
 }
 
-const stop = (next) => {
+const stop = function stop(next) {
   if (server) {
     server.close(next);
   }
