@@ -3,40 +3,40 @@ const express = require('express');
 const router = express.Router();
 const accountHandler = require('../../handlers/account').Account;
 
-router.post('/sign-up', (req, res) => {
+router.post('/sign-up', function handler(req, res) {
   accountHandler.signup(req.body)
-    .then(result => res.status(201).send(result))
-    .catch(error => res.status(400).send(error));
+    .then(function(result) { res.status(201).send(result); })
+    .catch(function(error) { res.status(400).send(error); });
 });
 
-router.post('/sign-in', (req, res) => {
+router.post('/sign-in', function handler(req, res) {
   accountHandler.authenticate(req.body.email, req.body.password)
-    .then(result => res.status(200).send(result))
-    .catch(error => res.status(400).send(error));
+    .then(function(result) { res.status(200).send(result); })
+    .catch(function(error) { res.status(400).send(error); });
 });
 
-router.get('/verify/:id', (req, res) => {
+router.get('/verify/:id', function handler(req, res) {
   accountHandler.verifyEmailAccount(req.params.id)
-    .then(result => res.status(200).send(result))
-    .catch(err => res.status(404).send(err));
+    .then(function(result) { res.status(200).send(result); })
+    .catch(function(error) { res.status(404).send(error); });
 });
 
-router.post('/forgot', (req, res) => {
+router.post('/forgot', function handler(req, res) {
   accountHandler.sendResetPassword(req.body.email)
-    .then(result => res.status(200).send(result))
-    .catch(err => res.status(404).send(err));
+    .then(function(result) { res.status(200).send(result); })
+    .catch(function(error) { res.status(404).send(error); });
 });
 
-router.get('/reset/:token', (req, res) => {
+router.get('/reset/:token', function handler(req, res) {
   accountHandler.validateToken(req.params.token)
-    .then(result => res.status(200).send(result))
-    .catch(err => res.status(404).send(err));
+    .then(function(result) { res.status(200).send(result); })
+    .catch(function(error) { res.status(404).send(error); });
 });
 
-router.post('/reset/:token', (req, res) => {
+router.post('/reset/:token', function handler(req, res) {
   accountHandler.resetPassword(req.params.token, req.body.password)
-    .then(result => res.status(200).send(result))
-    .catch(err => res.status(404).send(err));
+    .then(function(result) { res.status(200).send(result); })
+    .catch(function(error) { res.status(404).send(error); });
 });
 
 module.exports = router;
