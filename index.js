@@ -23,14 +23,14 @@ const run = (next) => {
       app.use('/public', require('./api/routes/public/public'));
       app.use('/public/account', require('./api/routes/public/account'));
 
-      app.use('/', expressJwt({ secret: config.jwtSecret }).unless({ path: ['/public', '/public/account'] }));
+      app.use('/', expressJwt({ secret: config.jwtSecret }).unless({ path: /\/public(\/.*)?/ }));
       app.use('/', require('./api/middleware-service').errorsTokenMissing);
       app.use('/', require('./api/handlers/account').Account.isAuthorise);
-      
+
       app.use('/profile', require('./api/routes/profile'));
       app.use('/account', require('./api/routes/account'));
-      
-      
+
+
       app.set('port', config.port);
       server = app.listen(app.get('port'), () => {
         console.log('Express server listening on %d, in %s mode', app.get('port'), app.get('env'));
