@@ -26,17 +26,17 @@ const sendEmail = (user, subject, url, urlName) => {
       to: user.account.email,
     }, {
       subject,
-      firstname: user.account.firstName,
-      lastname: user.account.lastName,
+      firstname: user.profile.firstName,
+      lastname: user.profile.lastName,
       url,
       urlName,
-    }, (err, info) => (err ? reject(err) : resolve(info)));
+    }, (err, info) => (err ? reject(err.message) : resolve(info)));
   });
 };
 
 exports.sendEmailConfirmation = (user) => {
   const subject = 'Confirmation email Pickaguide';
-  const url = `${config.host} '/public/verify/' ${user._id}`;
+  const url = config.host + '/public/verify/' + user._id;
   const urlName = 'Cliquez pour confirmer votre adresse email';
   return new Promise((resolve, reject) => {
     sendEmail(user, subject, url, urlName)
@@ -47,7 +47,7 @@ exports.sendEmailConfirmation = (user) => {
 
 exports.sendEmailPasswordReset = (user) => {
   const subject = 'Reset password Pickaguide';
-  const url = `${config.host} '/public/reset/' ${user.resetPasswordToken}`;
+  const url = config.host + '/public/reset/' + user.resetPasswordToken;
   const urlName = 'Cliquez pour changer votre mot de passe';
   return new Promise((resolve, reject) => {
     sendEmail(user, subject, url, urlName)

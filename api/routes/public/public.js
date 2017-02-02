@@ -1,7 +1,7 @@
 const express = require('express');
 
 const router = express.Router();
-const accountHandler = require('../handlers/account').Account;
+const accountHandler = require('../../handlers/account').Account;
 
 router.post('/sign-up', (req, res) => {
   accountHandler.signup(req.body)
@@ -16,7 +16,7 @@ router.post('/sign-in', (req, res) => {
 });
 
 router.get('/verify/:id', (req, res) => {
-  accountHandler.sendConfirmEmailAccount(req.params.id)
+  accountHandler.verifyEmailAccount(req.params.id)
     .then(result => res.status(200).send(result))
     .catch(err => res.status(404).send(err));
 });
@@ -36,7 +36,7 @@ router.get('/reset/:token', (req, res) => {
 router.post('/reset/:token', (req, res) => {
   accountHandler.resetPassword(req.params.token, req.body.password)
     .then(result => res.status(200).send(result))
-    .catch(() => res.status(500));
+    .catch(err => res.status(404).send(err));
 });
 
 module.exports = router;

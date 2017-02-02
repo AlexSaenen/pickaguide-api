@@ -53,7 +53,12 @@ class Account extends User {
           user.comparePassword(password, (err, isMatch) => {
             if (err) { return reject({ code: 1, message: err.message }); }
             if (!isMatch) { return reject({ code: 2, message: 'Invalid password' }); }
-
+            if (!user.account.token) {
+              user.account.token = jwt.sign({ userId: user._id }, config.jwtSecret);
+              user.save((err) => {
+                if (err) { reject({ code: 3, message: err.message }); }
+              });
+            }
             resolve({ token: user.account.token, id: user._id });
           });
         })
@@ -61,8 +66,7 @@ class Account extends User {
     });
   }
 
-  static isAuthorise(err, req, res, next) {
-    if (err.name === 'UnauthorizedError') return res.status(401).send('Token is not provided');
+  static isAuthorise(req, res, next) {
     if (!req.user.userId) return res.status(401).send();
 
     super.find(req.user.userId, 'account.token')
@@ -70,7 +74,7 @@ class Account extends User {
         if (`Bearer ${user.account.token}` !== req.headers.authorization) {
           return res.status(401).send({ code: 1, message: 'Bad token authentication' });
         }
-
+        
         return next();
       })
       .catch((findErr) => {
@@ -80,9 +84,9 @@ class Account extends User {
       });
   }
 
-  static sendConfirmEmailAccount(userId) {
+  static verifyEmailAccount(userId) {
     return new Promise((resolve, reject) => {
-      super.update({ 'account.emailConfirmation': true }, userId)
+      super.update(userId, { 'account.emailConfirmation': true })
         .then(() => resolve({ code: 0, message: 'Email verified' }))
         .catch(err => reject(err));
     });
@@ -121,8 +125,8 @@ class Account extends User {
 
   static validateToken(token) {
     return new Promise((resolve, reject) => {
-      db.Users.findOne({ 'account.resetPasswordToken': token }, 'account', (err) => {
-        if (err) {
+      db.Users.findOne({ 'account.resetPasswordToken': token }, (err, user) => {
+        if (err || user === null) {
           reject({ code: 1, message: 'Password reset token is invalid' });
         } else {
           resolve({ code: 0, message: 'Password reset token is valid' });
@@ -133,21 +137,29 @@ class Account extends User {
 
   static resetPassword(token, password) {
     return new Promise((resolve, reject) => {
-      db.Users.findOne({ 'account.resetPasswordToken': token }, 'account', (err, account) => {
-        if (err) {
+      db.Users.findOne({ 'account.resetPasswordToken': token }, (err, user) => {
+        if (err || user === null) {
           reject({ code: 1, message: 'Password reset token is invalid' });
         } else {
-          account.password = password; // hash
-          account.resetPasswordToken = undefined;
-          account.save((saveErr) => {
-            if (saveErr) {
-              reject({ code: 2, message: saveErr.message });
+          user.account.password = password; // hash + new password need to be valid -> not too short.
+          user.account.resetPasswordToken = undefined;
+          user.save((err) => {
+            if (err) {
+              reject({ code: 2, message: err.message });
             } else {
               resolve({ code: 0, message: 'Password reset token is valid' });
             }
           });
         }
       });
+    });
+  }
+  
+  static logout(userId) {
+    return new Promise((resolve, reject) => {
+      super.update(userId, { 'account.token': undefined })
+        .then(() => resolve({ code: 0, message: 'User logout' }))
+        .catch(err => reject(err));
     });
   }
 }
