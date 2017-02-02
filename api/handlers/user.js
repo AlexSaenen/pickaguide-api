@@ -23,8 +23,8 @@ class User extends Handler {
             return reject({ code: 1, message });
           }
           emailService.sendEmailConfirmation(newUser)
-            .then(result => resolve({ code: 0, message: 'Account created' }))
-            .catch(err => reject(err));
+            .then(() => resolve({ code: 0, message: 'Account created' }))
+            .catch(mailErr => reject(mailErr));
         });
       });
     });

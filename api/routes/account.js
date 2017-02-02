@@ -15,6 +15,12 @@ router.get('/', (req, res) => {
     .catch(error => res.status(400).send(error));
 });
 
+router.put('/', (req, res) => {
+  accountHandler.update(req.params.id)
+    .then(result => res.status(200).send(result))
+    .catch(error => res.status(400).send(error));
+});
+
 router.post('/signout', (req, res) => {
   accountHandler.remove(req.body)
     .then(result => res.status(200).send(result))

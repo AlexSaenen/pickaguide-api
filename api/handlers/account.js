@@ -55,8 +55,8 @@ class Account extends User {
             if (!isMatch) { return reject({ code: 2, message: 'Invalid password' }); }
             if (!user.account.token) {
               user.account.token = jwt.sign({ userId: user._id }, config.jwtSecret);
-              user.save((err) => {
-                if (err) { reject({ code: 3, message: err.message }); }
+              user.save((saveErr) => {
+                if (saveErr) { reject({ code: 3, message: saveErr.message }); }
               });
             }
             resolve({ token: user.account.token, id: user._id });
@@ -74,7 +74,7 @@ class Account extends User {
         if (`Bearer ${user.account.token}` !== req.headers.authorization) {
           return res.status(401).send({ code: 1, message: 'Bad token authentication' });
         }
-        
+
         return next();
       })
       .catch((findErr) => {
@@ -143,9 +143,9 @@ class Account extends User {
         } else {
           user.account.password = password; // hash + new password need to be valid -> not too short.
           user.account.resetPasswordToken = undefined;
-          user.save((err) => {
-            if (err) {
-              reject({ code: 2, message: err.message });
+          user.save((saveErr) => {
+            if (saveErr) {
+              reject({ code: 2, message: saveErr.message });
             } else {
               resolve({ code: 0, message: 'Password reset token is valid' });
             }
@@ -154,7 +154,7 @@ class Account extends User {
       });
     });
   }
-  
+
   static logout(userId) {
     return new Promise((resolve, reject) => {
       super.update(userId, { 'account.token': undefined })
