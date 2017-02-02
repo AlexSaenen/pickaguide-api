@@ -14,12 +14,12 @@ let server;
 const run = function run(next) {
   db.init()
     .then(function then() {
-      // app.use(bodyParser.json());
-      // app.use(bodyParser.urlencoded({extended: false}));
-      //
-      // app.use(morgan('dev'));
-      //
-      // app.use(cors());
+      app.use(bodyParser.json());
+      app.use(bodyParser.urlencoded({ extended: false }));
+
+      app.use(morgan('dev'));
+
+      app.use(cors());
       // app.use('/public', require('./api/routes/public/public'));
       // app.use('/public/account', require('./api/routes/public/account'));
       //
