@@ -3,7 +3,7 @@ var config = require('config');
 
 mongoose.Promise = global.Promise;
 
-var init = () { return mongoose.connect(config.mongo.url); };
+var init = function() { return mongoose.connect(config.mongo.url); };
 
 exports.ObjectId = mongoose.Types.ObjectId;
 
