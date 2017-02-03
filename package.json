@@ -31,7 +31,7 @@
     "eslint-plugin-import": "^1.14.0",
     "eslint-plugin-jsx-a11y": "^2.2.1",
     "eslint-plugin-react": "^6.2.0",
-    "mocha": "^3.0.2",
+    "mocha-es6": "^0.4.5",
     "nock": "^9.0.2",
     "nodemon": "^1.11.0",
     "supertest": "^2.0.0"
