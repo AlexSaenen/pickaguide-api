@@ -19,10 +19,10 @@ class Account extends User {
   // }
 
   static findAll() {
-    return new Promise((resolve, reject) => {
+    return new Promise(function(resolve, reject) {
       super.findAll('account.email')
-        .then(users => resolve(users.map(user => user.account)))
-        .catch(err => reject(err));
+        .then(function(users) { resolve(users.map(user => user.account))})
+        .catch(function(err) { reject(err)});
     });
   }
 
