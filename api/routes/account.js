@@ -9,12 +9,6 @@ router.get('/:id', (req, res) => {
     .catch(error => res.status(400).send(error));
 });
 
-router.get('/', (req, res) => {
-  accountHandler.findAll()
-    .then(result => res.status(200).send(result))
-    .catch(error => res.status(400).send(error));
-});
-
 router.put('/', (req, res) => {
   accountHandler.update(req.userId, { account: req.body })
     .then(result => res.status(200).send(result))
