@@ -77,10 +77,10 @@ class User extends Handler {
     return new Promise((resolve, reject) => {
       db.Users
         .findByIdAndUpdate(userId, reqBody)
-        .exec((err) => {
+        .exec((err, user) => {
           if (err) { return reject({ code: 1, message: err.message }); }
 
-          resolve({ code: 0, message: 'User information updated' });
+          resolve(user);
         });
     });
   }
