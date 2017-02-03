@@ -66,12 +66,12 @@ describe('Account Routes', () => {
 
   });
 
-  describe('POST /accounts/logout', () => {
+  describe('PUT /accounts/logout', () => {
 
     it('should logout a user deleting his token', (done) => {
 
       request(app)
-        .post('/accounts/logout')
+        .put('/accounts/logout')
         .set('Content-Type', 'application/json')
         .set('Authorization', 'Bearer ' + user.account.token)
         .expect(200, (err, res) => {
