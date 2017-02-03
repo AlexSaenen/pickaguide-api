@@ -20,7 +20,7 @@ const run = function run(next) {
       app.use(morgan('dev'));
       app.use(cors());
 
-      app.use('/public', require('./api/routes/public/public'));
+      // app.use('/public', require('./api/routes/public/public'));
       app.use('/public/account', require('./api/routes/public/account'));
       //
       // app.use('/', expressJwt({ secret: config.jwtSecret }).unless({ path: /\/public(\/.*)?/ }));
