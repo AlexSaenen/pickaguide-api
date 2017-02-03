@@ -29,25 +29,17 @@ describe('Account Routes', () => {
     });
   });
 
-  describe('GET /account/', () => {
-
-    it('should return error if token not provided', (done) => {
-      request(app)
-        .get('/account/')
-        .expect(401, done);
-    });
+  describe('GET /public/account/', () => {
 
     it('should return accounts', (done) => {
       request(app)
-        .get('/account/')
-        .set('Content-Type', 'application/json')
-        .set('Authorization', 'Bearer ' + user.account.token)
+        .get('/public/account/')
         .expect(200, done);
     });
   });
-  
+
   describe('GET /account/:id/resend-email', () => {
-    
+
     it('should return error if email fail to send', (done) => {
       let body;
       let emailSent = nock('https://api.mailgun.net/v3/mg.pickaguide.fr')
@@ -56,7 +48,7 @@ describe('Account Routes', () => {
           return true;
         })
         .reply(200, {status: 'sent'});
-  
+
       request(app)
         .get('/account/' + user._id + '/resend-email')
         .set('Content-Type', 'application/json')
@@ -71,13 +63,13 @@ describe('Account Routes', () => {
           done();
         });
     });
-    
+
   });
-  
+
   describe('POST /account/logout', () => {
-    
+
     it('should logout a user deleting his token', (done) => {
-  
+
       request(app)
         .post('/account/logout')
         .set('Content-Type', 'application/json')
@@ -92,9 +84,9 @@ describe('Account Routes', () => {
             done();
           });
         });
-      
+
     });
-    
+
   });
 
 });
