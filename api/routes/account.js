@@ -10,7 +10,7 @@ router.get('/:id', (req, res) => {
 });
 
 router.put('/', (req, res) => {
-  accountHandler.update(req.userId, { account: req.body })
+  accountHandler.update(req.user.userId, { account: req.body })
     .then(result => res.status(200).send(result))
     .catch(error => res.status(400).send(error));
 });
@@ -21,7 +21,7 @@ router.post('/signout', (req, res) => {
     .catch(error => res.status(400).send(error));
 });
 
-router.post('/logout', (req, res) => {
+router.put('/logout', (req, res) => {
   accountHandler.logout(req.user.userId)
     .then(result => res.status(200).send(result))
     .catch(error => res.status(400).send(error));
