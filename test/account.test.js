@@ -29,16 +29,16 @@ describe('Account Routes', () => {
     });
   });
 
-  describe('GET /public/account/', () => {
+  describe('GET /public/accounts/', () => {
 
     it('should return accounts', (done) => {
       request(app)
-        .get('/public/account/')
+        .get('/public/accounts/')
         .expect(200, done);
     });
   });
 
-  describe('GET /account/:id/resend-email', () => {
+  describe('GET /accounts/:id/resend-email', () => {
 
     it('should return error if email fail to send', (done) => {
       let body;
@@ -50,7 +50,7 @@ describe('Account Routes', () => {
         .reply(200, {status: 'sent'});
 
       request(app)
-        .get('/account/' + user._id + '/resend-email')
+        .get('/accounts/' + user._id + '/resend-email')
         .set('Content-Type', 'application/json')
         .set('Authorization', 'Bearer ' + user.account.token)
         .expect(200, (err, res) => {
@@ -66,12 +66,12 @@ describe('Account Routes', () => {
 
   });
 
-  describe('POST /account/logout', () => {
+  describe('POST /accounts/logout', () => {
 
     it('should logout a user deleting his token', (done) => {
 
       request(app)
-        .post('/account/logout')
+        .post('/accounts/logout')
         .set('Content-Type', 'application/json')
         .set('Authorization', 'Bearer ' + user.account.token)
         .expect(200, (err, res) => {
