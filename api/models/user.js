@@ -30,13 +30,13 @@ const userSchema = new Schema({
 });
 
 userSchema.methods.hash = function hash(plainPassword, next) {
-  bcrypt.hash(plainPassword, WORK_FORCE).then(function(hashed) {
+  bcrypt.hash(plainPassword, WORK_FORCE).then((hashed) => {
     next(hashed);
   });
 };
 
 userSchema.methods.comparePassword = function comparePassword(plainPassword, next) {
-  bcrypt.compare(plainPassword, this.account.password, function(err, isMatch) {
+  bcrypt.compare(plainPassword, this.account.password, (err, isMatch) => {
     if (err) return next(err);
     next(null, isMatch);
   });

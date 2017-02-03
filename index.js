@@ -20,15 +20,15 @@ const run = function run(next) {
       app.use(morgan('dev'));
       app.use(cors());
 
-      // app.use('/public', require('./api/routes/public/public'));
+      app.use('/public', require('./api/routes/public/public'));
       app.use('/public/account', require('./api/routes/public/account'));
-      //
-      // app.use('/', expressJwt({ secret: config.jwtSecret }).unless({ path: /\/public(\/.*)?/ }));
-      // app.use('/', require('./api/middleware-service').errorsTokenMissing);
-      // app.use('/', require('./api/handlers/account').Account.isAuthorise);
-      //
-      // app.use('/profile', require('./api/routes/profile'));
-      // app.use('/account', require('./api/routes/account'));
+
+      app.use('/', expressJwt({ secret: config.jwtSecret }).unless({ path: /\/public(\/.*)?/ }));
+      app.use('/', require('./api/middleware-service').errorsTokenMissing);
+      app.use('/', require('./api/handlers/account').Account.isAuthorise);
+
+      app.use('/profile', require('./api/routes/profile'));
+      app.use('/account', require('./api/routes/account'));
 
       app.set('port', config.port);
       server = app.listen(app.get('port'), function handler() {
