@@ -40,7 +40,7 @@
     "start": "NODE_ENV=production ENVIRONMENT=production node ./index.js",
     "start:dev": "NODE_ENV=dev ENVIRONMENT=dev nodemon ./index.js",
     "dev": "nodemon ./index.js",
-    "test": "./scripts/run-backend-tests.sh"
+    "test": "npm install && ./scripts/run-backend-tests.sh"
   },
   "repository": {
     "type": "git",
