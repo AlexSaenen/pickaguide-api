@@ -5,6 +5,7 @@ const Handler = require('./_handler').Handler;
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const emailService = require('../email-service');
+const _ = require('lodash');
 
 
 class User extends Handler {
@@ -76,12 +77,20 @@ class User extends Handler {
   static update(userId, reqBody) {
     return new Promise((resolve, reject) => {
       db.Users
-        .findByIdAndUpdate(userId, reqBody)
-        .exec((err, user) => {
-          if (err) { return reject({ code: 1, message: err.message }); }
+       .findById(userId)
+       .exec((err, user) => {
+         if (err) { return reject({ code: 1, message: err.message }); }
+         if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
 
-          resolve(user);
-        });
+         const mergedUser = _.merge(user, reqBody);
+
+         mergedUser.save((saveErr, updatedUser) => {
+           if (saveErr) { return reject({ code: 3, message: saveErr.message }); }
+           if (updatedUser === null) { return reject({ code: 4, message: 'Failed to update user' }); }
+
+           resolve(updatedUser);
+         });
+       });
     });
   }
 

@@ -86,7 +86,7 @@ class Account extends User {
 
   static verifyEmailAccount(userId) {
     return new Promise((resolve, reject) => {
-      super.update(userId, { 'account.emailConfirmation': true })
+      super.update(userId, { account: { emailConfirmation: true } })
         .then(() => resolve({ code: 0, message: 'Email verified' }))
         .catch(err => reject(err));
     });
@@ -157,7 +157,7 @@ class Account extends User {
 
   static logout(userId) {
     return new Promise((resolve, reject) => {
-      super.update(userId, { 'account.token': null })
+      super.update(userId, { account: { token: null } })
         .then(() => resolve({ code: 0, message: 'User logout' }))
         .catch(err => reject(err));
     });
