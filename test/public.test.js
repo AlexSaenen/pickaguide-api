@@ -93,7 +93,7 @@ describe('Public Routes', () => {
           return true;
         })
         .reply(200, {status: 'sent'});
-      
+
       request(app)
         .post('/public/sign-up')
         .send(userValid)
@@ -163,14 +163,14 @@ describe('Public Routes', () => {
           done();
         });
     });
-  
+
     it('should return a token created after a logout', (done) => {
       const singinuserValid = {
         email: userValid.email,
         password: userValid.password
       };
-      
-      db.Users.findByIdAndUpdate(userId, { 'account.token': undefined }, {new: true},(err, user) => {
+
+      db.Users.findByIdAndUpdate(userId, { account: { token: null } }, {new: true},(err, user) => {
         if (err) return done(err);
         expect(user.account.token).to.be.null;
         request(app)
@@ -188,17 +188,17 @@ describe('Public Routes', () => {
           });
       });
     });
-    
+
   });
-  
+
   describe('GET /public/verify/:id', () => {
-    
+
     it('should return err if id invalid', (done) => {
       request(app)
         .get('/public/verify/1234')
         .expect(404, done)
     });
-    
+
     it('should confirm the email address', (done) => {
       request(app)
         .get('/public/verify/' + userId)
@@ -207,16 +207,16 @@ describe('Public Routes', () => {
           expect(res.body.message).to.eql('Email verified');
           db.Users.findById(userId, (err, user) => {
            if (err) return done(err);
-           
+
            expect(user.account.emailConfirmation).to.be.true;
            done();
           });
         });
     });
   });
-  
+
   describe('POST /public/forgot', () => {
-    
+
     it('should return error if email does not exist', (done) => {
       request(app)
         .post('/public/forgot/')
@@ -226,7 +226,7 @@ describe('Public Routes', () => {
           message: 'No account with this email'
         }, done)
     });
-    
+
     it('should send an email and create resetPasswordToken', (done) => {
       let body;
       let emailSent = nock('https://api.mailgun.net/v3/mg.pickaguide.fr')
@@ -235,7 +235,7 @@ describe('Public Routes', () => {
           return true;
         })
         .reply(200, {status: 'sent'});
-      
+
       request(app)
         .post('/public/forgot/')
         .send({'email': userValid.email})
@@ -251,11 +251,11 @@ describe('Public Routes', () => {
           });
         });
     });
-    
+
   });
-  
+
   describe('GET /public/reset/:token', () => {
-    
+
     it('should return error if wrong token', (done) => {
       request(app)
         .get('/public/reset/12345')
@@ -264,7 +264,7 @@ describe('Public Routes', () => {
           message: 'Password reset token is invalid'
         }, done)
     });
-    
+
     it('should return status 200 and validate the token reset password', (done) => {
       request(app)
         .get('/public/reset/' + userTokenResetPassword)
@@ -273,11 +273,11 @@ describe('Public Routes', () => {
           message: 'Password reset token is valid'
         }, done);
     });
-    
+
   });
-  
+
   describe('POST /public/reset/:token', () => {
-    
+
     it('should return error if wrong token', (done) => {
       request(app)
         .post('/public/reset/12345')
@@ -303,7 +303,7 @@ describe('Public Routes', () => {
           });
         });
     });
-  
+
   });
-  
+
 });
