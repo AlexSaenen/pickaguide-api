@@ -78,6 +78,7 @@ describe('Account Routes', () => {
           if (err) done(err);
           expect(res.body.code).to.be.equal(0);
           expect(res.body.message).to.be.eql('User logout');
+
           db.Users.findById(user._id, (err, user) => {
             if (err) return done(err);
             expect(user.account.token).to.be.null;

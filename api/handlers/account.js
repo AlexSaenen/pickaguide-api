@@ -157,7 +157,7 @@ class Account extends User {
 
   static logout(userId) {
     return new Promise((resolve, reject) => {
-      super.update(userId, { 'account.token': undefined })
+      super.update(userId, { 'account.token': null })
         .then(() => resolve({ code: 0, message: 'User logout' }))
         .catch(err => reject(err));
     });
