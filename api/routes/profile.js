@@ -10,7 +10,7 @@ router.get('/:id', (req, res) => {
 });
 
 router.put('/', (req, res) => {
-  profileHandler.update(req.userId, { profile: req.body })
+  profileHandler.update(req.user.userId, { profile: req.body })
     .then(result => res.status(200).send(result))
     .catch(error => res.status(400).send(error));
 });
