@@ -82,7 +82,7 @@ class User extends Handler {
          if (err) { return reject({ code: 1, message: err.message }); }
          if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
 
-         const mergedUser = _.merge(user, reqBody);
+         const mergedUser = _.merge(user, JSON.parse(reqBody));
 
          mergedUser.save((saveErr, updatedUser) => {
            if (saveErr) { return reject({ code: 3, message: saveErr.message }); }
