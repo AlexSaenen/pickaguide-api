@@ -9,8 +9,8 @@ const userSchema = new Schema({
     password: { type: String, required: true },
     email: { type: String, required: true, unique: true, index: true },
     emailConfirmation: { type: Boolean, default: false },
-    token: { type: String, unique: true, sparse: true, index: true },
-    resetPasswordToken: { type: String, unique: true, sparse: true, index: true },
+    token: { type: String, index: true },
+    resetPasswordToken: { type: String, index: true },
   },
   profile: {
     firstName: { type: String, required: true },

@@ -26,6 +26,46 @@ class Account extends User {
     });
   }
 
+  static updatePassword(userId, reqBody) {
+    return new Promise((resolve, reject) => {
+      const failed = this.assertInput(['password', 'currentPassword'], reqBody);
+
+      if (failed) { return reject({ code: 1, message: `We need your ${failed}` }); }
+
+      super.find(userId, 'account.password', true)
+        .then((user) => {
+          user.comparePassword(reqBody.currentPassword, (err, isMatch) => {
+            if (err) { return reject({ code: 2, message: err.message }); }
+            if (!isMatch) { return reject({ code: 3, message: 'Invalid password' }); }
+
+            user.hash(reqBody.password, (hashed) => {
+              user.account.password = hashed;
+              user.save((saveErr, updatedUser) => {
+                if (saveErr) { return reject({ code: 4, message: saveErr.message }); }
+
+                resolve(updatedUser.account);
+              });
+            });
+          });
+        })
+        .catch(err => reject(err));
+    });
+  }
+
+  static updateMail(userId, reqBody) {
+    return new Promise((resolve, reject) => {
+      const failed = this.assertInput(['email'], reqBody);
+      console.log(reqBody);
+
+      if (failed) { return reject({ code: 1, message: `We need your ${failed}` }); }
+      // TODO: P-H: send confirmation email if update worked
+
+      super.update(userId, { account: { email: reqBody.email, emailConfirmation: false } })
+        .then(user => resolve(user.account))
+        .catch(err => reject(err));
+    });
+  }
+
   static signup(reqBody) {
     return new Promise((resolve, reject) => {
       const failed = this.assertInput(['firstName', 'lastName', 'password', 'email'], reqBody);
