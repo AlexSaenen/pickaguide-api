@@ -3,7 +3,7 @@
 {
     'extends': 'airbnb',
     'rules': {
-        'indent': [2, 4],
+        'indent': [2],
         'no-underscore-dangle': 0,
         'no-console': 0,
         'strict': 0,
@@ -12,6 +12,8 @@
         'arrow-body-style': 0,
         'no-param-reassign': 0,
         'max-len': 0,
+        'consistent-return': 0,
+        'global-require': 0,
         'import/no-unresolved': ['error', { ignore: ['^components*', '^actions*', '^stores*', '^services*', '^config*', '^scss*'] }],
     }
 }

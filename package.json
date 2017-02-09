@@ -6,29 +6,44 @@
   "author": "PickaGuideTeam",
   "main": "index.js",
   "engines": {
-    "node": "4.1.1",
-    "npm": "2.14.4"
+    "node": "4.4.5",
+    "npm": "2.15.5"
   },
   "dependencies": {
+    "bcrypt": "^1.0.1",
     "body-parser": "^1.15.2",
     "config": "^1.21.0",
+    "cors": "^2.8.1",
     "express": "^4.14.0",
-    "mongoose": "^4.6.3"
+    "express-jwt": "^5.1.0",
+    "jsonwebtoken": "^7.1.9",
+    "lodash": "^4.17.2",
+    "mongoose": "^4.6.3",
+    "morgan": "^1.7.0",
+    "nodemailer": "^2.7.0",
+    "nodemailer-mailgun-transport": "^1.2.4",
+    "validator": "^6.2.0"
   },
   "devDependencies": {
+    "babel-cli": "^6.22.2",
+    "babel-core": "^6.22.1",
+    "babel-preset-es2015": "^6.22.0",
     "chai": "^3.5.0",
     "eslint": "^3.4.0",
     "eslint-config-airbnb": "^11.0.0",
     "eslint-plugin-import": "^1.14.0",
     "eslint-plugin-jsx-a11y": "^2.2.1",
     "eslint-plugin-react": "^6.2.0",
-    "mocha": "^3.0.2",
+    "mocha": "^3.2.0",
+    "nock": "^9.0.2",
+    "nodemon": "^1.11.0",
     "supertest": "^2.0.0"
   },
   "scripts": {
-    "start:dev": "NODE_ENV=dev node ./index.js",
-    "start:prod": "NODE_ENV=production node ./index.js",
-    "test": "PORT=3001 ./node_modules/.bin/mocha test/**/*.test.js --timeout 10000"
+    "start": "NODE_ENV=production ENVIRONMENT=production node ./index.js",
+    "start:dev": "NODE_ENV=dev ENVIRONMENT=dev nodemon ./index.js",
+    "dev": "nodemon ./index.js",
+    "test": "npm install && ./scripts/run-backend-tests.sh"
   },
   "repository": {
     "type": "git",

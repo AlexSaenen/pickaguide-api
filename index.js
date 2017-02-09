@@ -2,45 +2,54 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
+const expressJwt = require('express-jwt');
 const config = require('config');
-const db = require('./api/database/database');
+const morgan = require('morgan');
+const cors = require('cors');
+const db = require('./api/database');
 
 const app = express();
 let server;
 
-const publicRoutes = require('./api/routes/public');
-const accountRoutes = require('./api/routes/account');
+const run = function run(next) {
+  db.init()
+    .then(function then() {
+      app.use(bodyParser.json());
+      app.use(bodyParser.urlencoded({ extended: false }));
 
-const run = (next) => {
-    app.use(function (req, res, next) {
+      app.use(morgan('dev'));
+      app.use(cors());
 
-        // Website you wish to allow to connect
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        next();
-    });
-    app.use(bodyParser.json());
+      app.use('/public', require('./api/routes/public/public'));
+      app.use('/public/accounts', require('./api/routes/public/account'));
+      app.use('/public/profiles', require('./api/routes/public/profile'));
 
-    app.use('/', publicRoutes);
-    app.use('/account', accountRoutes);
+      app.use('/', expressJwt({ secret: config.jwtSecret }).unless({ path: /\/public(\/.*)?/ }));
+      app.use('/', require('./api/middleware-service').errorsTokenMissing);
+      app.use('/', require('./api/handlers/account').Account.isAuthorise);
 
-    app.set('port', config.port);
-    server = app.listen(app.get('port'), () => {
-        console.log(`Express server listening on ${app.get('port')}`);
-        return (next ? next(app) : null);
+      app.use('/profiles', require('./api/routes/profile'));
+      app.use('/accounts', require('./api/routes/account'));
+
+      app.set('port', config.port);
+      server = app.listen(app.get('port'), function handler() {
+        console.log('Express server listening on %d, in %s mode', app.get('port'), app.get('env'));
+        if (next) next(null, app);
+      });
+    })
+    .catch(function error(err) {
+      console.error('Could not init the database:', err);
     });
 };
 
 if (require.main === module) {
-    db.init()
-    .then(() => {
-        run();
-    });
+  run();
 }
 
-const stop = (next) => {
-    if (server) {
-        server.close(next);
-    }
+const stop = function stop(next) {
+  if (server) {
+    server.close(next);
+  }
 };
 
 module.exports.start = run;

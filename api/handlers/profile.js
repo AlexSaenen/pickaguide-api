@@ -1,26 +1,45 @@
 'use strict';
 
-const db = require('../database/database');
-const Handler = require('./_handler').Handler;
+const User = require('./user').User;
 
-class Profile extends Handler {
-    static add(reqBody) {
-        return new Promise((resolve, reject) => {
-            const requiredInput = ['email'];
-            const failed = requiredInput.find((requirement) => {
-                return Object.keys(reqBody).indexOf(requirement) === -1 || reqBody[requirement] === null;
-            });
 
-            if (failed) { reject(`We need your ${failed}`); } else {
-                const newProfile = new db.Profiles(reqBody);
-                newProfile.save((err, profile) => {
-                    if (err) { reject(err.message); } else {
-                        resolve(profile);
-                    }
-                });
-            }
-        });
-    }
+class Profile extends User {
+
+  static find(userId, updatable = false) {
+    return new Promise((resolve, reject) => {
+      super.find(userId, 'profile', updatable)
+        .then(user => resolve(updatable ? user : user.profile))
+        .catch(err => reject(err));
+    });
+  }
+
+  static findAll() {
+    return new Promise((resolve, reject) => {
+      const fields = {
+        account: 0,
+        'profile.gender': 0,
+        'profile.phone': 0,
+        'profile.interests': 0,
+      };
+
+      super.findAll(fields)
+        .then((users) => {
+          const displayableProfiles = users.map((user) => {
+            const profile = user.profile;
+            profile.displayName = `${profile.firstName} ${profile.lastName.charAt(0)}.`;
+            delete profile.firstName;
+            delete profile.lastName;
+            const ageDate = new Date(Date.now() - new Date(profile.birthdate).getTime());
+            profile.age = Math.abs(ageDate.getUTCFullYear() - 1970);
+            delete profile.birthdate;
+            return profile;
+          });
+
+          resolve(displayableProfiles);
+        })
+        .catch(err => reject(err));
+    });
+  }
 }
 
 exports.Profile = Profile;
