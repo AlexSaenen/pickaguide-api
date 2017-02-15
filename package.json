@@ -40,7 +40,7 @@
     "supertest": "^2.0.0"
   },
   "scripts": {
-    "start": "NODE_ENV=production ENVIRONMENT=production node ./index.js",
+    "start": "node ./index.js",
     "start:dev": "NODE_ENV=dev ENVIRONMENT=dev nodemon ./index.js",
     "dev": "nodemon ./index.js",
     "test": "npm install && ./scripts/run-backend-tests.sh"
