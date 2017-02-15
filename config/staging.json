@@ -1,6 +1,6 @@
 {
   "port": "3030",
   "mongo": {
-    "url": "root:lucasanstoast6@mongo:27040/pickaguideDB"
+    "url": "root:lucasanstoast6@mongoStaging/pickaguideDB"
   }
 }

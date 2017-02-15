@@ -1,6 +1,6 @@
 {
   "port": "3000",
   "mongo": {
-    "url": "root:lucasanstoast6@mongo:27017/pickaguideDB"
+    "url": "root:lucasanstoast6@mongo/pickaguideDB"
   }
 }
