@@ -20,7 +20,7 @@ class User extends Handler {
         newUser.save((err) => {
           if (err) {
             let message;
-            if (err.code === 11000) { message = 'This account already exists'; } else { message = 'Invalid data'; }
+            if (err.code === 11000) { message = 'This account already exists'; } else { message = err.message; }
             return reject({ code: 1, message });
           }
           emailService.sendEmailConfirmation(newUser)
