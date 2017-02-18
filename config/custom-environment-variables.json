@@ -1,5 +1,8 @@
 {
   "mailgun": {
     "apiKey": "MAILGUN_APIKEY"
+  },
+  "mongo": {
+    "password": "MONGO_PASS"
   }
 }
