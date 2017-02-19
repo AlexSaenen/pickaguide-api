@@ -7,8 +7,6 @@ const connectionUrl = (['staging', 'production'].indexOf(process.env.NODE_ENV) !
   `${config.mongo.user}:${config.mongo.password}@${config.mongo.url}` :
   config.mongo.url);
 
-console.log(connectionUrl);
-
 const init = () => mongoose.connect(connectionUrl);
 
 exports.ObjectId = mongoose.Types.ObjectId;
