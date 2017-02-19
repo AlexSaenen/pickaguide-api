@@ -47,7 +47,7 @@ exports.sendEmailConfirmation = (user) => {
 
 exports.sendEmailPasswordReset = (user) => {
   const subject = 'Reset password Pickaguide';
-  const url = config.host + '/public/reset/' + user.resetPasswordToken;
+  const url = config.host + '/public/reset/' + user.account.resetPasswordToken;
   const urlName = 'Cliquez pour changer votre mot de passe';
   return new Promise((resolve, reject) => {
     sendEmail(user, subject, url, urlName)

@@ -3,7 +3,11 @@ const config = require('config');
 
 mongoose.Promise = global.Promise;
 
-const init = () => mongoose.connect(config.mongo.url);
+const connectionUrl = (['staging', 'production'].indexOf(process.env.NODE_ENV) !== -1 ?
+  `${config.mongo.user}:${config.mongo.password}@${config.mongo.url}` :
+  config.mongo.url);
+
+const init = () => mongoose.connect(connectionUrl);
 
 exports.ObjectId = mongoose.Types.ObjectId;
 

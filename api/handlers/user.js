@@ -23,6 +23,7 @@ class User extends Handler {
             if (err.code === 11000) { message = 'This account already exists'; } else { message = 'Invalid data'; }
             return reject({ code: 1, message });
           }
+
           emailService.sendEmailConfirmation(newUser)
             .then(() => resolve({ code: 0, message: 'Account created' }))
             .catch(mailErr => reject(mailErr));
@@ -63,6 +64,8 @@ class User extends Handler {
 
   static findByEmail(email) {
     return new Promise((resolve, reject) => {
+      if (email === undefined) { return reject({ code: 2, message: 'No account with this email' }); }
+
       db.Users
         .findOne({ 'account.email': email })
         .exec((err, user) => {

@@ -3,7 +3,7 @@
   "host": "http://localhost:3000",
   "jwtSecret": "PickaGuidesecret",
   "mongo": {
-    "url": "localhost:27017/pickaguideDB"
+    "url": "localhost/pickaguideDB"
   },
   "mailgun": {}
 }

@@ -38,6 +38,7 @@ class Account extends User {
             if (err) { return reject({ code: 2, message: err.message }); }
             if (!isMatch) { return reject({ code: 3, message: 'Invalid password' }); }
 
+            // TODO: P-H: hash + new password need to be valid -> not too short.
             user.hash(reqBody.password, (hashed) => {
               user.account.password = hashed;
               user.save((saveErr, updatedUser) => {
@@ -181,8 +182,8 @@ class Account extends User {
         if (err || user === null) {
           reject({ code: 1, message: 'Password reset token is invalid' });
         } else {
-          user.account.password = password; // hash + new password need to be valid -> not too short.
-          user.account.resetPasswordToken = undefined;
+          user.account.password = password; // TODO: P-H: hash + new password need to be valid -> not too short.
+          user.account.resetPasswordToken = null;
           user.save((saveErr) => {
             if (saveErr) {
               reject({ code: 2, message: saveErr.message });
