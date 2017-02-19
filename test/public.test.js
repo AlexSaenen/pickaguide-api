@@ -296,9 +296,9 @@ describe('Public Routes', () => {
           expect(res.body.code).to.equal(0);
           expect(res.body.message).to.eql('Password reset token is valid');
           db.Users.findOne({'account.email': userValid.email}, (err, user) => {
-           if(err) return done(err);
-           expect(user.account.password).to.be.eql('newpasswordtest');
-           expect(user.account.resetPasswordToken).to.be.undefined;
+            if(err) return done(err);
+            expect(user.account.password).to.be.eql('newpasswordtest');
+            expect(user.account.resetPasswordToken).to.be.null;
             done();
           });
         });
