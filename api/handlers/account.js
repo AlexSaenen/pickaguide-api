@@ -58,10 +58,13 @@ class Account extends User {
       console.log(reqBody);
 
       if (failed) { return reject({ code: 1, message: `We need your ${failed}` }); }
-      // TODO: P-H: send confirmation email if update worked
 
       super.update(userId, { account: { email: reqBody.email, emailConfirmation: false } })
-        .then(user => resolve(user.account))
+        .then(user => {
+          this.resendEmail(userId)
+            .then(result => resolve(user.account)) // TODO: ALex pourquoi retourner tous l'account?
+            .catch(err => reject(err))
+        })
         .catch(err => reject(err));
     });
   }
