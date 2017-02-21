@@ -88,7 +88,12 @@ class User extends Handler {
          const mergedUser = _.merge(user, reqBody);
 
          mergedUser.save((saveErr, updatedUser) => {
-           if (saveErr) { return reject({ code: 3, message: saveErr.message }); }
+           if (saveErr) {
+             let message;
+             if (saveErr.code === 11000) { message = 'This account already exists'; } else { message = 'Invalid update'; }
+             return reject({ code: 3, message });
+           }
+
            if (updatedUser === null) { return reject({ code: 4, message: 'Failed to update user' }); }
 
            resolve(updatedUser);
