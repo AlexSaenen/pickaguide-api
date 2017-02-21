@@ -58,8 +58,9 @@ class Account extends User {
       const failed = this.assertInput(['email'], reqBody);
 
       if (failed) { return reject({ code: 1, message: `We need your ${failed}` }); }
-      // TODO: P-H: send confirmation email if update worked
+      if (!validator.isEmail(reqBody.email)) { return reject({ code: 2, message: 'Invalid email' }); }
 
+      // TODO: P-H: send confirmation email if update worked
       super.update(userId, { account: { email: reqBody.email, emailConfirmation: false } })
         .then(user => resolve({ account: { email: user.account.email } }))
         .catch(err => reject(err));
