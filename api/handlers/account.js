@@ -38,13 +38,13 @@ class Account extends User {
             if (err) { return reject({ code: 2, message: err.message }); }
             if (!isMatch) { return reject({ code: 3, message: 'Invalid password' }); }
 
-            // TODO: P-H: hash + new password need to be valid -> not too short.
+            // TODO: P-H: new password need to be valid -> not too short.
             user.hash(reqBody.password, (hashed) => {
               user.account.password = hashed;
-              user.save((saveErr, updatedUser) => {
+              user.save((saveErr) => {
                 if (saveErr) { return reject({ code: 4, message: saveErr.message }); }
 
-                resolve(updatedUser.account);
+                resolve({ code: 0, message: 'Your password has been updated' });
               });
             });
           });
@@ -56,13 +56,12 @@ class Account extends User {
   static updateMail(userId, reqBody) {
     return new Promise((resolve, reject) => {
       const failed = this.assertInput(['email'], reqBody);
-      console.log(reqBody);
 
       if (failed) { return reject({ code: 1, message: `We need your ${failed}` }); }
       // TODO: P-H: send confirmation email if update worked
 
       super.update(userId, { account: { email: reqBody.email, emailConfirmation: false } })
-        .then(user => resolve(user.account))
+        .then(user => resolve({ account: { email: user.account.email } }))
         .catch(err => reject(err));
     });
   }
