@@ -8,6 +8,7 @@ const nock = require('nock');
 const db = require('../api/database');
 
 describe('Public Routes', () => {
+
   let app, userId, userTokenResetPassword;
 
   const userWithoutEmail = {
@@ -37,6 +38,7 @@ describe('Public Routes', () => {
     email: 'test.test@test.com'
   };
 
+
   before((done) => {
     server.start((err, _app) => {
       if (err) return done(err);
@@ -51,6 +53,7 @@ describe('Public Routes', () => {
         server.stop(done);
     });
   });
+
 
   describe('POST /public/sign-up', () => {
 
@@ -83,7 +86,6 @@ describe('Public Routes', () => {
           message: 'Invalid Password'
         }, done);
     });
-
 
     it('should return 201 and create an user', (done) => {
       let body;
@@ -120,7 +122,9 @@ describe('Public Routes', () => {
 
   });
 
+
   describe('POST /public/sign-in', () => {
+
     it('should return error if email is wrong', (done) => {
       request(app)
         .post('/public/sign-in')
@@ -191,6 +195,7 @@ describe('Public Routes', () => {
 
   });
 
+
   describe('GET /public/verify/:id', () => {
 
     it('should return err if id invalid', (done) => {
@@ -213,7 +218,9 @@ describe('Public Routes', () => {
           });
         });
     });
+
   });
+
 
   describe('POST /public/forgot', () => {
 
@@ -254,6 +261,7 @@ describe('Public Routes', () => {
 
   });
 
+
   describe('GET /public/reset/:token', () => {
 
     it('should return error if wrong token', (done) => {
@@ -287,6 +295,7 @@ describe('Public Routes', () => {
           message: 'Password reset token is invalid'
         }, done)
     });
+
     // add test with password shorter.
     it('should update password of the user', (done) => {
       request(app)

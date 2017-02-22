@@ -11,7 +11,7 @@ router.get('/:id', (req, res) => {
 
 router.put('/', (req, res) => {
   profileHandler.update(req.user.userId, { profile: req.body })
-    .then(result => res.status(200).send(result))
+    .then(result => res.status(200).send({ profile: result.profile }))
     .catch(error => res.status(400).send(error));
 });
 
