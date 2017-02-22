@@ -1,5 +1,5 @@
 {
-  "port": "3000",
+  "port": "80",
   "mongo": {
     "user": "root",
     "url": "mongo/pickaguideDB"
