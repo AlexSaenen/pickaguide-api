@@ -38,13 +38,12 @@ class Account extends User {
             if (err) { return reject({ code: 2, message: err.message }); }
             if (!isMatch) { return reject({ code: 3, message: 'Invalid password' }); }
 
-            // TODO: P-H: new password need to be valid -> not too short.
             user.hash(reqBody.password, (hashed) => {
               user.account.password = hashed;
-              user.save((saveErr) => {
+              user.save((saveErr, updatedUser) => {
                 if (saveErr) { return reject({ code: 4, message: saveErr.message }); }
 
-                resolve({ code: 0, message: 'Your password has been updated' });
+                resolve(updatedUser.account);
               });
             });
           });
@@ -58,11 +57,15 @@ class Account extends User {
       const failed = this.assertInput(['email'], reqBody);
 
       if (failed) { return reject({ code: 1, message: `We need your ${failed}` }); }
+
       if (!validator.isEmail(reqBody.email)) { return reject({ code: 2, message: 'Invalid email' }); }
 
-      // TODO: P-H: send confirmation email if update worked
       super.update(userId, { account: { email: reqBody.email, emailConfirmation: false } })
-        .then(user => resolve({ account: { email: user.account.email } }))
+        .then(user => {
+          this.resendEmail(userId)
+            .then(result => resolve({ account: { email: user.account.email } }))
+            .catch(err => reject(err))
+        })
         .catch(err => reject(err));
     });
   }
@@ -182,8 +185,8 @@ class Account extends User {
         if (err || user === null) {
           reject({ code: 1, message: 'Password reset token is invalid' });
         } else {
-          user.account.password = password; // TODO: P-H: hash + new password need to be valid -> not too short.
-          user.account.resetPasswordToken = null;
+          user.account.password = password; // hash + new password need to be valid -> not too short.
+          user.account.resetPasswordToken = undefined;
           user.save((saveErr) => {
             if (saveErr) {
               reject({ code: 2, message: saveErr.message });
