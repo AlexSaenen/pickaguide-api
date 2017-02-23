@@ -110,7 +110,7 @@ class Account extends User {
     });
   }
 
-  static isAuthorise(req, res, next) {
+  static isAuthorised(req, res, next) {
     if (!req.user.userId) return res.status(401).send();
 
     super.find(req.user.userId, 'account.token')
