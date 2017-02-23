@@ -61,10 +61,10 @@ class Account extends User {
       if (!validator.isEmail(reqBody.email)) { return reject({ code: 2, message: 'Invalid email' }); }
 
       super.update(userId, { account: { email: reqBody.email, emailConfirmation: false } })
-        .then(user => {
+        .then((user) => {
           this.resendEmail(userId)
-            .then(result => resolve({ account: { email: user.account.email } }))
-            .catch(err => reject(err))
+            .then(() => resolve({ account: { email: user.account.email } }))
+            .catch(err => reject(err));
         })
         .catch(err => reject(err));
     });

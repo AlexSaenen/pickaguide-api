@@ -26,12 +26,8 @@ class User extends Handler {
 
           emailService.sendEmailConfirmation(newUser)
             .then(() => resolve({ code: 0, message: 'Account created' }))
-            .catch(mailErr => {
-              if(mailErr.code === 1) {
-                console.error(mailErr);
-                resolve({ code: 0, message: 'Account created' });
-              }
-              else reject(mailErr);
+            .catch((mailErr) => {
+              if (mailErr.code === 1) { resolve({ code: 0, message: 'Account created' }); } else { reject(mailErr); }
             });
         });
       });
