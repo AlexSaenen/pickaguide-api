@@ -186,7 +186,7 @@ class Account extends User {
           reject({ code: 1, message: 'Password reset token is invalid' });
         } else {
           user.account.password = password; // hash + new password need to be valid -> not too short.
-          user.account.resetPasswordToken = undefined;
+          user.account.resetPasswordToken = null;
           user.save((saveErr) => {
             if (saveErr) {
               reject({ code: 2, message: saveErr.message });
