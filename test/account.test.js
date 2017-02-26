@@ -76,6 +76,7 @@ describe('Private Account Routes', () => {
   
   describe('PUT /accounts/mail', () => {
     
+    // Todo fix why middleware does not work as expected
     it.skip('should return 415 if header content-type not provided', (done) => {
       request(app)
         .put('/accounts/mail')
@@ -110,6 +111,67 @@ describe('Private Account Routes', () => {
             done();
           });
         });
+    });
+    
+  });
+  
+  describe('PUT /accounts/password', (done) => {
+  
+    it('should return 400 if password not provided', (done) => {
+      request(app)
+        .put('/accounts/password')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', 'Bearer ' + user.account.token)
+        .send({currentPassword: 'test'})
+        .expect(400, {
+          code: 1,
+          message: 'We need your password'
+        }, done);
+    });
+  
+    it('should return 400 if currentPassword not provided', (done) => {
+      request(app)
+        .put('/accounts/password')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', 'Bearer ' + user.account.token)
+        .send({password: 'newPassword'})
+        .expect(400, {
+          code: 1,
+          message: 'We need your currentPassword'
+        }, done);
+    });
+    
+    it('should return 400 if password shorter', (done) => {
+      request(app)
+        .put('/accounts/password')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', 'Bearer ' + user.account.token)
+        .send({password: 'new', currentPassword: 'test'})
+        .expect(400, {
+          code: 3,
+          message: 'Invalid new password'
+        }, done);
+    });
+  
+    it('should return 400 if wrong currentPassword', (done) => {
+      request(app)
+        .put('/accounts/password')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', 'Bearer ' + user.account.token)
+        .send({password: 'new', currentPassword: 'notTheCurrentPassword'})
+        .expect(400, {
+          code: 3,
+          message: 'Invalid password'
+        }, done);
+    });
+  
+    it('should return 200 and update the user password', (done) => {
+      request(app)
+        .put('/accounts/password')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', 'Bearer ' + user.account.token)
+        .send({password: 'newPassword', currentPassword: 'test'})
+        .expect(200, done);
     });
     
   });
