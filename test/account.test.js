@@ -8,7 +8,7 @@ const helpers = require('./helpers');
 const nock = require('nock');
 const db = require('../api/database');
 
-describe('Account Routes', () => {
+describe('Private Account Routes', () => {
   let app, user;
 
   before((done) => {
@@ -28,14 +28,50 @@ describe('Account Routes', () => {
       server.stop(done);
     });
   });
-
-  describe('GET /public/accounts/', () => {
-
-    it('should return accounts', (done) => {
+  
+  describe('GET /accounts/:id', () => {
+  
+    it('should return 401 if token is not valid', (done) => {
       request(app)
-        .get('/public/accounts/')
-        .expect(200, done);
+        .get('/accounts/1234')
+        .set('Content-Type', 'application/json')
+        .expect(401, {
+          code: 1,
+          message: 'No authorization token was found'
+        }, done);
     });
+    
+    it('should return 401 if token not found', (done) => {
+      request(app)
+        .get('/accounts/1234')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1OGIzMjk0Y2ZmOGY3ODI5YjM3NTE5NjEiLCJpYXQiOjE0ODgxMzY1MjR9.MWmIUDuQIRHXgMJ1wv38C-2hCXpccGGCNqXK49SGKzw')
+        .expect(401, {
+          code: 1,
+          message: 'Bad token authentication'
+        }, done);
+    });
+    
+    it('should return 404 if id is not found', (done) => {
+      request(app)
+        .get('/accounts/1234')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', 'Bearer ' + user.account.token)
+        .expect(404, done);
+    });
+    
+    it('should return 200 and an account', (done) => {
+      request(app)
+        .get('/accounts/' + user._id)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', 'Bearer ' + user.account.token)
+        .expect(200, (err, res) => {
+          if (err) done(err);
+          expect(res.body.email).to.equal('test@test.test');
+          done();
+        });
+    });
+    
   });
 
   describe('GET /accounts/:id/resend-email', () => {

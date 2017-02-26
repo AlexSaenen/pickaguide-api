@@ -1,5 +1,5 @@
 #!/bin/bash
-FILES=test/*.test.js
+FILES=$(find test -type f -name '*.test.js')
 CMD="echo \"Running backend tests\"";
 for f in $FILES
 do
