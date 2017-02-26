@@ -103,11 +103,11 @@ describe('Private Account Routes', () => {
         .send({email: 'email@email.put'})
         .expect(200, (err, res) => {
           if (err) done(err);
+          console.log(user);
           expect(res.body.email).to.be.equal('email@email.put');
           
           db.Users.findById(user._id, (err, user) => {
             if (err) done(err);
-            console.log(user);
             expect(user.account.email).to.be.equal('email@email.put');
             done();
           });
