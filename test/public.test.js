@@ -293,10 +293,19 @@ describe('Public Routes', () => {
         .expect(404, {
           code: 1,
           message: 'Password reset token is invalid'
-        }, done)
+        }, done);
     });
-
-    // add test with password shorter.
+  
+    it('should return error if password shorter', (done) => {
+      request(app)
+        .post('/public/reset/' + userTokenResetPassword)
+        .send({'password': 'new'})
+        .expect(404, {
+          code: 3,
+          message: 'Invalid new Password'
+        }, done);
+    });
+    
     it('should update password of the user', (done) => {
       request(app)
         .post('/public/reset/' + userTokenResetPassword)
@@ -306,13 +315,14 @@ describe('Public Routes', () => {
           expect(res.body.message).to.eql('Password reset token is valid');
           db.Users.findOne({'account.email': userValid.email}, (err, user) => {
             if(err) return done(err);
-            expect(user.account.password).to.be.eql('newpasswordtest');
-            expect(user.account.resetPasswordToken).to.be.null;
-            done();
+              user.comparePassword('newpasswordtest', (err, isMatch) => {
+                expect(isMatch).to.be.true;
+                expect(user.account.resetPasswordToken).to.be.null;
+                done();
+              });
+            });
           });
         });
     });
-
-  });
 
 });

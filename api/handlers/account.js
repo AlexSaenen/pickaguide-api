@@ -37,6 +37,7 @@ class Account extends User {
           user.comparePassword(reqBody.currentPassword, (err, isMatch) => {
             if (err) { return reject({ code: 2, message: err.message }); }
             if (!isMatch) { return reject({ code: 3, message: 'Invalid password' }); }
+            if (!validator.isLength(reqBody.password, { min: 4, max: undefined })) { return reject({ code: 3, message: 'Invalid new Password' }); }
 
             user.hash(reqBody.password, (hashed) => {
               user.account.password = hashed;
@@ -185,14 +186,17 @@ class Account extends User {
         if (err || user === null) {
           reject({ code: 1, message: 'Password reset token is invalid' });
         } else {
-          user.account.password = password; // hash + new password need to be valid -> not too short.
-          user.account.resetPasswordToken = null;
-          user.save((saveErr) => {
-            if (saveErr) {
-              reject({ code: 2, message: saveErr.message });
-            } else {
-              resolve({ code: 0, message: 'Password reset token is valid' });
-            }
+          if (!validator.isLength(password, { min: 4, max: undefined })) { return reject({ code: 3, message: 'Invalid new Password' }); }
+          user.hash(password, (hashed) => {
+            user.account.password = hashed;
+            user.account.resetPasswordToken = null;
+            user.save((saveErr) => {
+              if (saveErr) {
+                reject({ code: 2, message: saveErr.message });
+              } else {
+                resolve({ code: 0, message: 'Password reset token is valid' });
+              }
+            });
           });
         }
       });
