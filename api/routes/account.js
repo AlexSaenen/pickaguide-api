@@ -3,6 +3,7 @@ const accountHandler = require('../handlers/account').Account;
 
 const router = express.Router();
 
+//Tous les gens connecter pourront savoir l'address email de tout le monde
 router.get('/:id', (req, res) => {
   accountHandler.find(req.params.id)
     .then(result => res.status(200).send(result))

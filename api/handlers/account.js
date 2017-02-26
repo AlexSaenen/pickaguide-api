@@ -65,7 +65,9 @@ class Account extends User {
         .then((user) => {
           this.resendEmail(userId)
             .then(() => resolve({ account: { email: user.account.email } }))
-            .catch(err => reject(err));
+            .catch((mailErr) => {
+              if (mailErr.code === 1) { resolve({ email: user.account.email }); } else { reject(mailErr); }
+            });
         })
         .catch(err => reject(err));
     });

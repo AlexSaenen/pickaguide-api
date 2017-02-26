@@ -73,10 +73,50 @@ describe('Private Account Routes', () => {
     });
     
   });
+  
+  describe('PUT /accounts/mail', () => {
+    
+    it.skip('should return 415 if header content-type not provided', (done) => {
+      request(app)
+        .put('/accounts/mail')
+        .set('Authorization', 'Bearer ' + user.account.token)
+        .expect(400, {
+          code: 1,
+          message: 'Missing "Content-Type" header set to "application/json"'
+        }, done);
+    });
+    
+    it('should return 400 if email not provided', (done) => {
+      request(app)
+        .put('/accounts/mail')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', 'Bearer ' + user.account.token)
+        .expect(400, done);
+    });
+  
+    it('should return 200 and the new email', (done) => {
+      request(app)
+        .put('/accounts/mail')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', 'Bearer ' + user.account.token)
+        .send({email: 'email@email.put'})
+        .expect(200, (err, res) => {
+          if (err) done(err);
+          expect(res.body.email).to.be.eql('email@email.put');
+          
+          db.Users.findById(user._id, (err, user) => {
+            if (err) done(err);
+            expect(user.account.email).to.be.eql('email@email.put');
+            done();
+          });
+        });
+    });
+    
+  });
 
   describe('GET /accounts/:id/resend-email', () => {
 
-    it('should return error if email fail to send', (done) => {
+    it('should return 200 if an email is sent', (done) => {
       let body;
       let emailSent = nock('https://api.mailgun.net/v3/mg.pickaguide.fr')
         .post(/messages/, function (b) {
@@ -92,7 +132,7 @@ describe('Private Account Routes', () => {
         .expect(200, (err, res) => {
           if (err) done(err);
           expect(body.from).to.be.eql('equipe@pickaguide.fr');
-          expect(body.to).to.be.eql('test@test.test');
+          expect(body.to).to.be.eql('email@email.put');
           expect(res.body.code).to.be.equal(0);
           expect(res.body.message).to.be.eql('Confirmation email has been resent');
           expect(emailSent.isDone()).to.be.true;
