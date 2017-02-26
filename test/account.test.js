@@ -107,6 +107,7 @@ describe('Private Account Routes', () => {
           
           db.Users.findById(user._id, (err, user) => {
             if (err) done(err);
+            console.log(user);
             expect(user.account.email).to.be.equal('email@email.put');
             done();
           });
@@ -115,7 +116,7 @@ describe('Private Account Routes', () => {
     
   });
   
-  describe('PUT /accounts/password', (done) => {
+  describe('PUT /accounts/password', () => {
   
     it('should return 400 if password not provided', (done) => {
       request(app)
