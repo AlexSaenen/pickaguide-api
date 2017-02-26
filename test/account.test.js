@@ -196,7 +196,7 @@ describe('Private Account Routes', () => {
         .expect(200, (err, res) => {
           if (err) done(err);
           expect(body.from).to.be.eql('equipe@pickaguide.fr');
-          expect(body.to).to.be.eql('email@email.put');
+          expect(body.to).to.be.eql('test@test.test');
           expect(res.body.code).to.be.equal(0);
           expect(res.body.message).to.be.eql('Confirmation email has been resent');
           expect(emailSent.isDone()).to.be.true;
