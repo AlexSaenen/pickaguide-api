@@ -27,6 +27,7 @@ const userSchema = new Schema({
     interests: [{ type: String }],
     photoUrl: { type: String, default: 'https://www.soundstream.tv/assets/default_profile-e08597880fc222202f22984a4f1966a29b108e856a3fb935072bfbbc302a4b73.png' },
   },
+  isGuide: { type: Boolean, default: false },
 });
 
 userSchema.methods.hash = function hash(plainPassword, next) {
