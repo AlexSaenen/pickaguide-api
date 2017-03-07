@@ -30,7 +30,8 @@ const run = function run(next) {
 
       app.use('/', expressJwt({ secret: config.jwtSecret }).unless({ path: /\/public(\/.*)?/ }));
       app.use('/', require('./api/middleware-service').errorsTokenMissing);
-      app.use('/', require('./api/handlers/account').Account.isAuthorise);
+      app.use('/', require('./api/handlers/account').Account.isAuthorised);
+      app.use('/', require('./api/middleware-service').checkContentTypeHeader);
 
       app.use('/profiles', require('./api/routes/profile'));
       app.use('/accounts', require('./api/routes/account'));

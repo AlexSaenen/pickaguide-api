@@ -4,17 +4,19 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 const db = require('../api/database');
 
-const userValid = new db.Users({
-  'profile.firstName': 'userValid',
-  'profile.lastName': 'test',
-  'account.password': 'test',
-  'account.email': 'test@test.test'
-});
+const account = { password: 'test', email: 'test@test.test' };
+const profile = { firstName: 'userValid', lastName: 'test' };
+
+const userValid = new db.Users({account, profile});
 
 exports.createUser = (next) => {
-  userValid.account.token = jwt.sign({ userId: userValid._id }, config.jwtSecret);
-  userValid.save((err, user) => {
-    return next(user);
+  userValid.hash(userValid.account.password, (hashed) => {
+    userValid.account.token = jwt.sign({ userId: userValid._id }, config.jwtSecret);
+    userValid.account.password = hashed;
+    
+    userValid.save((err, user) => {
+      return next(user);
+    });
   });
 };
 
