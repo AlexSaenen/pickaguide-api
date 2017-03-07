@@ -26,6 +26,7 @@ class Account extends User {
     });
   }
 
+  // Why password is return?
   static updatePassword(userId, reqBody) {
     return new Promise((resolve, reject) => {
       const failed = this.assertInput(['password', 'currentPassword'], reqBody);
@@ -37,7 +38,7 @@ class Account extends User {
           user.comparePassword(reqBody.currentPassword, (err, isMatch) => {
             if (err) { return reject({ code: 2, message: err.message }); }
             if (!isMatch) { return reject({ code: 3, message: 'Invalid password' }); }
-            if (!validator.isLength(reqBody.password, { min: 4, max: undefined })) { return reject({ code: 3, message: 'Invalid new Password' }); }
+            if (!validator.isLength(reqBody.password, { min: 4, max: undefined })) { return reject({ code: 3, message: 'Invalid new password' }); }
 
             user.hash(reqBody.password, (hashed) => {
               user.account.password = hashed;
@@ -65,7 +66,9 @@ class Account extends User {
         .then((user) => {
           this.resendEmail(userId)
             .then(() => resolve({ account: { email: user.account.email } }))
-            .catch(err => reject(err));
+            .catch((mailErr) => {
+              if (mailErr.code === 1) { resolve({ email: user.account.email }); } else { reject(mailErr); }
+            });
         })
         .catch(err => reject(err));
     });

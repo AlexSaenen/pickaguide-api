@@ -3,9 +3,9 @@
 const request = require('supertest');
 
 const expect = require('chai').expect;
-const server = require('../index');
+const server = require('../../index');
 const nock = require('nock');
-const db = require('../api/database');
+const db = require('../../api/database');
 
 describe('Public Routes', () => {
 
