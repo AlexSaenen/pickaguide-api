@@ -16,6 +16,7 @@
     "cors": "^2.8.1",
     "express": "^4.14.0",
     "express-jwt": "^5.1.0",
+    "gridfs-stream": "^1.1.1",
     "jsonwebtoken": "^7.1.9",
     "lodash": "^4.17.2",
     "mkdirp": "^0.5.1",

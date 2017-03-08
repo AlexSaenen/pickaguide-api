@@ -1,28 +1,9 @@
 const express = require('express');
 const profileHandler = require('../handlers/profile').Profile;
-const multer = require('multer');
-var mkdirp = require('mkdirp');
-const fs = require('fs');
+const multer  = require('multer');
+const upload = multer({ dest: __dirname + '/../../assets/' });
 
 const router = express.Router();
-
-const storage = multer.diskStorage({
-  destination: function (req, file, next) {
-    console.log(req)
-    console.log(file)
-    mkdirp(__dirname + '/../../assets/' + req.user.userId + '/', function (err) {
-      if (err) next(err);
-      next(null, __dirname + '/../../assets/' + req.user.userId + '/')
-    });
-  },
-  filename: function (req, file, next) {
-    let extArray = file.mimetype.split("/");
-    let extension = extArray[extArray.length - 1];
-    next(null, file.fieldname + '.' + extension)
-  }
-});
-
-const upload = multer({ storage: storage});
 
 router.get('/:id', (req, res) => {
   profileHandler.find(req.params.id)
@@ -37,30 +18,25 @@ router.put('/', (req, res) => {
 });
 
 router.post('/avatar', upload.single('avatar'), (req, res) => {
-  console.log(req);
-  profileHandler.update(req.user.userId, { profile: { photoUrl: req.file.filename } })
-    .then(result => res.sendStatus(201))
-    .catch(error => res.status(404).send(error));
+  profileHandler.upload(req.user.userId, req.file)
+    .then(result => res.sendStatus(200))
+    .catch(error => res.status(500).send(error));
+  
 });
 
-router.get('/:id/avatar', (req, res, next) => {
-  
-  var options = {
-    root: __dirname + '/../../assets/' + req.params.id + '/',
-    dotfiles: 'deny',
-    headers: {
-      'x-timestamp': Date.now(),
-      'x-sent': true
-    }
-  };
-  
-  res.sendFile('avatar.jpeg', options, function (err) {
-    if (err) {
-      console.log(err);
-      next(err);
-    } else {
-      console.log('Sent:');
-    }
+router.get('/:id/avatar', (req, res) => {
+  const gfs = Grid(db.conn.db);
+//write content to file system
+  var fs_write_stream = fs.createWriteStream(__dirname + '/../../assets/' + req.params.id + '/write.jpeg');
+
+//read from mongodb
+  var readstream = gfs.createReadStream({
+    filename: 'mongo_file.jpeg'
+  });
+  readstream.pipe(fs_write_stream);
+  fs_write_stream.on('close', function () {
+    console.log('file has been written fully!');
+    res.sendStatus(200);
   });
 });
 

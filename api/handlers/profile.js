@@ -1,6 +1,8 @@
 'use strict';
 
 const User = require('./user').User;
+const uploadService = require('../upload-service');
+const ObjectId = require('../database').ObjectId;
 
 
 class Profile extends User {
@@ -40,6 +42,20 @@ class Profile extends User {
         .catch(err => reject(err));
     });
   }
+  
+  static upload(userId, file) {
+    return new Promise((resolve, reject) => {
+      uploadService.uploadImage(file.path, file.originalname)
+        .then((value) => {
+          console.log(value);
+          super.update(userId, { profile: { _fsId: new ObjectId(value) } })
+            .then(() => resolve())
+            .catch(err => reject(err));
+        })
+        .catch(err => reject(err));
+    });
+  }
+  
 }
 
 exports.Profile = Profile;
