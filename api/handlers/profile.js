@@ -45,11 +45,24 @@ class Profile extends User {
   
   static upload(userId, file) {
     return new Promise((resolve, reject) => {
-      uploadService.uploadImage(file.path, file.originalname)
+      uploadService.uploadImage(file.path, file.originalname, file.mimetype)
         .then((value) => {
-          console.log(value);
           super.update(userId, { profile: { _fsId: new ObjectId(value) } })
             .then(() => resolve())
+            .catch(err => reject(err));
+        })
+        .catch(err => reject(err));
+    });
+  }
+  
+  static download(userId) {
+    return new Promise((resolve, reject) => {
+      super.find(userId, 'profile')
+        .then(user => {
+          uploadService.downloadImage(user.profile._fsId)
+            .then((value) => {
+              resolve(value);
+            })
             .catch(err => reject(err));
         })
         .catch(err => reject(err));

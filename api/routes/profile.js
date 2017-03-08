@@ -1,7 +1,18 @@
 const express = require('express');
 const profileHandler = require('../handlers/profile').Profile;
 const multer  = require('multer');
-const upload = multer({ dest: __dirname + '/../../assets/' });
+const mime = require('mime-types');
+
+const upload = multer({
+  fileFilter: function (req, file, cb) {
+    if (!mime.extension(file.mimetype).match(/^(jpeg|jpg|png|gif)$/))
+      return cb(new Error('The mimetype is not valid : ' + file.mimetype));
+    cb(null, true);
+  },
+  dest: __dirname + '/../../assets/'
+});
+
+const avatarUpload = upload.single('avatar');
 
 const router = express.Router();
 
@@ -17,27 +28,21 @@ router.put('/', (req, res) => {
     .catch(error => res.status(400).send(error));
 });
 
-router.post('/avatar', upload.single('avatar'), (req, res) => {
-  profileHandler.upload(req.user.userId, req.file)
-    .then(result => res.sendStatus(200))
-    .catch(error => res.status(500).send(error));
-  
+router.post('/avatar', (req, res) => {
+  avatarUpload(req, res, (err) => {
+    if (err) return res.status(400).send({ code: 1, message: 'The mimetype is not valid must be jpeg|jpg|png|gif' });
+    profileHandler.upload(req.user.userId, req.file)
+      .then(result => res.sendStatus(200))
+      .catch(error => res.status(500).send(error));
+  });
 });
 
 router.get('/:id/avatar', (req, res) => {
-  const gfs = Grid(db.conn.db);
-//write content to file system
-  var fs_write_stream = fs.createWriteStream(__dirname + '/../../assets/' + req.params.id + '/write.jpeg');
-
-//read from mongodb
-  var readstream = gfs.createReadStream({
-    filename: 'mongo_file.jpeg'
-  });
-  readstream.pipe(fs_write_stream);
-  fs_write_stream.on('close', function () {
-    console.log('file has been written fully!');
-    res.sendStatus(200);
-  });
+  profileHandler.download(req.params.id)
+    .then((result) => {
+      res.sendFile(result)
+    })
+    .catch(error => res.status(404).send(error));
 });
 
 module.exports = router;
