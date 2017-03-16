@@ -3,7 +3,7 @@
 const fs = require('fs');
 const db = require('./database');
 const mime = require('mime-types');
-var path = require('path');
+const path = require('path');
 const Grid = require('gridfs-stream');
 Grid.mongo = db.mongo;
 
