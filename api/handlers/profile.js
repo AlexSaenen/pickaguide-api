@@ -69,6 +69,24 @@ class Profile extends User {
     });
   }
   
+  static deleteAvatar(userId) {
+    return new Promise((resolve, reject) => {
+      super.find(userId, 'profile')
+        .then(user => {
+          uploadService.deleteImage(user.profile._fsId)
+            .then(() => {
+              User.update(userId, { profile: { _fsId: null } })
+                .then(() => {
+                  resolve()
+                })
+                .catch(err => reject(err));
+            })
+            .catch(err => reject(err));
+        })
+        .catch(err => reject(err));
+    });
+  }
+  
 }
 
 exports.Profile = Profile;

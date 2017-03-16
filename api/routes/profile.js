@@ -2,6 +2,7 @@ const express = require('express');
 const profileHandler = require('../handlers/profile').Profile;
 const multer  = require('multer');
 const mime = require('mime-types');
+const fs = require('fs');
 
 const upload = multer({
   fileFilter: function (req, file, cb) {
@@ -33,15 +34,24 @@ router.post('/avatar', (req, res) => {
     if (err) return res.status(400).send({ code: 1, message: 'The mimetype is not valid must be jpeg|jpg|png|gif' });
     profileHandler.upload(req.user.userId, req.file)
       .then(result => res.sendStatus(200))
-      .catch(error => res.status(500).send(error));
+      .catch(error => res.status(404).send(error));
   });
 });
 
 router.get('/:id/avatar', (req, res) => {
   profileHandler.download(req.params.id)
     .then((result) => {
-      res.sendFile(result)
+      res.sendFile(result, function (err) {
+        if (err) res.status(500).send(err);
+        fs.unlink(result);
+      });
     })
+    .catch(error => res.status(404).send(error));
+});
+
+router.delete('/avatar', (req, res) => {
+  profileHandler.deleteAvatar(req.user.userId)
+    .then(result => res.sendStatus(200))
     .catch(error => res.status(404).send(error));
 });
 
