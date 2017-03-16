@@ -13,4 +13,8 @@ exports.ObjectId = mongoose.Types.ObjectId;
 
 exports.Users = require('./models/user').Users;
 
+exports.conn = mongoose.connection;
+
+exports.mongo = mongoose.mongo;
+
 exports.init = init;
