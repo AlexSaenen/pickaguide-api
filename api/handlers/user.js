@@ -126,6 +126,20 @@ class User extends Handler {
         .catch(err => reject({ code: 5, message: err }));
     });
   }
+
+  static isGuide(userId) {
+    return new Promise((resolve, reject) => {
+      db.Users
+       .findById(userId, { isGuide: 1 })
+       .lean()
+       .exec((err, user) => {
+         if (err) { return reject({ code: 1, message: err.message }); }
+         if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
+
+         resolve({ id: userId, isGuide: user.isGuide });
+       });
+    });
+  }
 }
 
 exports.User = User;

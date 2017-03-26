@@ -27,6 +27,7 @@ const run = function run(next) {
       app.use('/public', require('./api/routes/public/public'));
       app.use('/public/accounts', require('./api/routes/public/account'));
       app.use('/public/profiles', require('./api/routes/public/profile'));
+      app.use('/public/users', require('./api/routes/public/user'));
 
       app.use('/', expressJwt({ secret: config.jwtSecret }).unless({ path: /\/public(\/.*)?/ }));
       app.use('/', require('./api/middleware-service').errorsTokenMissing);

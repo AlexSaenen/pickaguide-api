@@ -25,7 +25,7 @@ const userSchema = new Schema({
 
     description: { type: String, default: 'My personal description' },
     interests: [{ type: String }],
-    photoUrl: { type: String, default: 'https://www.soundstream.tv/assets/default_profile-e08597880fc222202f22984a4f1966a29b108e856a3fb935072bfbbc302a4b73.png' },
+    photoUrl: { type: String, default: 'https://www.learnmine.com/assets/img/medium-default-avatar.png' },
   },
   isGuide: { type: Boolean, default: false },
 });
