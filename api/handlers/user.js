@@ -10,12 +10,25 @@ const _ = require('lodash');
 
 class User extends Handler {
 
+  static _capitalize(user) {
+    const fieldsToCapitalize = ['city', 'country', 'firstName', 'lastName'];
+
+    fieldsToCapitalize.forEach((fieldName) => {
+      const fieldValue = user.profile[fieldName];
+      if (fieldValue && fieldValue.constructor === String) {
+        user.profile[fieldName] = user.profile[fieldName].capitalize();
+      }
+    });
+  }
+
   static add(fields) {
     return new Promise((resolve, reject) => {
       const newUser = new db.Users(fields);
       newUser.hash(fields.account.password, (hashed) => {
         newUser.account.token = jwt.sign({ userId: newUser._id }, config.jwtSecret);
         newUser.account.password = hashed;
+
+        User._capitalize(newUser);
 
         newUser.save((err) => {
           if (err) {
@@ -88,6 +101,7 @@ class User extends Handler {
          if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
 
          const mergedUser = _.merge(user, reqBody);
+         User._capitalize(mergedUser);
 
          mergedUser.save((saveErr, updatedUser) => {
            if (saveErr) {
