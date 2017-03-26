@@ -1,6 +1,8 @@
 'use strict';
 
 const User = require('./user').User;
+const uploadService = require('../upload-service');
+const ObjectId = require('../database').ObjectId;
 
 
 class Profile extends User {
@@ -40,6 +42,51 @@ class Profile extends User {
         .catch(err => reject(err));
     });
   }
+  
+  static upload(userId, file) {
+    return new Promise((resolve, reject) => {
+      uploadService.uploadImage(file.path, file.originalname, file.mimetype)
+        .then((value) => {
+          super.update(userId, { profile: { _fsId: new ObjectId(value) } })
+            .then(() => resolve())
+            .catch(err => reject(err));
+        })
+        .catch(err => reject(err));
+    });
+  }
+  
+  static download(userId) {
+    return new Promise((resolve, reject) => {
+      super.find(userId, 'profile')
+        .then(user => {
+          uploadService.downloadImage(user.profile._fsId)
+            .then((value) => {
+              resolve(value);
+            })
+            .catch(err => reject(err));
+        })
+        .catch(err => reject(err));
+    });
+  }
+  
+  static deleteAvatar(userId) {
+    return new Promise((resolve, reject) => {
+      super.find(userId, 'profile')
+        .then(user => {
+          uploadService.deleteImage(user.profile._fsId)
+            .then(() => {
+              User.update(userId, { profile: { _fsId: null } })
+                .then(() => {
+                  resolve()
+                })
+                .catch(err => reject(err));
+            })
+            .catch(err => reject(err));
+        })
+        .catch(err => reject(err));
+    });
+  }
+  
 }
 
 exports.Profile = Profile;

@@ -25,7 +25,7 @@ const userSchema = new Schema({
 
     description: { type: String, default: 'My personal description' },
     interests: [{ type: String }],
-    photoUrl: { type: String, default: 'https://www.learnmine.com/assets/img/medium-default-avatar.png' },
+    _fsId: { type: Schema.Types.ObjectId, ref: 'fs.files', default: null },
   },
   isGuide: { type: Boolean, default: false },
 });
