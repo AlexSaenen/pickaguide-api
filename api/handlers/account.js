@@ -131,6 +131,14 @@ class Account extends User {
       });
   }
 
+  static isConfirmed(userId) {
+    return new Promise((resolve, reject) => {
+      super.find(userId, 'account.emailConfirmation')
+        .then(user => resolve({ id: userId, isConfirmed: user.account.emailConfirmation }))
+        .catch(err => reject(err));
+    });
+  }
+
   static verifyEmailAccount(userId) {
     return new Promise((resolve, reject) => {
       super.update(userId, { account: { emailConfirmation: true } })
