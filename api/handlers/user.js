@@ -64,6 +64,25 @@ class User extends Handler {
     });
   }
 
+  static findInIds(userIds, selectFields = '', updatable = false) {
+    return new Promise((resolve, reject) => {
+      let query = db.Users.find()
+        .where('_id')
+        .in(userIds)
+        .select(selectFields);
+
+      if (updatable === false) {
+        query = query.lean();
+      }
+
+      query.exec((err, users) => {
+        if (err) { return reject({ code: 1, message: err.message }); }
+
+        resolve(users);
+      });
+    });
+  }
+
   static findAll(selectFields = '') {
     return new Promise((resolve, reject) => {
       db.Users
@@ -154,6 +173,47 @@ class User extends Handler {
        });
     });
   }
+
+  static becomeGuide(userId) {
+    return new Promise((resolve, reject) => {
+      db.Users
+       .findById(userId)
+       .exec((err, user) => {
+         if (err) { return reject({ code: 1, message: err.message }); }
+         if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
+
+         if (user.account.emailConfirmation === false) {
+           return reject({ code: 3, message: 'You need to confirm your email address' });
+         }
+
+         const fieldsToValidate = ['phone', 'city', 'country', 'description', 'interests'];
+         if (fieldsToValidate.every(field => ([undefined, null].indexOf(user.profile[field]) === -1)) === false) {
+           return reject({ code: 4, message: 'You need to fill in all fields' });
+         }
+
+         user.isGuide = true;
+         user.save((saveErr, updatedUser) => {
+           if (saveErr) { return reject({ code: 3, message: saveErr.message }); }
+           if (updatedUser === null) { return reject({ code: 4, message: 'Failed to update user' }); }
+
+           resolve({ id: userId, isGuide: updatedUser.isGuide });
+         });
+       });
+    });
+  }
+
+  static retire(userId) {
+    return new Promise((resolve, reject) => {
+      db.Users
+        .findByIdAndUpdate(userId, { isGuide: false }, { new: true }, (err, user) => {
+          if (err) { return reject({ code: 1, message: err.message }); }
+          if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
+
+          resolve({ id: userId, isGuide: user.isGuide });
+        });
+    });
+  }
+
 }
 
 exports.User = User;

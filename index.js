@@ -36,6 +36,7 @@ const run = function run(next) {
 
       app.use('/profiles', require('./api/routes/profile'));
       app.use('/accounts', require('./api/routes/account'));
+      app.use('/users', require('./api/routes/user'));
 
       app.set('port', config.port);
 
