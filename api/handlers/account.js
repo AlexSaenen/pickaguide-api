@@ -21,7 +21,10 @@ class Account extends User {
   static findAll() {
     return new Promise((resolve, reject) => {
       super.findAll('account.email')
-        .then(users => resolve(users.map(user => user.account)))
+        .then(users => resolve({
+          accounts: users.map(user => user.account),
+          ids: users.map(user => user._id),
+        }))
         .catch(err => reject(err));
     });
   }
@@ -129,6 +132,25 @@ class Account extends User {
 
         return res.status(401).send({ code: 1, message: 'Bad token authentication' });
       });
+  }
+
+  static isConfirmed(userId) {
+    return new Promise((resolve, reject) => {
+      super.find(userId, 'account.emailConfirmation')
+        .then(user => resolve({ id: userId, isConfirmed: user.account.emailConfirmation }))
+        .catch(err => reject(err));
+    });
+  }
+
+  static areConfirmed(userIds) {
+    return new Promise((resolve, reject) => {
+      super.findInIds(userIds, 'account.emailConfirmation')
+        .then(users => resolve({
+          areConfirmed: users.map(user => user.account.emailConfirmation),
+          ids: users.map(user => user._id),
+        }))
+        .catch(err => reject(err));
+    });
   }
 
   static verifyEmailAccount(userId) {

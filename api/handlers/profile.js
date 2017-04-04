@@ -37,7 +37,7 @@ class Profile extends User {
             return profile;
           });
 
-          resolve(displayableProfiles);
+          resolve({ profiles: displayableProfiles, ids: users.map(user => user._id) });
         })
         .catch(err => reject(err));
     });
