@@ -61,6 +61,26 @@ class Advert extends Handler {
     });
   }
 
+  static toggle(userId, advertId) {
+    return new Promise((resolve, reject) => {
+      db.Adverts
+        .findOne({ _id: advertId, owner: userId }, 'owner active')
+        .exec((err, advert) => {
+          if (err) { return reject({ code: 1, message: err.message }); }
+          if (advert === null) { return reject({ code: 2, message: 'No such advert' }); }
+
+          advert.active = !advert.active;
+          advert.save((saveErr) => {
+            if (saveErr) { return reject({ code: 3, message: saveErr.message }); }
+
+            Advert.findAllFrom(userId)
+              .then(adverts => resolve(adverts))
+              .catch(findErr => reject(findErr));
+          });
+        });
+    });
+  }
+
 }
 
 exports.Advert = Advert;
