@@ -9,6 +9,7 @@ const advertSchema = new Schema({
 
   photoUrl: { type: String, required: true },
   owner: { type: Schema.Types.ObjectId, ref: 'Users', required: true, index: true, sparse: true },
+  active: { type: Boolean, default: false },
 });
 
 

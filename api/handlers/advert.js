@@ -2,6 +2,7 @@
 
 const db = require('../database');
 const Handler = require('./_handler').Handler;
+const _ = require('lodash');
 
 
 class Advert extends Handler {
@@ -51,12 +52,71 @@ class Advert extends Handler {
   static findAllFrom(userId) {
     return new Promise((resolve, reject) => {
       db.Adverts
-        .find({ owner: String(userId) }, { owner: 0 })
+        .find({ owner: String(userId) }, 'title description hourlyPrice photoUrl active')
         .lean()
         .exec((err, adverts) => {
           if (err) { return reject({ code: 1, message: err.message }); }
 
           resolve(adverts);
+        });
+    });
+  }
+
+  static find(advertId) {
+    return new Promise((resolve, reject) => {
+      db.Adverts
+        .findById(String(advertId))
+        .lean()
+        .exec((err, advert) => {
+          if (err) { return reject({ code: 1, message: err.message }); }
+          if (advert == null) { return reject({ code: 2, message: 'Advert not found' }); }
+
+          resolve({ advert });
+        });
+    });
+  }
+
+  static update(userId, advertId, advertBody) {
+    return new Promise((resolve, reject) => {
+      db.Adverts
+        .findOne({ _id: advertId, owner: userId })
+        .exec((err, advert) => {
+          if (err) { return reject({ code: 1, message: err.message }); }
+          if (advert === null) { return reject({ code: 2, message: 'Cannot find advert' }); }
+
+          const mergedAdvert = _.merge(advert, advertBody);
+
+          mergedAdvert.save((saveErr, updatedAdvert) => {
+            if (saveErr) {
+              let message;
+              if (saveErr.code === 11000) { message = 'This advert already exists'; } else { message = 'Invalid update'; }
+              return reject({ code: 3, message });
+            }
+
+            if (updatedAdvert === null) { return reject({ code: 4, message: 'Failed to update advert' }); }
+
+            resolve({ advert: updatedAdvert });
+          });
+        });
+    });
+  }
+
+  static toggle(userId, advertId) {
+    return new Promise((resolve, reject) => {
+      db.Adverts
+        .findOne({ _id: advertId, owner: userId }, 'owner active')
+        .exec((err, advert) => {
+          if (err) { return reject({ code: 1, message: err.message }); }
+          if (advert === null) { return reject({ code: 2, message: 'No such advert' }); }
+
+          advert.active = !advert.active;
+          advert.save((saveErr) => {
+            if (saveErr) { return reject({ code: 3, message: saveErr.message }); }
+
+            Advert.findAllFrom(userId)
+              .then(adverts => resolve(adverts))
+              .catch(findErr => reject(findErr));
+          });
         });
     });
   }
