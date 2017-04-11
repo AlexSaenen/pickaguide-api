@@ -121,6 +121,25 @@ class Advert extends Handler {
     });
   }
 
+  static remove(userId, advertId) {
+    return new Promise((resolve, reject) => {
+      db.Adverts
+        .findOne({ _id: advertId, owner: userId }, 'owner active')
+        .exec((err, advert) => {
+          if (err) { return reject({ code: 1, message: err.message }); }
+          if (advert === null) { return reject({ code: 2, message: 'No such advert' }); }
+
+          advert.remove((removeErr) => {
+            if (removeErr) { return reject({ code: 3, message: removeErr.message }); }
+
+            Advert.findAllFrom(userId)
+              .then(adverts => resolve(adverts))
+              .catch(findErr => reject(findErr));
+          });
+        });
+    });
+  }
+
 }
 
 exports.Advert = Advert;
