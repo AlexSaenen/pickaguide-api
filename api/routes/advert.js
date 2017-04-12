@@ -27,4 +27,10 @@ router.put('/:id', (req, res) => {
     .catch(error => res.status(500).send(error));
 });
 
+router.delete('/:id', (req, res) => {
+  advertHandler.remove(req.user.userId, req.params.id)
+    .then(result => res.status(200).send({ adverts: result }))
+    .catch(error => res.status(500).send(error));
+});
+
 module.exports = router;
