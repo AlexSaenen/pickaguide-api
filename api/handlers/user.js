@@ -122,6 +122,11 @@ class User extends Handler {
          const mergedUser = _.merge(user, reqBody);
          User._capitalize(mergedUser);
 
+         if (reqBody.profile && reqBody.profile.interests !== undefined) {
+           mergedUser.profile.interests = reqBody.profile.interests;
+           mergedUser.markModified('profile.interests');
+         }
+
          mergedUser.save((saveErr, updatedUser) => {
            if (saveErr) {
              let message;
