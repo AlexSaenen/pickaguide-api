@@ -111,6 +111,37 @@ class User extends Handler {
     });
   }
 
+  static findByTerms(terms) {
+    const fields = {
+      account: 0,
+      'profile.gender': 0,
+      'profile.phone': 0,
+      'profile.interests': 0,
+      'profile._fsId': 0,
+    };
+
+    if (!terms || terms.length === 0) { return User.findAll(fields); }
+
+    return new Promise((resolve, reject) => {
+      const regexes = terms.split(' ').map(term => new RegExp(term, 'i'));
+      const regexSearch = [];
+      ['firstName', 'lastName', 'city', 'country', 'description'].forEach((field) => {
+        const searchElement = {};
+        searchElement[`profile.${field}`] = { $in: regexes };
+        regexSearch.push(searchElement);
+      });
+
+      db.Users
+        .find({ $or: regexSearch }, fields)
+        .lean()
+        .exec((err, users) => {
+          if (err) { return reject({ code: 1, message: err.message }); }
+
+          resolve(users);
+        });
+    });
+  }
+
   static update(userId, reqBody) {
     return new Promise((resolve, reject) => {
       db.Users

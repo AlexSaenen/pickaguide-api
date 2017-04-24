@@ -22,9 +22,31 @@ class Profile extends User {
         'profile.gender': 0,
         'profile.phone': 0,
         'profile.interests': 0,
+        'profile._fsId': 0,
       };
 
       super.findAll(fields)
+        .then((users) => {
+          const displayableProfiles = users.map((user) => {
+            const profile = user.profile;
+            profile.displayName = `${profile.firstName} ${profile.lastName.charAt(0)}.`;
+            delete profile.firstName;
+            delete profile.lastName;
+            const ageDate = new Date(Date.now() - new Date(profile.birthdate).getTime());
+            profile.age = Math.abs(ageDate.getUTCFullYear() - 1970);
+            delete profile.birthdate;
+            return profile;
+          });
+
+          resolve({ profiles: displayableProfiles, ids: users.map(user => user._id) });
+        })
+        .catch(err => reject(err));
+    });
+  }
+
+  static search(searchTerms) {
+    return new Promise((resolve, reject) => {
+      super.findByTerms(searchTerms)
         .then((users) => {
           const displayableProfiles = users.map((user) => {
             const profile = user.profile;

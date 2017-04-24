@@ -76,6 +76,42 @@ class Advert extends Handler {
     });
   }
 
+  static findAll() {
+    return new Promise((resolve, reject) => {
+      db.Adverts
+        .find({})
+        .lean()
+        .exec((err, adverts) => {
+          if (err) { return reject({ code: 1, message: err.message }); }
+
+          resolve(adverts);
+        });
+    });
+  }
+
+  static search(terms) {
+    if (!terms || terms.length === 0) { return Advert.findAll(); }
+
+    return new Promise((resolve, reject) => {
+      const regexes = terms.split(' ').map(term => new RegExp(term, 'i'));
+      const regexSearch = [];
+      ['title', 'description'].forEach((field) => {
+        const searchElement = {};
+        searchElement[field] = { $in: regexes };
+        regexSearch.push(searchElement);
+      });
+
+      db.Adverts
+        .find({ $or: regexSearch })
+        .lean()
+        .exec((err, adverts) => {
+          if (err) { return reject({ code: 1, message: err.message }); }
+
+          resolve(adverts);
+        });
+    });
+  }
+
   static update(userId, advertId, advertBody) {
     return new Promise((resolve, reject) => {
       db.Adverts
