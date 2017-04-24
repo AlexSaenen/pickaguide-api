@@ -2,6 +2,7 @@
 
 const db = require('../database');
 const Handler = require('./_handler').Handler;
+const Profile = require('./profile').Profile;
 const _ = require('lodash');
 
 
@@ -66,10 +67,16 @@ class Advert extends Handler {
     return new Promise((resolve, reject) => {
       db.Adverts
         .findById(String(advertId))
+        .populate({ path: 'owner', select: 'profile' })
         .lean()
         .exec((err, advert) => {
           if (err) { return reject({ code: 1, message: err.message }); }
           if (advert == null) { return reject({ code: 2, message: 'Advert not found' }); }
+
+          advert.owner = advert.owner.profile;
+          advert.owner.displayName = Profile._displayName(advert.owner);
+          delete advert.owner.firstName;
+          delete advert.owner.lastName;
 
           resolve({ advert });
         });
