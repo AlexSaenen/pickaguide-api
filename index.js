@@ -27,13 +27,19 @@ const run = function run(next) {
       app.use('/public', require('./api/routes/public/public'));
       app.use('/public/accounts', require('./api/routes/public/account'));
       app.use('/public/profiles', require('./api/routes/public/profile'));
+      app.use('/public/users', require('./api/routes/public/user'));
+      app.use('/public/proposals', require('./api/routes/public/advert'));
+      app.use('/public/search', require('./api/routes/public/search'));
 
       app.use('/', expressJwt({ secret: config.jwtSecret }).unless({ path: /\/public(\/.*)?/ }));
       app.use('/', require('./api/middleware-service').errorsTokenMissing);
-      app.use('/', require('./api/handlers/account').Account.isAuthorise);
+      app.use('/', require('./api/handlers/account').Account.isAuthorised);
+      app.use('/', require('./api/middleware-service').checkContentTypeHeader);
 
       app.use('/profiles', require('./api/routes/profile'));
       app.use('/accounts', require('./api/routes/account'));
+      app.use('/users', require('./api/routes/user'));
+      app.use('/proposals', require('./api/routes/advert'));
 
       app.set('port', config.port);
 

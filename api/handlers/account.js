@@ -21,7 +21,10 @@ class Account extends User {
   static findAll() {
     return new Promise((resolve, reject) => {
       super.findAll('account.email')
-        .then(users => resolve(users.map(user => user.account)))
+        .then(users => resolve({
+          accounts: users.map(user => user.account),
+          ids: users.map(user => user._id),
+        }))
         .catch(err => reject(err));
     });
   }
@@ -37,14 +40,14 @@ class Account extends User {
           user.comparePassword(reqBody.currentPassword, (err, isMatch) => {
             if (err) { return reject({ code: 2, message: err.message }); }
             if (!isMatch) { return reject({ code: 3, message: 'Invalid password' }); }
+            if (!validator.isLength(reqBody.password, { min: 4, max: undefined })) { return reject({ code: 3, message: 'Invalid new password' }); }
 
-            // TODO: P-H: new password need to be valid -> not too short.
             user.hash(reqBody.password, (hashed) => {
               user.account.password = hashed;
               user.save((saveErr) => {
                 if (saveErr) { return reject({ code: 4, message: saveErr.message }); }
 
-                resolve({ code: 0, message: 'Your password has been updated' });
+                resolve({ code: 0, message: 'Password updated' });
               });
             });
           });
@@ -58,11 +61,17 @@ class Account extends User {
       const failed = this.assertInput(['email'], reqBody);
 
       if (failed) { return reject({ code: 1, message: `We need your ${failed}` }); }
+
       if (!validator.isEmail(reqBody.email)) { return reject({ code: 2, message: 'Invalid email' }); }
 
-      // TODO: P-H: send confirmation email if update worked
       super.update(userId, { account: { email: reqBody.email, emailConfirmation: false } })
-        .then(user => resolve({ account: { email: user.account.email } }))
+        .then((user) => {
+          this.resendEmail(userId)
+            .then(() => resolve({ account: { email: user.account.email } }))
+            .catch((mailErr) => {
+              if (mailErr.code === 1) { resolve({ account: { email: user.account.email } }); } else { reject(mailErr); }
+            });
+        })
         .catch(err => reject(err));
     });
   }
@@ -107,7 +116,7 @@ class Account extends User {
     });
   }
 
-  static isAuthorise(req, res, next) {
+  static isAuthorised(req, res, next) {
     if (!req.user.userId) return res.status(401).send();
 
     super.find(req.user.userId, 'account.token')
@@ -123,6 +132,25 @@ class Account extends User {
 
         return res.status(401).send({ code: 1, message: 'Bad token authentication' });
       });
+  }
+
+  static isConfirmed(userId) {
+    return new Promise((resolve, reject) => {
+      super.find(userId, 'account.emailConfirmation')
+        .then(user => resolve({ id: userId, isConfirmed: user.account.emailConfirmation }))
+        .catch(err => reject(err));
+    });
+  }
+
+  static areConfirmed(userIds) {
+    return new Promise((resolve, reject) => {
+      super.findInIds(userIds, 'account.emailConfirmation')
+        .then(users => resolve({
+          areConfirmed: users.map(user => user.account.emailConfirmation),
+          ids: users.map(user => user._id),
+        }))
+        .catch(err => reject(err));
+    });
   }
 
   static verifyEmailAccount(userId) {
@@ -182,14 +210,17 @@ class Account extends User {
         if (err || user === null) {
           reject({ code: 1, message: 'Password reset token is invalid' });
         } else {
-          user.account.password = password; // TODO: P-H: hash + new password need to be valid -> not too short.
-          user.account.resetPasswordToken = null;
-          user.save((saveErr) => {
-            if (saveErr) {
-              reject({ code: 2, message: saveErr.message });
-            } else {
-              resolve({ code: 0, message: 'Password reset token is valid' });
-            }
+          if (!validator.isLength(password, { min: 4, max: undefined })) { return reject({ code: 3, message: 'Invalid new Password' }); }
+          user.hash(password, (hashed) => {
+            user.account.password = hashed;
+            user.account.resetPasswordToken = null;
+            user.save((saveErr) => {
+              if (saveErr) {
+                reject({ code: 2, message: saveErr.message });
+              } else {
+                resolve({ code: 0, message: 'Password reset token is valid' });
+              }
+            });
           });
         }
       });
