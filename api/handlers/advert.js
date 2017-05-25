@@ -109,7 +109,7 @@ class Advert extends Handler {
       });
 
       db.Adverts
-        .find({ $or: regexSearch })
+        .find({ $or: regexSearch, active: true })
         .lean()
         .exec((err, adverts) => {
           if (err) { return reject({ code: 1, message: err.message }); }
