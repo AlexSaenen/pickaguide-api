@@ -39,7 +39,7 @@ const run = function run(next) {
       app.use('/profiles', require('./api/routes/profile'));
       app.use('/accounts', require('./api/routes/account'));
       app.use('/users', require('./api/routes/user'));
-      app.use('/proposals', require('./api/routes/advert'));
+      app.use('/adverts', require('./api/routes/advert'));
 
       app.set('port', config.port);
 
