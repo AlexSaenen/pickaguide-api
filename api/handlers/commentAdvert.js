@@ -51,6 +51,10 @@ class CommentAdvert extends Handler {
       });
     });
   }
+  
+  /*
+  Unlike and delete
+   */
 }
 
 
