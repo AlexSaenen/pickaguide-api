@@ -1,5 +1,6 @@
 const express = require('express');
 const advertHandler = require('../handlers/advert').Advert;
+const visitHandler = require('../handlers/visit').Visit;
 
 const router = express.Router();
 
@@ -21,6 +22,12 @@ router.put('/:id/toggle', (req, res) => {
     .catch(error => res.status(500).send(error));
 });
 
+router.put('/:id/visit', (req, res) => {
+  visitHandler.create(req.user.userId, req.params.id, req.body)
+    .then(result => res.status(200).send(result))
+    .catch(error => res.status(500).send(error));
+});
+
 router.put('/:id', (req, res) => {
   advertHandler.update(req.user.userId, req.params.id, req.body)
     .then(result => res.status(200).send(result))
@@ -32,5 +39,11 @@ router.delete('/:id', (req, res) => {
     .then(result => res.status(200).send({ adverts: result }))
     .catch(error => res.status(500).send(error));
 });
+
+// router.put('/:id/availability', (req, res) => {
+//   advertHandler.setAvailability(req.user.userId, req.params.id, req.body)
+//     .then(result => res.status(200).send(result))
+//     .catch(error => res.status(500).send(error));
+// });
 
 module.exports = router;

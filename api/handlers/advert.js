@@ -144,6 +144,21 @@ class Advert extends Handler {
     });
   }
 
+  // static setAvailability(userId, advertId, advertBody) {
+  //   return new Promise((resolve, reject) => {
+  //     const availability = advertBody.availability;
+  //
+  //     if (availability === undefined) { return reject({ code: 1, message: 'Need availability' }); }
+  //     if (availability.constructor !== Array) { return reject({ code: 2, message: 'Availability has to be an array' }); }
+  //     if (availability.some(el => el.from === undefined || el.to === undefined)) {
+  //       return reject({ code: 3, message: 'Availability has to be well formatted' });
+  //     }
+  //     if (availability.some(el => el.from.constructor !== Date || el.to.constructor !== Date)) {
+  //       return reject({ code: 4, message: 'Availability has to be expressed in Date' });
+  //     }
+  //   });
+  // }
+
   static toggle(userId, advertId) {
     return new Promise((resolve, reject) => {
       db.Adverts

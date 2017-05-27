@@ -23,6 +23,7 @@ class User extends Handler {
 
   static add(fields) {
     return new Promise((resolve, reject) => {
+      fields.birthdate = Date.now();
       const newUser = new db.Users(fields);
       newUser.hash(fields.account.password, (hashed) => {
         newUser.account.token = jwt.sign({ userId: newUser._id }, config.jwtSecret);

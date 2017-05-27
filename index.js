@@ -29,6 +29,7 @@ const run = function run(next) {
       app.use('/public/profiles', require('./api/routes/public/profile'));
       app.use('/public/users', require('./api/routes/public/user'));
       app.use('/public/proposals', require('./api/routes/public/advert'));
+      app.use('/public/visits', require('./api/routes/public/visit'));
       app.use('/public/search', require('./api/routes/public/search'));
 
       app.use('/', expressJwt({ secret: config.jwtSecret }).unless({ path: /\/public(\/.*)?/ }));
@@ -40,6 +41,7 @@ const run = function run(next) {
       app.use('/accounts', require('./api/routes/account'));
       app.use('/users', require('./api/routes/user'));
       app.use('/proposals', require('./api/routes/advert'));
+      app.use('/visits', require('./api/routes/visit'));
 
       app.set('port', config.port);
 
