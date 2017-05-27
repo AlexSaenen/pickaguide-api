@@ -124,7 +124,7 @@ class User extends Handler {
     return new Promise((resolve, reject) => {
       const regexes = terms.split(' ').map(term => new RegExp(term, 'i'));
       const regexSearch = [];
-      ['firstName', 'lastName', 'city', 'country', 'description'].forEach((field) => {
+      ['firstName', 'lastName', 'city', 'country', 'description', 'interests'].forEach((field) => {
         const searchElement = {};
         searchElement[`profile.${field}`] = { $in: regexes };
         regexSearch.push(searchElement);

@@ -29,7 +29,7 @@ class Profile extends User {
         .then((users) => {
           const displayableProfiles = users.map((user) => {
             const profile = user.profile;
-            profile.displayName = `${profile.firstName} ${profile.lastName.charAt(0)}.`;
+            profile.displayName = Profile._displayName(profile);
             delete profile.firstName;
             delete profile.lastName;
             const ageDate = new Date(Date.now() - new Date(profile.birthdate).getTime());
