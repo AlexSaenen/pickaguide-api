@@ -6,13 +6,13 @@ const visitSchema = new Schema({
   by: { type: Schema.Types.ObjectId, ref: 'Users', required: true },
   about: { type: Schema.Types.ObjectId, ref: 'Adverts', required: true },
   when: { type: Date, required: true },
-  creationDate: { type: Date, required: true },
+  creationDate: { type: Date, default: Date.now },
 
   numberVisitors: { type: Number, required: true },
   status: [{
     label: { type: String, default: 'waiting' },
     message: { type: String, default: 'Guide needs to respond' },
-    date: { type: Date },
+    date: { type: Date, default: Date.now },
   }],
   special: { type: String, default: null },
 }).index({ by: 1, about: 1, when: 1 }, { unique: true });

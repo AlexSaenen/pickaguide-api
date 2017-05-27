@@ -14,9 +14,8 @@ class Visit extends Handler {
         about,
         when: reqBody.when,
         numberVisitors: reqBody.numberVisitors,
-        status: [{ date: Date.now() }],
+        status: [{ }],
         special: reqBody.special,
-        creationDate: Date.now(),
       });
 
       newVisit.save((err) => {
@@ -71,7 +70,7 @@ class Visit extends Handler {
       db.Visits
         .findByIdAndUpdate(
           visitId,
-          { $push: { status: { label, message, date: Date.now() } } },
+          { $push: { status: { label, message } } },
           { new: true },
           (saveErr, updatedVisit) => {
             if (saveErr) { return reject({ code: 1, saveErr }); }

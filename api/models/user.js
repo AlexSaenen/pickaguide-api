@@ -18,7 +18,7 @@ const userSchema = new Schema({
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
 
-    birthdate: { type: Date, required: true },
+    birthdate: { type: Date, default: Date.now },
     gender: { type: String, default: 'm' },
     phone: { type: String, unique: true, sparse: true, index: true },
 
