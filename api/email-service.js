@@ -55,3 +55,30 @@ exports.sendEmailPasswordReset = (user) => {
     .catch(err => reject({ code: 1, message: err }));
   });
 };
+
+
+const sendContactUsEmail = nodemailerMailgun.templateSender({
+  subject: 'Message from {{name}}',
+  html: 'Email : {{email}}<br><br>' +
+  'Phone : {{phone}}<br><br>' +
+  '{{message}}',
+}, {
+  from: 'equipe@pickaguide.fr',
+});
+
+
+exports.contactUs = (mail) => {
+  return new Promise((resolve, reject) => {
+    if (!mail.phone) mail.phone = 'None';
+    else {
+      sendContactUsEmail({
+        to: 'pickaguide_2018@labeip.epitech.eu',
+      }, {
+        name: mail.name,
+        email: mail.email,
+        message: mail.message,
+        phone: mail.phone,
+      }, (err, info) => (err ? reject(err) : resolve(info)));
+    }
+  });
+};
