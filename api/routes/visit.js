@@ -22,6 +22,12 @@ router.put('/:id/deny', (req, res) => {
     .catch(error => res.status(500).send(error));
 });
 
+router.put('/:id/accept', (req, res) => {
+  visitHandler.accept(req.user.userId, req.params.id, req.body)
+    .then(result => res.status(200).send(result))
+    .catch(error => res.status(500).send(error));
+});
+
 router.put('/:id/finish', (req, res) => {
   visitHandler.finish(req.user.userId, req.params.id, req.body)
     .then(result => res.status(200).send(result))
