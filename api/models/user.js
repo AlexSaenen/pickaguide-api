@@ -4,8 +4,6 @@ const bcrypt = require('bcrypt');
 const WORK_FORCE = 10;
 const Schema = mongoose.Schema;
 
-// default picture : https://www.learnmine.com/assets/img/medium-default-avatar.png
-
 const userSchema = new Schema({
   account: {
     password: { type: String, required: true },
