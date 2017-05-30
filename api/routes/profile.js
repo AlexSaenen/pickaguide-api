@@ -36,7 +36,7 @@ router.post('/avatar', (req, res) => {
   avatarUpload(req, res, (err) => {
     if (err) return res.status(400).send({ code: 1, message: 'The mimetype is not valid must be jpeg|jpg|png|gif' });
     profileHandler.upload(req.user.userId, req.file)
-      .then(() => res.sendStatus(200))
+      .then(() => res.status(200).send({ ok: true }))
       .catch(error => res.status(404).send(error));
   });
 });
@@ -54,7 +54,7 @@ router.get('/:id/avatar', (req, res) => {
 
 router.delete('/avatar', (req, res) => {
   profileHandler.deleteAvatar(req.user.userId)
-    .then(() => res.sendStatus(200))
+    .then(() => res.status(200).send({ ok: true }))
     .catch(error => res.status(404).send(error));
 });
 
