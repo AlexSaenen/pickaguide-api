@@ -3,6 +3,7 @@
 const db = require('../database');
 const Handler = require('./_handler').Handler;
 const Profile = require('./profile').Profile;
+const User = require('./user').User;
 const _ = require('lodash');
 
 
@@ -56,12 +57,66 @@ class Visit extends Handler {
   static findAllFrom(userId) {
     return new Promise((resolve, reject) => {
       db.Visits
-        .find({ by: String(userId) })
+        .find({ by: String(userId) }, 'about when status')
+        .populate({ path: 'about', select: 'title photoUrl owner' })
         .lean()
+        .sort('-when')
         .exec((err, visits) => {
           if (err) { return reject({ code: 1, message: err.message }); }
 
-          resolve(visits);
+          visits.forEach((visit) => {
+            visit.status = visit.status[visit.status.length - 1];
+          });
+
+          const ids = _.map(visits, 'about.owner');
+
+          User
+            .findInIds(ids, 'profile.firstName profile.lastName')
+            .then((users) => {
+              const userHash = _.map(users, '_id').map(String);
+
+              visits.forEach((visit) => {
+                const index = userHash.indexOf(String(visit.about.owner));
+                visit.about.ownerName = Profile._displayName(users[index].profile);
+              });
+
+              resolve(visits);
+            })
+            .catch(findGuideErr => reject(findGuideErr));
+        });
+    });
+  }
+
+  static findAllFor(userId) {
+    return new Promise((resolve, reject) => {
+      db.Visits
+        .find({}, 'by about when status')
+        .populate({ path: 'about', match: { owner: String(userId) }, select: 'title photoUrl owner' })
+        .lean()
+        .sort('-when')
+        .exec((err, visits) => {
+          if (err) { return reject({ code: 1, message: err.message }); }
+
+          visits = visits.filter(visit => visit.about !== null);
+          visits.forEach((visit) => {
+            visit.status = visit.status[visit.status.length - 1];
+          });
+
+          const ids = _.map(visits, 'by');
+
+          User
+            .findInIds(ids, 'profile.firstName profile.lastName')
+            .then((users) => {
+              const userHash = _.map(users, '_id').map(String);
+
+              visits.forEach((visit) => {
+                const index = userHash.indexOf(String(visit.by));
+                visit.byName = Profile._displayName(users[index].profile);
+              });
+
+              resolve(visits);
+            })
+            .catch(findVisitorErr => reject(findVisitorErr));
         });
     });
   }
@@ -87,7 +142,6 @@ class Visit extends Handler {
               .then((itIs) => {
                 if (itIs === false) { return rejectStatus({ code: 1, message: 'You cannot change the visit in this current state' }); }
 
-                console.log('resolveStatus');
                 resolveStatus();
               })
               .catch(err => rejectStatus(err));

@@ -5,8 +5,12 @@ const router = express.Router();
 
 
 router.get('/', (req, res) => {
-  visitHandler.findAllFrom(req.user.userId)
-    .then(result => res.status(200).send({ visits: result }))
+  Promise
+    .all([
+      visitHandler.findAllFrom(req.user.userId),
+      visitHandler.findAllFor(req.user.userId),
+    ])
+    .then(results => res.status(200).send({ myVisits: results[0], theirVisits: results[1] }))
     .catch(error => res.status(500).send(error));
 });
 
