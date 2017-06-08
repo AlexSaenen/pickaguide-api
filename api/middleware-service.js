@@ -1,6 +1,6 @@
 'use strict';
 
-exports.errorsTokenMissing = function errorsTokenMissing(err, req, res, next) {
+exports.errorsTokenMissing = function errorsTokenMissing(err, req, res) {
   if (err.name === 'UnauthorizedError') {
     return res.status(401).send({
       code: 1,

@@ -32,25 +32,57 @@ class Visit extends Handler {
     });
   }
 
-  static find(visitId) {
+  static findAsGuide(visitId, userId) {
     return new Promise((resolve, reject) => {
-      db.Visits
-        .findById(String(visitId))
-        .populate({ path: 'by', select: 'profile' })
-        .populate('about')
-        .lean()
-        .exec((err, visit) => {
-          if (err) { return reject({ code: 1, message: err.message }); }
-          if (visit == null) { return reject({ code: 2, message: 'Visit not found' }); }
+      Visit.isForGuide(visitId, userId)
+        .then((itIs) => {
+          if (itIs === false) { return reject({ code: 1, message: 'You are not the guide of this visit' }); }
 
-          const by = visit.by.profile;
+          db.Visits
+            .findById(String(visitId))
+            .populate({ path: 'by', select: 'profile' })
+            .populate({ path: 'about', select: 'title photoUrl' })
+            .lean()
+            .exec((err, visit) => {
+              if (err) { return reject({ code: 1, message: err.message }); }
+              if (visit == null) { return reject({ code: 2, message: 'Visit not found' }); }
 
-          by.displayName = Profile._displayName(by);
-          delete by.firstName;
-          delete by.lastName;
+              visit.with = Profile._displayName(visit.by.profile);
+              delete visit.by;
 
-          resolve({ visit });
-        });
+              resolve({ visit });
+            });
+        })
+        .catch(err => reject(err));
+    });
+  }
+
+  static findAsVisitor(visitId, userId) {
+    return new Promise((resolve, reject) => {
+      Visit.isFromVisitor(visitId, userId)
+        .then((itIs) => {
+          if (itIs === false) { return reject({ code: 1, message: 'This is not your visit' }); }
+
+          db.Visits
+            .findById(String(visitId))
+            .populate({ path: 'about', select: 'title owner photoUrl' })
+            .lean()
+            .exec((err, visit) => {
+              if (err) { return reject({ code: 1, message: err.message }); }
+              if (visit == null) { return reject({ code: 2, message: 'Visit not found' }); }
+
+              User
+                .findInIds([visit.about.owner], 'profile.firstName profile.lastName')
+                .then((users) => {
+                  visit.with = Profile._displayName(users[0].profile);
+                  delete visit.about.owner;
+
+                  resolve({ visit });
+                })
+                .catch(findGuideErr => reject(findGuideErr));
+            });
+        })
+        .catch(err => reject(err));
     });
   }
 
