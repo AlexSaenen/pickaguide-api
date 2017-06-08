@@ -6,9 +6,12 @@ const router = express.Router();
 
 router.post('/become-guide', (req, res) => {
   profileHandler.update(req.user.userId, { profile: req.body })
-    .then(() => {
+    .then((updatedUser) => {
       userHandler.becomeGuide(req.user.userId)
-        .then(result => res.status(200).send(result))
+        .then((result) => {
+          updatedUser.profile.isGuide = result.isGuide;
+          res.status(200).send(updatedUser.profile);
+        })
         .catch(error => res.status(500).send(error));
     })
     .catch(error => res.status(400).send(error));
