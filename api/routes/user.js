@@ -9,8 +9,8 @@ router.post('/become-guide', (req, res) => {
     .then((updatedUser) => {
       userHandler.becomeGuide(req.user.userId)
         .then((result) => {
-          updatedUser.profile.isGuide = result.isGuide;
-          res.status(200).send(updatedUser.profile);
+          updatedUser.isGuide = result.isGuide;
+          res.status(200).send(updatedUser);
         })
         .catch(error => res.status(500).send(error));
     })
