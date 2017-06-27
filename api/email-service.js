@@ -69,16 +69,16 @@ const sendContactUsEmail = nodemailerMailgun.templateSender({
 
 exports.contactUs = (mail) => {
   return new Promise((resolve, reject) => {
-    if (!mail.phone) mail.phone = 'None';
-    else {
-      sendContactUsEmail({
-        to: 'pickaguide_2018@labeip.epitech.eu',
-      }, {
-        name: mail.name,
-        email: mail.email,
-        message: mail.message,
-        phone: mail.phone,
-      }, (err, info) => (err ? reject(err) : resolve(info)));
+    if (!mail.phone) {
+      mail.phone = 'None';
     }
+    sendContactUsEmail({
+      to: 'pickaguide_2018@labeip.epitech.eu',
+    }, {
+      name: mail.name,
+      email: mail.email,
+      message: mail.message,
+      phone: mail.phone,
+    }, (err, info) => (err ? reject(err) : resolve(info)));
   });
 };
