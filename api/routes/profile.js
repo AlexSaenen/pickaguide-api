@@ -19,6 +19,18 @@ const avatarUpload = upload.single('avatar');
 
 const router = express.Router();
 
+router.post('/geo', (req, res) => {
+  profileHandler.addGeo(req.user.userId, req.body)
+    .then(result => res.status(200).send(result))
+    .catch(error => res.status(500).send(error));
+});
+
+router.get('/geo', (req, res) => {
+  profileHandler.findNear(req.user.userId, req.query.distance)
+    .then(result => res.status(200).send(result))
+    .catch(error => res.status(500).send(error));
+});
+
 router.get('/:id', (req, res) => {
   profileHandler.find(req.params.id)
     .then(result => res.status(200).send(result))
