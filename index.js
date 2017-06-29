@@ -75,7 +75,6 @@ const stop = function stop(next) {
   if (httpsServer) {
     httpsServer.close()
   }
-
   if (server) {
     server.close(next);
   }
