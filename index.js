@@ -31,6 +31,7 @@ const run = function run(next) {
       app.use('/public/proposals', require('./api/routes/public/advert'));
       app.use('/public/visits', require('./api/routes/public/visit'));
       app.use('/public/search', require('./api/routes/public/search'));
+      app.use('/public/contact-us', require('./api/routes/public/contact'));
 
       app.use('/', expressJwt({ secret: config.jwtSecret }).unless({ path: /\/public(\/.*)?/ }));
       app.use('/', require('./api/middleware-service').errorsTokenMissing);
