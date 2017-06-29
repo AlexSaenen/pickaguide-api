@@ -11,6 +11,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const db = require('./api/database');
 
+
 const app = express();
 let server = null;
 let httpsServer = null;
@@ -43,7 +44,6 @@ const run = function run(next) {
       app.use('/users', require('./api/routes/user'));
       app.use('/proposals', require('./api/routes/advert'));
       app.use('/visits', require('./api/routes/visit'));
-      app.use('/adverts', require('./api/routes/advert'));
 
       app.set('port', config.port);
 

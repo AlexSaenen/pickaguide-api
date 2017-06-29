@@ -53,7 +53,7 @@ class Advert extends Handler {
   static findAllFrom(userId) {
     return new Promise((resolve, reject) => {
       db.Adverts
-        .find({ owner: String(userId) }, 'title description hourlyPrice photoUrl active')
+        .find({ owner: String(userId) }, 'title description photoUrl active')
         .lean()
         .exec((err, adverts) => {
           if (err) { return reject({ code: 1, message: err.message }); }

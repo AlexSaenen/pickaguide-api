@@ -2,7 +2,6 @@ const express = require('express');
 const profileHandler = require('../handlers/profile').Profile;
 const multer = require('multer');
 const mime = require('mime-types');
-const fs = require('fs');
 const path = require('path');
 
 const upload = multer({
@@ -39,17 +38,6 @@ router.post('/avatar', (req, res) => {
       .then(() => res.status(200).send({ ok: true }))
       .catch(error => res.status(404).send(error));
   });
-});
-
-router.get('/:id/avatar', (req, res) => {
-  profileHandler.download(req.params.id)
-    .then((result) => {
-      res.sendFile(result, (err) => {
-        if (err) res.status(500).send(err);
-        fs.unlink(result);
-      });
-    })
-    .catch(error => res.status(404).send(error));
 });
 
 router.delete('/avatar', (req, res) => {

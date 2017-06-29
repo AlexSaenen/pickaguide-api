@@ -28,22 +28,22 @@ describe('Private Account Routes', () => {
       server.stop(done);
     });
   });
-  
+
   describe('GET /accounts/:id', () => {
-  
+
     it('should return 401 if token is not valid', (done) => {
       request(app)
-        .get('/accounts/1234')
+        .get('/accounts/123412341234')
         .set('Content-Type', 'application/json')
         .expect(401, {
           code: 1,
           message: 'No authorization token was found'
         }, done);
     });
-    
+
     it('should return 401 if token not found', (done) => {
       request(app)
-        .get('/accounts/1234')
+        .get('/accounts/123412341234')
         .set('Content-Type', 'application/json')
         .set('Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1OGIzMjk0Y2ZmOGY3ODI5YjM3NTE5NjEiLCJpYXQiOjE0ODgxMzY1MjR9.MWmIUDuQIRHXgMJ1wv38C-2hCXpccGGCNqXK49SGKzw')
         .expect(401, {
@@ -51,15 +51,15 @@ describe('Private Account Routes', () => {
           message: 'Bad token authentication'
         }, done);
     });
-    
+
     it('should return 404 if id is not found', (done) => {
       request(app)
-        .get('/accounts/1234')
+        .get('/accounts/123412341234')
         .set('Content-Type', 'application/json')
         .set('Authorization', 'Bearer ' + user.account.token)
         .expect(404, done);
     });
-    
+
     it('should return 200 and an account', (done) => {
       request(app)
         .get('/accounts/' + user._id)
@@ -71,11 +71,11 @@ describe('Private Account Routes', () => {
           done();
         });
     });
-    
+
   });
-  
+
   describe('PUT /accounts/mail', () => {
-    
+
     // Todo fix why middleware does not work as expected
     it.skip('should return 415 if header content-type not provided', (done) => {
       request(app)
@@ -86,7 +86,7 @@ describe('Private Account Routes', () => {
           message: 'Missing "Content-Type" header set to "application/json"'
         }, done);
     });
-    
+
     it('should return 400 if email not provided', (done) => {
       request(app)
         .put('/accounts/mail')
@@ -94,7 +94,7 @@ describe('Private Account Routes', () => {
         .set('Authorization', 'Bearer ' + user.account.token)
         .expect(400, done);
     });
-  
+
     // todo the update does not work on the circle.
     it.skip('should return 200 and the new email', (done) => {
       request(app)
@@ -106,7 +106,7 @@ describe('Private Account Routes', () => {
           if (err) done(err);
           console.log(user);
           expect(res.body.email).to.be.equal('email@email.put');
-          
+
           db.Users.findById(user._id, (err, user) => {
             if (err) done(err);
             expect(user.account.email).to.be.equal('email@email.put');
@@ -114,11 +114,11 @@ describe('Private Account Routes', () => {
           });
         });
     });
-    
+
   });
-  
+
   describe('PUT /accounts/password', () => {
-  
+
     it('should return 400 if password not provided', (done) => {
       request(app)
         .put('/accounts/password')
@@ -130,7 +130,7 @@ describe('Private Account Routes', () => {
           message: 'We need your password'
         }, done);
     });
-  
+
     it('should return 400 if currentPassword not provided', (done) => {
       request(app)
         .put('/accounts/password')
@@ -142,7 +142,7 @@ describe('Private Account Routes', () => {
           message: 'We need your currentPassword'
         }, done);
     });
-    
+
     it('should return 400 if password shorter', (done) => {
       request(app)
         .put('/accounts/password')
@@ -154,7 +154,7 @@ describe('Private Account Routes', () => {
           message: 'Invalid new password'
         }, done);
     });
-  
+
     it('should return 400 if wrong currentPassword', (done) => {
       request(app)
         .put('/accounts/password')
@@ -166,7 +166,7 @@ describe('Private Account Routes', () => {
           message: 'Invalid password'
         }, done);
     });
-  
+
     it('should return 200 and update the user password', (done) => {
       request(app)
         .put('/accounts/password')
@@ -175,7 +175,7 @@ describe('Private Account Routes', () => {
         .send({password: 'newPassword', currentPassword: 'test'})
         .expect(200, done);
     });
-    
+
   });
 
   describe('GET /accounts/:id/resend-email', () => {
