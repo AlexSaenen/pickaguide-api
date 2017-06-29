@@ -8,7 +8,7 @@ const userSchema = new Schema({
   account: {
     password: { type: String, required: true },
     email: { type: String, required: true, unique: true, index: true },
-    emailConfirmation: { type: Boolean, default: false },
+    emailConfirmation: { type: Boolean, default: true },
     token: { type: String, index: true },
     resetPasswordToken: { type: String, index: true },
   },
