@@ -86,7 +86,9 @@ class Advert extends Handler {
   static findAll() {
     return new Promise((resolve, reject) => {
       db.Adverts
-        .find({})
+        .find({
+          active: true,
+        })
         .lean()
         .exec((err, adverts) => {
           if (err) { return reject({ code: 1, message: err.message }); }
