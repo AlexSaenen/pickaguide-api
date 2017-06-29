@@ -26,9 +26,9 @@ const userSchema = new Schema({
     description: { type: String, default: 'My personal description' },
     interests: [{ type: String }],
     _fsId: { type: Schema.Types.ObjectId, ref: 'fs.files', default: null },
+    geo: {type: [Number], index: '2d'}
   },
-  isGuide: { type: Boolean, default: false },
-  geo: {type: [Number], index: '2d'},
+  isGuide: { type: Boolean, default: false }
 });
 
 userSchema.methods.hash = function hash(plainPassword, next) {

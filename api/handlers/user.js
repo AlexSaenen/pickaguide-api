@@ -249,43 +249,15 @@ class User extends Handler {
     });
   }
   
-  static addGeo(userId, reqBody) {
+  static findNear(geo, distance) {
     return new Promise((resolve, reject) => {
       db.Users
-        .findById(userId)
-        .exec((err, user) => {
-          if (err) { return reject({ code: 1, message: err.message }); }
-          if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
-          let array = [];
-          user.geo = _.concat(array, reqBody.x, reqBody.y);
-          user.save((saveErr, updatedUser) => {
-            if (saveErr) { return reject({ code: 3, message: saveErr.message }); }
-            if (updatedUser === null) { return reject({ code: 4, message: 'Failed to update user' }); }
+        .find({'profile.geo': {$nearSphere: geo, $maxDistance: distance} }, {'account': 0})
+        .exec((err, users) => {
+          if (err) { return reject({ code: 4, message: err.message }); }
+          resolve(users);
+        })
     
-            resolve({ id: userId, geo: updatedUser.geo });
-          });
-        });
-    });
-  }
-  
-  static findNear(userId, distance) {
-    return new Promise((resolve, reject) => {
-      db.Users
-        .findById(userId)
-        .exec((err, user) => {
-          if (err) { return reject({ code: 1, message: err.message }); }
-          if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
-          if (user.geo === null) { return reject({ code: 3, message: 'User does not have localisation'}); }
-          
-          db.Users
-            .find({geo: {$nearSphere: user.geo, $maxDistance: distance} })
-            .exec((err, users) => {
-              if (err) { return reject({ code: 4, message: err.message }); }
-              console.log(users);
-              resolve(users);
-            })
-        
-        });
     });
   }
 

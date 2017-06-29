@@ -23,16 +23,4 @@ router.post('/retire', (req, res) => {
     .catch(error => res.status(500).send(error));
 });
 
-router.post('/geo', (req, res) => {
-  userHandler.addGeo(req.user.userId, req.body)
-    .then(result => res.status(200).send(result))
-    .catch(error => res.status(500).send(error));
-});
-
-router.get('/geo', (req, res) => {
-  userHandler.findNear(req.user.userId, req.query.distance)
-    .then(result => res.status(200).send(result))
-    .catch(error => res.status(500).send(error));
-});
-
 module.exports = router;
