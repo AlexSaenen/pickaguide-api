@@ -23,7 +23,7 @@ router.post('/:id/toggle', (req, res) => {
     .catch(error => res.status(500).send(error));
 });
 
-router.put('/:id/visit', (req, res) => {
+router.post('/:id/visit', (req, res) => {
   visitHandler.create(req.user.userId, req.params.id, req.body)
     .then(result => res.status(200).send(result))
     .catch(error => res.status(500).send(error));
