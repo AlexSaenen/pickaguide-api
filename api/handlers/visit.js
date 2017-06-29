@@ -71,15 +71,20 @@ class Visit extends Handler {
               if (err) { return reject({ code: 1, message: err.message }); }
               if (visit == null) { return reject({ code: 2, message: 'Visit not found' }); }
 
-              User
-                .findInIds([visit.about.owner], 'profile.firstName profile.lastName')
-                .then((users) => {
-                  visit.with = Profile._displayName(users[0].profile);
-                  delete visit.about.owner;
+              if (visit.about) {
+                User
+                  .findInIds([visit.about.owner], 'profile.firstName profile.lastName')
+                  .then((users) => {
+                    visit.with = Profile._displayName(users[0].profile);
+                    delete visit.about.owner;
 
-                  resolve({ visit });
-                })
-                .catch(findGuideErr => reject(findGuideErr));
+                    resolve({ visit });
+                  })
+                  .catch(findGuideErr => reject(findGuideErr));
+              } else {
+                visit.with = 'Unknown';
+                resolve({ visit });
+              }
             });
         })
         .catch(err => reject(err));
@@ -108,8 +113,10 @@ class Visit extends Handler {
               const userHash = _.map(users, '_id').map(String);
 
               visits.forEach((visit) => {
-                const index = userHash.indexOf(String(visit.about.owner));
-                visit.about.ownerName = Profile._displayName(users[index].profile);
+                if (visit.about) {
+                  const index = userHash.indexOf(String(visit.about.owner));
+                  visit.about.ownerName = Profile._displayName(users[index].profile);
+                }
               });
 
               resolve(visits);
@@ -247,7 +254,7 @@ class Visit extends Handler {
           if (err) { return reject({ code: 1, message: err.message }); }
           if (visit === null) { return reject({ code: 2, message: 'No such visit found' }); }
 
-          resolve(String(visit.about.owner) === userId);
+          resolve(visit.about ? String(visit.about.owner) === userId : false);
         });
     });
   }
