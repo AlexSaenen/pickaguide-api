@@ -15,7 +15,7 @@ exports.errorsTokenMissing = function errorsTokenMissing(err, req, res) {
 };
 
 exports.checkContentTypeHeader = (err, req, res, next) => {
-  if (['PUT', 'POST'].indexOf(req.method) !== -1) {
+  if (['PUT', 'POST'].indexOf(req.method) !== -1 && req.url.indexOf('avatar') === -1) {
     if (req.headers['content-type'] !== 'application/json') {
       return res.status(415).send({
         code: 1,

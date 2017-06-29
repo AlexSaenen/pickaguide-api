@@ -42,7 +42,6 @@ const run = function run(next) {
       app.use('/users', require('./api/routes/user'));
       app.use('/proposals', require('./api/routes/advert'));
       app.use('/visits', require('./api/routes/visit'));
-      app.use('/adverts', require('./api/routes/advert'));
 
       app.set('port', config.port);
 
