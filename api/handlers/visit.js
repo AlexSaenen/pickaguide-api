@@ -40,7 +40,7 @@ class Visit extends Handler {
 
           db.Visits
             .findById(String(visitId))
-            .populate({ path: 'by', select: 'profile' })
+            .populate({ path: 'by', select: 'profile.firstName profile.lastName profile.phone account.email' })
             .populate({ path: 'about', select: 'title photoUrl' })
             .lean()
             .exec((err, visit) => {
@@ -48,6 +48,9 @@ class Visit extends Handler {
               if (visit == null) { return reject({ code: 2, message: 'Visit not found' }); }
 
               visit.with = Profile._displayName(visit.by.profile);
+              if (visit.status[visit.status.length - 1].label === 'accepted') {
+                visit.contact = { phone: visit.by.profile.phone, email: visit.by.account.email };
+              }
               delete visit.by;
 
               resolve({ visit });
@@ -73,9 +76,13 @@ class Visit extends Handler {
 
               if (visit.about) {
                 User
-                  .findInIds([visit.about.owner], 'profile.firstName profile.lastName')
+                  .findInIds([visit.about.owner], 'profile.firstName profile.lastName profile.phone account.email')
                   .then((users) => {
                     visit.with = Profile._displayName(users[0].profile);
+                    if (visit.status[visit.status.length - 1].label === 'accepted') {
+                      visit.contact = { phone: users[0].profile.phone, email: users[0].account.email };
+                    }
+
                     delete visit.about.owner;
 
                     resolve({ visit });

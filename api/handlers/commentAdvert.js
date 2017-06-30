@@ -18,7 +18,10 @@ class CommentAdvert extends Handler {
         advert.comments.push(newComment);
         advert.save((saveErr) => {
           if (saveErr) return reject({ code: 3, message: saveErr });
-          resolve(newComment);
+
+          CommentAdvert.findByCommentsAdvert(idAdvert)
+            .then(res => resolve(res))
+            .catch(error => reject(error));
         });
       });
     });
@@ -34,7 +37,10 @@ class CommentAdvert extends Handler {
           if (err) return reject({ code: 1, message: err.message });
 
           commentsForAd.comments.forEach((comment) => {
-            comment.owner.displayName = Profile._displayName(comment.owner.profile);
+            if (comment.owner.displayName === undefined) {
+              comment.owner.displayName = Profile._displayName(comment.owner.profile);
+            }
+
             delete comment.owner.profile;
           });
 
@@ -63,9 +69,39 @@ class CommentAdvert extends Handler {
     });
   }
 
+  static remove(userId, advertId, commentId) {
+    return new Promise((resolve, reject) => {
+      CommentAdvert.findByCommentsAdvert(advertId)
+        .then((res) => {
+          const comment = res.comments.find(nextComment => String(nextComment._id) === commentId && String(nextComment.owner._id) === userId);
+
+          if (comment) {
+            const index = res.comments.indexOf(comment);
+            res.comments.splice(index, 1);
+
+            db.Adverts
+              .findByIdAndUpdate(
+                advertId,
+                { comments: res.comments },
+                { new: true },
+                (err) => {
+                  if (err) { return reject({ code: 1, message: err.message }); }
+
+                  resolve(res.comments);
+                }
+              );
+          } else {
+            return reject({ code: 2, message: 'No such comment' });
+          }
+        })
+        .catch(error => reject(error));
+    });
+  }
+
   /*
-  Unlike and delete
-   */
+  Unlike
+  */
+
 }
 
 

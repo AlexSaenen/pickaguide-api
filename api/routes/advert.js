@@ -41,6 +41,12 @@ router.delete('/:id', (req, res) => {
     .catch(error => res.status(500).send(error));
 });
 
+router.get('/:id/comments', (req, res) => {
+  commentAdvert.findByCommentsAdvert(req.params.id)
+    .then(result => res.status(200).send(result))
+    .catch(error => res.status(500).send(error));
+});
+
 router.post('/:id/comments', (req, res) => {
   commentAdvert.create(req.user.userId, req.params.id, req.body)
     .then(result => res.status(200).send(result))
@@ -50,6 +56,12 @@ router.post('/:id/comments', (req, res) => {
 router.put('/:id/comments/:idcomment', (req, res) => {
   commentAdvert.like(req.params.id, req.params.idcomment)
     .then(result => res.status(200).send(result))
+    .catch(error => res.status(500).send(error));
+});
+
+router.delete('/:id/comments/:idcomment', (req, res) => {
+  commentAdvert.remove(req.user.userId, req.params.id, req.params.idcomment)
+    .then(result => res.status(200).send({ comments: result, _id: req.params.id }))
     .catch(error => res.status(500).send(error));
 });
 

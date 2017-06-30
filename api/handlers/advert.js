@@ -63,6 +63,19 @@ class Advert extends Handler {
     });
   }
 
+  static findAllFromHim(userId) {
+    return new Promise((resolve, reject) => {
+      db.Adverts
+        .find({ owner: String(userId), active: true }, 'title description photoUrl')
+        .lean()
+        .exec((err, adverts) => {
+          if (err) { return reject({ code: 1, message: err.message }); }
+
+          resolve(adverts);
+        });
+    });
+  }
+
   static find(advertId) {
     return new Promise((resolve, reject) => {
       db.Adverts
