@@ -11,6 +11,7 @@ const userSchema = new Schema({
     emailConfirmation: { type: Boolean, default: false },
     token: { type: String, index: true },
     resetPasswordToken: { type: String, index: true },
+    paymentId: {type: String, default: null},
   },
   profile: {
     firstName: { type: String, required: true },
