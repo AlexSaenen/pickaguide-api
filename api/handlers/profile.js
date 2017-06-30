@@ -10,7 +10,15 @@ class Profile extends User {
   static find(userId, updatable = false) {
     return new Promise((resolve, reject) => {
       super.find(userId, 'profile', updatable)
-        .then(user => resolve(updatable ? user : user.profile))
+        .then((user) => {
+          user.profile.hasAvatar = user.profile._fsId !== null;
+
+          if (updatable === false) {
+            delete user.profile._fsId;
+          }
+
+          resolve(updatable ? user : user.profile);
+        })
         .catch(err => reject(err));
     });
   }
@@ -19,15 +27,9 @@ class Profile extends User {
     return new Promise((resolve, reject) => {
       super.find(userId, 'profile', false)
         .then((user) => {
-          const profile = user.profile;
-          profile.displayName = Profile._displayName(profile);
-          delete profile.firstName;
-          delete profile.lastName;
-          const ageDate = new Date(Date.now() - new Date(profile.birthdate).getTime());
-          profile.age = Math.abs(ageDate.getUTCFullYear() - 1970);
-          delete profile.birthdate;
-          delete profile.phone;
-          resolve(profile);
+          Profile._formatProfile(user.profile);
+          delete user.profile.phone;
+          resolve(user.profile);
         })
         .catch(err => reject(err));
     });
@@ -40,20 +42,13 @@ class Profile extends User {
         'profile.gender': 0,
         'profile.phone': 0,
         'profile.interests': 0,
-        'profile._fsId': 0,
       };
 
       super.findAll(fields)
         .then((users) => {
           const displayableProfiles = users.map((user) => {
-            const profile = user.profile;
-            profile.displayName = Profile._displayName(profile);
-            delete profile.firstName;
-            delete profile.lastName;
-            const ageDate = new Date(Date.now() - new Date(profile.birthdate).getTime());
-            profile.age = Math.abs(ageDate.getUTCFullYear() - 1970);
-            delete profile.birthdate;
-            return profile;
+            Profile._formatProfile(user.profile);
+            return user.profile;
           });
 
           resolve({ profiles: displayableProfiles, ids: users.map(user => user._id) });
@@ -68,17 +63,22 @@ class Profile extends User {
         .then((users) => {
           const displayableProfiles = users.map((user) => {
             const profile = user.profile;
-            profile.displayName = `${profile.firstName} ${profile.lastName.charAt(0)}.`;
-            delete profile.firstName;
-            delete profile.lastName;
-            const ageDate = new Date(Date.now() - new Date(profile.birthdate).getTime());
-            profile.age = Math.abs(ageDate.getUTCFullYear() - 1970);
-            delete profile.birthdate;
+            const names = { first: profile.firstName, last: profile.lastName };
+            Profile._formatProfile(user.profile);
+            profile.displayName = `${names.first} ${names.last.charAt(0)}.`;
             return profile;
           });
 
           resolve({ profiles: displayableProfiles, ids: users.map(user => user._id) });
         })
+        .catch(err => reject(err));
+    });
+  }
+
+  static hasAvatar(userId) {
+    return new Promise((resolve, reject) => {
+      super.find(userId, 'profile._fsId')
+        .then(user => resolve({ id: userId, hasAvatar: user.profile._fsId !== null }))
         .catch(err => reject(err));
     });
   }
@@ -131,6 +131,17 @@ class Profile extends User {
 
   static _pseudo(profile) {
     return `${profile.firstName.substring(0, 6)}${profile.lastName.charAt(0)}`;
+  }
+
+  static _formatProfile(profile) {
+    profile.displayName = Profile._displayName(profile);
+    delete profile.firstName;
+    delete profile.lastName;
+    const ageDate = new Date(Date.now() - new Date(profile.birthdate).getTime());
+    profile.age = Math.abs(ageDate.getUTCFullYear() - 1970);
+    delete profile.birthdate;
+    profile.hasAvatar = profile._fsId !== null;
+    delete profile._fsId;
   }
 
 }

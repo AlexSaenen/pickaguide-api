@@ -116,7 +116,6 @@ class User extends Handler {
       account: 0,
       'profile.gender': 0,
       'profile.phone': 0,
-      'profile._fsId': 0,
     };
 
     if (!terms || terms.length === 0) { return User.findAll(fields); }
