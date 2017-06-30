@@ -15,6 +15,24 @@ class Profile extends User {
     });
   }
 
+  static findPublic(userId) {
+    return new Promise((resolve, reject) => {
+      super.find(userId, 'profile', false)
+        .then((user) => {
+          const profile = user.profile;
+          profile.displayName = Profile._displayName(profile);
+          delete profile.firstName;
+          delete profile.lastName;
+          const ageDate = new Date(Date.now() - new Date(profile.birthdate).getTime());
+          profile.age = Math.abs(ageDate.getUTCFullYear() - 1970);
+          delete profile.birthdate;
+          delete profile.phone;
+          resolve(profile);
+        })
+        .catch(err => reject(err));
+    });
+  }
+
   static findAll() {
     return new Promise((resolve, reject) => {
       const fields = {
