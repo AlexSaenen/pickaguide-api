@@ -8,7 +8,7 @@ const userSchema = new Schema({
   account: {
     password: { type: String, required: true },
     email: { type: String, required: true, unique: true, index: true },
-    emailConfirmation: { type: Boolean, default: false },
+    emailConfirmation: { type: Boolean, default: true },
     token: { type: String, index: true },
     resetPasswordToken: { type: String, index: true },
     paymentId: {type: String, default: null},
@@ -27,8 +27,9 @@ const userSchema = new Schema({
     description: { type: String, default: 'My personal description' },
     interests: [{ type: String }],
     _fsId: { type: Schema.Types.ObjectId, ref: 'fs.files', default: null },
+    geo: {type: [Number], index: '2d'}
   },
-  isGuide: { type: Boolean, default: false },
+  isGuide: { type: Boolean, default: false }
 });
 
 userSchema.methods.hash = function hash(plainPassword, next) {

@@ -5,8 +5,20 @@ const router = express.Router();
 
 
 router.get('/', (req, res) => {
-  visitHandler.findAllFrom(req.user.userId)
-    .then(result => res.status(200).send({ visits: result }))
+  Promise
+    .all([
+      visitHandler.findAllFrom(req.user.userId),
+      visitHandler.findAllFor(req.user.userId),
+    ])
+    .then(results => res.status(200).send({ myVisits: results[0], theirVisits: results[1] }))
+    .catch(error => res.status(500).send(error));
+});
+
+router.get('/:id/:type', (req, res) => {
+  const method = (req.params.type === 'guide' ? visitHandler.findAsGuide : visitHandler.findAsVisitor);
+
+  method(req.params.id, req.user.userId)
+    .then(result => res.status(200).send(result))
     .catch(error => res.status(500).send(error));
 });
 
@@ -18,6 +30,12 @@ router.put('/:id/cancel', (req, res) => {
 
 router.put('/:id/deny', (req, res) => {
   visitHandler.deny(req.user.userId, req.params.id, req.body)
+    .then(result => res.status(200).send(result))
+    .catch(error => res.status(500).send(error));
+});
+
+router.put('/:id/accept', (req, res) => {
+  visitHandler.accept(req.user.userId, req.params.id, req.body)
     .then(result => res.status(200).send(result))
     .catch(error => res.status(500).send(error));
 });

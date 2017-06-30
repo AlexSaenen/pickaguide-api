@@ -2,7 +2,6 @@ const express = require('express');
 const profileHandler = require('../handlers/profile').Profile;
 const multer = require('multer');
 const mime = require('mime-types');
-const fs = require('fs');
 const path = require('path');
 
 const upload = multer({
@@ -19,6 +18,18 @@ const upload = multer({
 const avatarUpload = upload.single('avatar');
 
 const router = express.Router();
+
+router.post('/geo', (req, res) => {
+  profileHandler.addGeo(req.user.userId, req.body)
+    .then(result => res.status(200).send(result))
+    .catch(error => res.status(500).send(error));
+});
+
+router.get('/geo', (req, res) => {
+  profileHandler.findNear(req.user.userId, req.query.distance)
+    .then(result => res.status(200).send(result))
+    .catch(error => res.status(500).send(error));
+});
 
 router.get('/:id', (req, res) => {
   profileHandler.find(req.params.id)
@@ -39,17 +50,6 @@ router.post('/avatar', (req, res) => {
       .then(() => res.status(200).send({ ok: true }))
       .catch(error => res.status(404).send(error));
   });
-});
-
-router.get('/:id/avatar', (req, res) => {
-  profileHandler.download(req.params.id)
-    .then((result) => {
-      res.sendFile(result, (err) => {
-        if (err) res.status(500).send(err);
-        fs.unlink(result);
-      });
-    })
-    .catch(error => res.status(404).send(error));
 });
 
 router.delete('/avatar', (req, res) => {
