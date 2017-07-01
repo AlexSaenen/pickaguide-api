@@ -13,7 +13,7 @@ exports.createUser = (next) => {
   userValid.hash(userValid.account.password, (hashed) => {
     userValid.account.token = jwt.sign({ userId: userValid._id }, config.jwtSecret);
     userValid.account.password = hashed;
-    
+
     userValid.save((err, user) => {
       return next(user);
     });

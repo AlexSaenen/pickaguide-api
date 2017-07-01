@@ -17,6 +17,8 @@ String.prototype.capitalize = function capitalize() {
 
 exports.Users = require('./models/user').Users;
 exports.Adverts = require('./models/advert').Adverts;
+exports.Visits = require('./models/visit').Visits;
+exports.Comments = require('./models/advert').Comments;
 
 exports.conn = mongoose.connection;
 exports.mongo = mongoose.mongo;

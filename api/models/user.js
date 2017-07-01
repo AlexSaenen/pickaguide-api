@@ -1,24 +1,23 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const WORK_FORCE = 10;
 const Schema = mongoose.Schema;
-
-// default picture : https://www.learnmine.com/assets/img/medium-default-avatar.png
 
 const userSchema = new Schema({
   account: {
     password: { type: String, required: true },
     email: { type: String, required: true, unique: true, index: true },
-    emailConfirmation: { type: Boolean, default: false },
+    emailConfirmation: { type: Boolean, default: true },
     token: { type: String, index: true },
     resetPasswordToken: { type: String, index: true },
+    paymentId: { type: String, default: null },
   },
   profile: {
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
 
-    birthdate: { type: Date, default: Date.now() },
+    birthdate: { type: Date, default: Date.now },
     gender: { type: String, default: 'm' },
     phone: { type: String, unique: true, sparse: true, index: true },
 
@@ -28,8 +27,10 @@ const userSchema = new Schema({
     description: { type: String, default: 'My personal description' },
     interests: [{ type: String }],
     _fsId: { type: Schema.Types.ObjectId, ref: 'fs.files', default: null },
+    geo: { type: [Number], index: '2d' },
   },
   isGuide: { type: Boolean, default: false },
+  isBlocking: { type: Boolean, default: false },
 });
 
 userSchema.methods.hash = function hash(plainPassword, next) {

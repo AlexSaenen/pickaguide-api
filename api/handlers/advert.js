@@ -53,7 +53,20 @@ class Advert extends Handler {
   static findAllFrom(userId) {
     return new Promise((resolve, reject) => {
       db.Adverts
-        .find({ owner: String(userId) }, 'title description hourlyPrice photoUrl active')
+        .find({ owner: String(userId) }, 'title description photoUrl active')
+        .lean()
+        .exec((err, adverts) => {
+          if (err) { return reject({ code: 1, message: err.message }); }
+
+          resolve(adverts);
+        });
+    });
+  }
+
+  static findAllFromHim(userId) {
+    return new Promise((resolve, reject) => {
+      db.Adverts
+        .find({ owner: String(userId), active: true }, 'title description photoUrl')
         .lean()
         .exec((err, adverts) => {
           if (err) { return reject({ code: 1, message: err.message }); }
@@ -86,10 +99,13 @@ class Advert extends Handler {
   static findAll() {
     return new Promise((resolve, reject) => {
       db.Adverts
-        .find({})
+        .find({ active: true })
+        .populate({ path: 'owner', select: 'profile.firstName profile.lastName' })
         .lean()
         .exec((err, adverts) => {
           if (err) { return reject({ code: 1, message: err.message }); }
+
+          adverts.forEach((advert) => { advert.owner = Profile._displayName(advert.owner.profile); });
 
           resolve(adverts);
         });
@@ -109,10 +125,13 @@ class Advert extends Handler {
       });
 
       db.Adverts
-        .find({ $or: regexSearch })
+        .find({ $or: regexSearch, active: true })
+        .populate({ path: 'owner', select: 'profile.firstName profile.lastName' })
         .lean()
         .exec((err, adverts) => {
           if (err) { return reject({ code: 1, message: err.message }); }
+
+          adverts.forEach((advert) => { advert.owner = Profile._displayName(advert.owner.profile); });
 
           resolve(adverts);
         });
@@ -143,6 +162,21 @@ class Advert extends Handler {
         });
     });
   }
+
+  // static setAvailability(userId, advertId, advertBody) {
+  //   return new Promise((resolve, reject) => {
+  //     const availability = advertBody.availability;
+  //
+  //     if (availability === undefined) { return reject({ code: 1, message: 'Need availability' }); }
+  //     if (availability.constructor !== Array) { return reject({ code: 2, message: 'Availability has to be an array' }); }
+  //     if (availability.some(el => el.from === undefined || el.to === undefined)) {
+  //       return reject({ code: 3, message: 'Availability has to be well formatted' });
+  //     }
+  //     if (availability.some(el => el.from.constructor !== Date || el.to.constructor !== Date)) {
+  //       return reject({ code: 4, message: 'Availability has to be expressed in Date' });
+  //     }
+  //   });
+  // }
 
   static toggle(userId, advertId) {
     return new Promise((resolve, reject) => {

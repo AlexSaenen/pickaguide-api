@@ -116,8 +116,6 @@ class User extends Handler {
       account: 0,
       'profile.gender': 0,
       'profile.phone': 0,
-      'profile.interests': 0,
-      'profile._fsId': 0,
     };
 
     if (!terms || terms.length === 0) { return User.findAll(fields); }
@@ -125,7 +123,7 @@ class User extends Handler {
     return new Promise((resolve, reject) => {
       const regexes = terms.split(' ').map(term => new RegExp(term, 'i'));
       const regexSearch = [];
-      ['firstName', 'lastName', 'city', 'country', 'description'].forEach((field) => {
+      ['firstName', 'lastName', 'city', 'country', 'description', 'interests'].forEach((field) => {
         const searchElement = {};
         searchElement[`profile.${field}`] = { $in: regexes };
         regexSearch.push(searchElement);
@@ -210,6 +208,32 @@ class User extends Handler {
     });
   }
 
+  static isBlocking(userId) {
+    return new Promise((resolve, reject) => {
+      db.Users
+       .findById(userId, { isBlocking: 1 })
+       .lean()
+       .exec((err, user) => {
+         if (err) { return reject({ code: 1, message: err.message }); }
+         if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
+
+         resolve({ id: userId, isBlocking: user.isBlocking });
+       });
+    });
+  }
+
+  static setBlocking(userId, isBlocking) {
+    return new Promise((resolve, reject) => {
+      db.Users
+       .findByIdAndUpdate(userId, { isBlocking }, { new: true }, (err, user) => {
+         if (err) { return reject({ code: 1, message: err.message }); }
+         if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
+
+         resolve({ id: userId, isBlocking: user.isBlocking });
+       });
+    });
+  }
+
   static becomeGuide(userId) {
     return new Promise((resolve, reject) => {
       db.Users
@@ -247,6 +271,18 @@ class User extends Handler {
 
           resolve({ id: userId, isGuide: user.isGuide });
         });
+    });
+  }
+  
+  static findNear(geo, distance) {
+    return new Promise((resolve, reject) => {
+      db.Users
+        .find({'profile.geo': {$nearSphere: geo, $maxDistance: distance}, 'isGuide': true }, {'account': 0})
+        .exec((err, users) => {
+          if (err) { return reject({ code: 4, message: err.message }); }
+          resolve(users);
+        })
+    
     });
   }
 

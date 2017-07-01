@@ -11,6 +11,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const db = require('./api/database');
 
+
 const app = express();
 let server = null;
 let httpsServer = null;
@@ -29,7 +30,9 @@ const run = function run(next) {
       app.use('/public/profiles', require('./api/routes/public/profile'));
       app.use('/public/users', require('./api/routes/public/user'));
       app.use('/public/proposals', require('./api/routes/public/advert'));
+      app.use('/public/visits', require('./api/routes/public/visit'));
       app.use('/public/search', require('./api/routes/public/search'));
+      app.use('/public/contact-us', require('./api/routes/public/contact'));
 
       app.use('/', expressJwt({ secret: config.jwtSecret }).unless({ path: /\/public(\/.*)?/ }));
       app.use('/', require('./api/middleware-service').errorsTokenMissing);
@@ -40,6 +43,9 @@ const run = function run(next) {
       app.use('/accounts', require('./api/routes/account'));
       app.use('/users', require('./api/routes/user'));
       app.use('/proposals', require('./api/routes/advert'));
+      app.use('/visits', require('./api/routes/visit'));
+      app.use('/payment', require('./api/routes/payment'))
+      
 
       app.set('port', config.port);
 
@@ -71,7 +77,6 @@ const stop = function stop(next) {
   if (httpsServer) {
     httpsServer.close()
   }
-
   if (server) {
     server.close(next);
   }
