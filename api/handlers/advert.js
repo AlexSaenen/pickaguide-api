@@ -99,12 +99,13 @@ class Advert extends Handler {
   static findAll() {
     return new Promise((resolve, reject) => {
       db.Adverts
-        .find({
-          active: true,
-        })
+        .find({ active: true })
+        .populate({ path: 'owner', select: 'profile.firstName profile.lastName' })
         .lean()
         .exec((err, adverts) => {
           if (err) { return reject({ code: 1, message: err.message }); }
+
+          adverts.forEach((advert) => { advert.owner = Profile._displayName(advert.owner.profile); });
 
           resolve(adverts);
         });
