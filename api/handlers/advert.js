@@ -63,6 +63,19 @@ class Advert extends Handler {
     });
   }
 
+  static findAllFromHim(userId) {
+    return new Promise((resolve, reject) => {
+      db.Adverts
+        .find({ owner: String(userId), active: true }, 'title description photoUrl')
+        .lean()
+        .exec((err, adverts) => {
+          if (err) { return reject({ code: 1, message: err.message }); }
+
+          resolve(adverts);
+        });
+    });
+  }
+
   static find(advertId) {
     return new Promise((resolve, reject) => {
       db.Adverts
@@ -86,12 +99,13 @@ class Advert extends Handler {
   static findAll() {
     return new Promise((resolve, reject) => {
       db.Adverts
-        .find({
-          active: true,
-        })
+        .find({ active: true })
+        .populate({ path: 'owner', select: 'profile.firstName profile.lastName' })
         .lean()
         .exec((err, adverts) => {
           if (err) { return reject({ code: 1, message: err.message }); }
+
+          adverts.forEach((advert) => { advert.owner = Profile._displayName(advert.owner.profile); });
 
           resolve(adverts);
         });

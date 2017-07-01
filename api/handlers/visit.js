@@ -32,6 +32,20 @@ class Visit extends Handler {
     });
   }
 
+  static getCreator(visitId) {
+    return new Promise((resolve, reject) => {
+      db.Visits
+        .findById(String(visitId), 'by')
+        .lean()
+        .exec((err, visit) => {
+          if (err) { return reject({ code: 1, message: err.message }); }
+          if (visit == null) { return reject({ code: 2, message: 'Visit not found' }); }
+
+          resolve(visit.by);
+        });
+    });
+  }
+
   static findAsGuide(visitId, userId) {
     return new Promise((resolve, reject) => {
       Visit.isForGuide(visitId, userId)
@@ -40,7 +54,7 @@ class Visit extends Handler {
 
           db.Visits
             .findById(String(visitId))
-            .populate({ path: 'by', select: 'profile' })
+            .populate({ path: 'by', select: 'profile.firstName profile.lastName profile.phone account.email' })
             .populate({ path: 'about', select: 'title photoUrl' })
             .lean()
             .exec((err, visit) => {
@@ -48,6 +62,9 @@ class Visit extends Handler {
               if (visit == null) { return reject({ code: 2, message: 'Visit not found' }); }
 
               visit.with = Profile._displayName(visit.by.profile);
+              if (visit.status[visit.status.length - 1].label === 'accepted') {
+                visit.contact = { phone: visit.by.profile.phone, email: visit.by.account.email };
+              }
               delete visit.by;
 
               resolve({ visit });
@@ -73,9 +90,13 @@ class Visit extends Handler {
 
               if (visit.about) {
                 User
-                  .findInIds([visit.about.owner], 'profile.firstName profile.lastName')
+                  .findInIds([visit.about.owner], 'profile.firstName profile.lastName profile.phone account.email')
                   .then((users) => {
                     visit.with = Profile._displayName(users[0].profile);
+                    if (visit.status[visit.status.length - 1].label === 'accepted') {
+                      visit.contact = { phone: users[0].profile.phone, email: users[0].account.email };
+                    }
+
                     delete visit.about.owner;
 
                     resolve({ visit });
@@ -125,6 +146,39 @@ class Visit extends Handler {
         });
     });
   }
+
+  // static findToReview(userId) {
+  //   return new Promise((resolve, reject) => {
+  //     db.Visits
+  //       .find({ by: String(userId) }, 'about when status')
+  //       .lean()
+  //       .exec((err, visits) => {
+  //         if (err) { return reject({ code: 1, message: err.message }); }
+  //
+  //         visits.forEach((visit) => {
+  //           visit.status = visit.status[visit.status.length - 1];
+  //         });
+  //
+  //         const ids = _.map(visits, 'about.owner');
+  //
+  //         User
+  //           .findInIds(ids, 'profile.firstName profile.lastName')
+  //           .then((users) => {
+  //             const userHash = _.map(users, '_id').map(String);
+  //
+  //             visits.forEach((visit) => {
+  //               if (visit.about) {
+  //                 const index = userHash.indexOf(String(visit.about.owner));
+  //                 visit.about.ownerName = Profile._displayName(users[index].profile);
+  //               }
+  //             });
+  //
+  //             resolve(visits);
+  //           })
+  //           .catch(findGuideErr => reject(findGuideErr));
+  //       });
+  //   });
+  // }
 
   static findAllFor(userId) {
     return new Promise((resolve, reject) => {
@@ -290,13 +344,29 @@ class Visit extends Handler {
   }
 
   static finish(userId, visitId, reqBody) {
-    return this._changeStatus({
-      userId,
-      visitId,
-      reqBody,
-      assertUserType: this.isForGuide,
-      defaultReason: 'No comment',
-    }, 'accepted', 'finished');
+    return new Promise((resolve, reject) => {
+      this._changeStatus({
+        userId,
+        visitId,
+        reqBody,
+        assertUserType: this.isForGuide,
+        defaultReason: 'No comment',
+      }, 'accepted', 'finished')
+        .then((result) => {
+          Visit.getCreator(visitId)
+            .then((creator) => {
+              User.setBlocking(creator, true)
+                .then(() => {
+                  User.setBlocking(userId, true)
+                    .then(() => { resolve(result); })
+                    .catch(blockGuideErr => reject(blockGuideErr));
+                })
+                .catch(blockCreatorErr => reject(blockCreatorErr));
+            })
+            .catch(getErr => reject(getErr));
+        })
+        .catch(err => reject(err));
+    });
   }
 
 }

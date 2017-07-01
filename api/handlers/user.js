@@ -116,7 +116,6 @@ class User extends Handler {
       account: 0,
       'profile.gender': 0,
       'profile.phone': 0,
-      'profile._fsId': 0,
     };
 
     if (!terms || terms.length === 0) { return User.findAll(fields); }
@@ -205,6 +204,32 @@ class User extends Handler {
          if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
 
          resolve({ id: userId, isGuide: user.isGuide });
+       });
+    });
+  }
+
+  static isBlocking(userId) {
+    return new Promise((resolve, reject) => {
+      db.Users
+       .findById(userId, { isBlocking: 1 })
+       .lean()
+       .exec((err, user) => {
+         if (err) { return reject({ code: 1, message: err.message }); }
+         if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
+
+         resolve({ id: userId, isBlocking: user.isBlocking });
+       });
+    });
+  }
+
+  static setBlocking(userId, isBlocking) {
+    return new Promise((resolve, reject) => {
+      db.Users
+       .findByIdAndUpdate(userId, { isBlocking }, { new: true }, (err, user) => {
+         if (err) { return reject({ code: 1, message: err.message }); }
+         if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
+
+         resolve({ id: userId, isBlocking: user.isBlocking });
        });
     });
   }

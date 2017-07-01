@@ -17,6 +17,12 @@ router.post('/become-guide', (req, res) => {
     .catch(error => res.status(400).send(error));
 });
 
+router.get('/isBlocking', (req, res) => {
+  userHandler.isBlocking(req.user.userId)
+    .then(result => res.status(200).send(result))
+    .catch(error => res.status(400).send(error));
+});
+
 router.post('/retire', (req, res) => {
   userHandler.retire(req.user.userId)
     .then(result => res.status(200).send(result))

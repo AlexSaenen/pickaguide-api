@@ -14,6 +14,12 @@ router.get('/', (req, res) => {
     .catch(error => res.status(500).send(error));
 });
 
+router.get('/review', (req, res) => {
+  visitHandler.findToReview(req.user.userId)
+    .then(results => res.status(200).send({ visits: results }))
+    .catch(error => res.status(500).send(error));
+});
+
 router.get('/:id/:type', (req, res) => {
   const method = (req.params.type === 'guide' ? visitHandler.findAsGuide : visitHandler.findAsVisitor);
 
