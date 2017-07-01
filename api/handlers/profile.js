@@ -3,6 +3,7 @@
 const User = require('./user').User;
 const uploadService = require('../upload-service');
 const ObjectId = require('../database').ObjectId;
+const _ = require('lodash');
 
 
 class Profile extends User {
@@ -131,6 +132,32 @@ class Profile extends User {
 
   static _pseudo(profile) {
     return `${profile.firstName.substring(0, 6)}${profile.lastName.charAt(0)}`;
+  }
+  
+  static addGeo(userId, reqBody) {
+    return new Promise((resolve, reject) => {
+      super.find(userId, 'profile')
+        .then((user) => {
+          let array = [];
+          user.profile.geo =
+          User.update(userId, { profile: { geo: _.concat(array, reqBody.x, reqBody.y) } })
+            .then((user) => resolve({ id: userId, geo: user.profile.geo }))
+            .catch(err => reject(err));
+        })
+        .catch(err => reject(err));
+    });
+  }
+  
+  static findNear(userId, distance) {
+    return new Promise((resolve, reject) => {
+      super.find(userId, 'profile')
+        .then((user) => {
+          if (!user.profile.geo) { return reject({ code: 3, message: 'User does not have localisation'}); }
+          super.findNear(user.profile.geo, distance)
+            .then((users) => resolve(users))
+            .catch(err => reject(err));
+        });
+    });
   }
 
   static _formatProfile(profile) {
