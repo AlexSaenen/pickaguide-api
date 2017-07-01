@@ -25,8 +25,8 @@ router.post('/geo', (req, res) => {
     .catch(error => res.status(500).send(error));
 });
 
-router.get('/geo', (req, res) => {
-  profileHandler.findNear(req.user.userId, req.query.distance)
+router.get('/geo/:distance', (req, res) => {
+  profileHandler.findNear(req.user.userId, req.params.distance)
     .then(result => res.status(200).send(result))
     .catch(error => res.status(500).send(error));
 });
