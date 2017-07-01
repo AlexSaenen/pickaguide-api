@@ -208,6 +208,32 @@ class User extends Handler {
     });
   }
 
+  static isBlocking(userId) {
+    return new Promise((resolve, reject) => {
+      db.Users
+       .findById(userId, { isBlocking: 1 })
+       .lean()
+       .exec((err, user) => {
+         if (err) { return reject({ code: 1, message: err.message }); }
+         if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
+
+         resolve({ id: userId, isBlocking: user.isBlocking });
+       });
+    });
+  }
+
+  static setBlocking(userId, isBlocking) {
+    return new Promise((resolve, reject) => {
+      db.Users
+       .findByIdAndUpdate(userId, { isBlocking }, { new: true }, (err, user) => {
+         if (err) { return reject({ code: 1, message: err.message }); }
+         if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
+
+         resolve({ id: userId, isBlocking: user.isBlocking });
+       });
+    });
+  }
+
   static becomeGuide(userId) {
     return new Promise((resolve, reject) => {
       db.Users

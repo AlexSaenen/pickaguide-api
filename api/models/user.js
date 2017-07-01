@@ -28,6 +28,7 @@ const userSchema = new Schema({
     _fsId: { type: Schema.Types.ObjectId, ref: 'fs.files', default: null },
   },
   isGuide: { type: Boolean, default: false },
+  isBlocking: { type: Boolean, default: false },
 });
 
 userSchema.methods.hash = function hash(plainPassword, next) {
