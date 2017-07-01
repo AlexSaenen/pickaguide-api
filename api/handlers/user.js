@@ -277,7 +277,7 @@ class User extends Handler {
   static findNear(geo, distance) {
     return new Promise((resolve, reject) => {
       db.Users
-        .find({'profile.geo': {$nearSphere: geo, $maxDistance: distance} }, {'account': 0}, {'isGuide': true})
+        .find({'profile.geo': {$nearSphere: geo, $maxDistance: distance}, 'isGuide': true }, {'account': 0})
         .exec((err, users) => {
           if (err) { return reject({ code: 4, message: err.message }); }
           resolve(users);
