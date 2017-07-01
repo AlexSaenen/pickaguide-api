@@ -91,7 +91,8 @@ exports.createPayment = (idUser, body) => {// idCard, amount, currency, descript
       currency: body.currency,
       customer: idUser,
       source: body.idCard,
-      description: body.description
+      description: body.description,
+      metadata: body.meta
     }).then(function(payment) {
       resolve(payment);
     }).catch(function(err) {
