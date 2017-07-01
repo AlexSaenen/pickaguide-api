@@ -105,7 +105,11 @@ class Advert extends Handler {
         .exec((err, adverts) => {
           if (err) { return reject({ code: 1, message: err.message }); }
 
-          adverts.forEach((advert) => { advert.owner = Profile._displayName(advert.owner.profile); });
+          adverts.forEach((advert) => {
+            if (advert.owner) {
+              advert.owner = Profile._displayName(advert.owner.profile);
+            }
+          });
 
           resolve(adverts);
         });
