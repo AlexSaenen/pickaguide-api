@@ -80,7 +80,7 @@ class Advert extends Handler {
     return new Promise((resolve, reject) => {
       db.Adverts
         .findById(String(advertId))
-        .populate({ path: 'owner', select: 'profile' })
+        .populate({ path: 'owner', select: 'profile.firstName profile.lastName' })
         .lean()
         .exec((err, advert) => {
           if (err) { return reject({ code: 1, message: err.message }); }
@@ -146,6 +146,7 @@ class Advert extends Handler {
     return new Promise((resolve, reject) => {
       db.Adverts
         .findOne({ _id: advertId, owner: userId })
+        .populate({ path: 'owner', select: 'profile.firstName profile.lastName' })
         .exec((err, advert) => {
           if (err) { return reject({ code: 1, message: err.message }); }
           if (advert === null) { return reject({ code: 2, message: 'Cannot find advert' }); }
@@ -161,7 +162,11 @@ class Advert extends Handler {
 
             if (updatedAdvert === null) { return reject({ code: 4, message: 'Failed to update advert' }); }
 
-            resolve({ advert: updatedAdvert });
+            const jsonAdvert = JSON.parse(JSON.stringify(updatedAdvert));
+            jsonAdvert.owner.displayName = Profile._displayName(jsonAdvert.owner.profile);
+            delete jsonAdvert.owner.profile;
+
+            resolve({ advert: jsonAdvert });
           });
         });
     });
