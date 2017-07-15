@@ -133,28 +133,28 @@ class Profile extends User {
   static _pseudo(profile) {
     return `${profile.firstName.substring(0, 6)}${profile.lastName.charAt(0)}`;
   }
-  
+
   static addGeo(userId, reqBody) {
     return new Promise((resolve, reject) => {
       super.find(userId, 'profile')
         .then((user) => {
-          let array = [];
+          const array = [];
           user.profile.geo =
           User.update(userId, { profile: { geo: _.concat(array, reqBody.x, reqBody.y) } })
-            .then((user) => resolve({ id: userId, geo: user.profile.geo }))
+            .then(updatedUser => resolve({ id: userId, geo: updatedUser.profile.geo }))
             .catch(err => reject(err));
         })
         .catch(err => reject(err));
     });
   }
-  
+
   static findNear(userId, distance) {
     return new Promise((resolve, reject) => {
       super.find(userId, 'profile')
         .then((user) => {
-          if (!user.profile.geo) { return reject({ code: 3, message: 'User does not have localisation'}); }
+          if (!user.profile.geo) { return reject({ code: 3, message: 'User does not have localisation' }); }
           super.findNear(user.profile.geo, distance)
-            .then((users) => resolve(users))
+            .then(users => resolve(users))
             .catch(err => reject(err));
         });
     });

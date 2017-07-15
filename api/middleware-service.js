@@ -26,3 +26,17 @@ exports.checkContentTypeHeader = (err, req, res, next) => {
 
   next();
 };
+
+exports.trimForm = function trimForm(req, res, next) {
+  if (req.body) {
+    const keys = Object.keys(req.body);
+    keys.forEach((key) => {
+      const value = req.body[key];
+      if (typeof value === 'string') {
+        req.body[key] = value.trim();
+      }
+    });
+  }
+
+  next();
+};
