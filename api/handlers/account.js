@@ -125,7 +125,7 @@ class Account extends User {
           return res.status(401).send({ code: 1, message: 'Bad token authentication' });
         }
 
-        return next();
+        next();
       })
       .catch((findErr) => {
         if (findErr.code === 1) return res.status(500).send();

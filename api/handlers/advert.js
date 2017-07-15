@@ -102,6 +102,27 @@ class Advert extends Handler {
         .find({ active: true })
         .populate({ path: 'owner', select: 'profile.firstName profile.lastName' })
         .lean()
+        .limit(10)
+        .exec((err, adverts) => {
+          if (err) { return reject({ code: 1, message: err.message }); }
+
+          adverts.forEach((advert) => {
+            if (advert.owner) {
+              advert.owner = Profile._displayName(advert.owner.profile);
+            }
+          });
+
+          resolve(adverts);
+        });
+    });
+  }
+  static findMain() {
+    return new Promise((resolve, reject) => {
+      db.Adverts
+        .find({ active: true })
+        .populate({ path: 'owner', select: 'profile.firstName profile.lastName' })
+        .lean()
+        .limit(10)
         .exec((err, adverts) => {
           if (err) { return reject({ code: 1, message: err.message }); }
 

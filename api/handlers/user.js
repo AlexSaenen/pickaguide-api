@@ -273,7 +273,7 @@ class User extends Handler {
         });
     });
   }
-  
+
   static findNear(geo, distance) {
     return new Promise((resolve, reject) => {
       db.Users
@@ -282,7 +282,7 @@ class User extends Handler {
           if (err) { return reject({ code: 4, message: err.message }); }
           resolve(users);
         })
-    
+
     });
   }
 
