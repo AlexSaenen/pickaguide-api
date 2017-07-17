@@ -2,7 +2,7 @@
 
 const db = require('../database');
 const Handler = require('./_handler').Handler;
-const Profile = require('./profile').Profile;
+const displayName = require('./shared').displayName;
 const _ = require('lodash');
 
 
@@ -87,7 +87,7 @@ class Advert extends Handler {
           if (advert == null) { return reject({ code: 2, message: 'Advert not found' }); }
 
           advert.owner = advert.owner.profile;
-          advert.owner.displayName = Profile._displayName(advert.owner);
+          advert.owner.displayName = displayName(advert.owner);
           delete advert.owner.firstName;
           delete advert.owner.lastName;
 
@@ -108,7 +108,7 @@ class Advert extends Handler {
 
           adverts.forEach((advert) => {
             if (advert.owner) {
-              advert.owner = Profile._displayName(advert.owner.profile);
+              advert.owner = displayName(advert.owner.profile);
             }
           });
 
@@ -128,7 +128,7 @@ class Advert extends Handler {
 
           adverts.forEach((advert) => {
             if (advert.owner) {
-              advert.owner = Profile._displayName(advert.owner.profile);
+              advert.owner = displayName(advert.owner.profile);
             }
           });
 
@@ -156,7 +156,7 @@ class Advert extends Handler {
         .exec((err, adverts) => {
           if (err) { return reject({ code: 1, message: err.message }); }
 
-          adverts.forEach((advert) => { advert.owner = Profile._displayName(advert.owner.profile); });
+          adverts.forEach((advert) => { advert.owner = displayName(advert.owner.profile); });
 
           resolve(adverts);
         });
@@ -184,7 +184,7 @@ class Advert extends Handler {
             if (updatedAdvert === null) { return reject({ code: 4, message: 'Failed to update advert' }); }
 
             const jsonAdvert = JSON.parse(JSON.stringify(updatedAdvert));
-            jsonAdvert.owner.displayName = Profile._displayName(jsonAdvert.owner.profile);
+            jsonAdvert.owner.displayName = displayName(jsonAdvert.owner.profile);
             delete jsonAdvert.owner.profile;
 
             resolve({ advert: jsonAdvert });
@@ -224,6 +224,18 @@ class Advert extends Handler {
               .then(adverts => resolve(adverts))
               .catch(findErr => reject(findErr));
           });
+        });
+    });
+  }
+
+  static toggleOff(userId, advertId) {
+    return new Promise((resolve, reject) => {
+      db.Adverts
+        .findOneAndUpdate({ _id: advertId, owner: userId }, { active: false }, (err, advert) => {
+          if (err) { return reject({ code: 1, message: err.message }); }
+          if (advert === null) { return reject({ code: 2, message: 'No such advert' }); }
+
+          resolve();
         });
     });
   }

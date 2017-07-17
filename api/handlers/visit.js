@@ -2,7 +2,8 @@
 
 const db = require('../database');
 const Handler = require('./_handler').Handler;
-const Profile = require('./profile').Profile;
+const visitManager = require('../managers/visit');
+const displayName = require('./shared').displayName;
 const User = require('./user').User;
 const _ = require('lodash');
 
@@ -61,7 +62,7 @@ class Visit extends Handler {
               if (err) { return reject({ code: 1, message: err.message }); }
               if (visit == null) { return reject({ code: 2, message: 'Visit not found' }); }
 
-              visit.with = Profile._displayName(visit.by.profile);
+              visit.with = displayName(visit.by.profile);
               if (visit.status[visit.status.length - 1].label === 'accepted') {
                 visit.contact = { phone: visit.by.profile.phone, email: visit.by.account.email };
               }
@@ -92,7 +93,7 @@ class Visit extends Handler {
                 User
                   .findInIds([visit.about.owner], 'profile.firstName profile.lastName profile.phone account.email')
                   .then((users) => {
-                    visit.with = Profile._displayName(users[0].profile);
+                    visit.with = displayName(users[0].profile);
                     if (visit.status[visit.status.length - 1].label === 'accepted') {
                       visit.contact = { phone: users[0].profile.phone, email: users[0].account.email };
                     }
@@ -113,38 +114,7 @@ class Visit extends Handler {
   }
 
   static findAllFrom(userId) {
-    return new Promise((resolve, reject) => {
-      db.Visits
-        .find({ by: String(userId) }, 'about when status')
-        .populate({ path: 'about', select: 'title photoUrl owner' })
-        .lean()
-        .sort('-when')
-        .exec((err, visits) => {
-          if (err) { return reject({ code: 1, message: err.message }); }
-
-          visits.forEach((visit) => {
-            visit.status = visit.status[visit.status.length - 1];
-          });
-
-          const ids = _.map(visits, 'about.owner');
-
-          User
-            .findInIds(ids, 'profile.firstName profile.lastName')
-            .then((users) => {
-              const userHash = _.map(users, '_id').map(String);
-
-              visits.forEach((visit) => {
-                if (visit.about) {
-                  const index = userHash.indexOf(String(visit.about.owner));
-                  visit.about.ownerName = Profile._displayName(users[index].profile);
-                }
-              });
-
-              resolve(visits);
-            })
-            .catch(findGuideErr => reject(findGuideErr));
-        });
-    });
+    return visitManager.findAllFrom(userId);
   }
 
   // static findToReview(userId) {
@@ -169,7 +139,7 @@ class Visit extends Handler {
   //             visits.forEach((visit) => {
   //               if (visit.about) {
   //                 const index = userHash.indexOf(String(visit.about.owner));
-  //                 visit.about.ownerName = Profile._displayName(users[index].profile);
+  //                 visit.about.ownerName = displayName(users[index].profile);
   //               }
   //             });
   //
@@ -204,7 +174,7 @@ class Visit extends Handler {
 
               visits.forEach((visit) => {
                 const index = userHash.indexOf(String(visit.by));
-                visit.byName = Profile._displayName(users[index].profile);
+                visit.byName = displayName(users[index].profile);
               });
 
               resolve(visits);
@@ -324,13 +294,7 @@ class Visit extends Handler {
   }
 
   static deny(userId, visitId, reqBody) {
-    return this._changeStatus({
-      userId,
-      visitId,
-      reqBody,
-      assertUserType: this.isForGuide,
-      defaultReason: 'No reason',
-    }, ['waiting', 'accepted'], 'denied');
+    return visitManager.deny(userId, visitId, reqBody);
   }
 
   static accept(userId, visitId, reqBody) {

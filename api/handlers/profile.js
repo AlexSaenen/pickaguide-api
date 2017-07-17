@@ -3,6 +3,7 @@
 const User = require('./user').User;
 const uploadService = require('../upload-service');
 const ObjectId = require('../database').ObjectId;
+const displayName = require('./shared').displayName;
 const _ = require('lodash');
 
 
@@ -126,14 +127,6 @@ class Profile extends User {
     });
   }
 
-  static _displayName(profile) {
-    return `${profile.firstName} ${profile.lastName.charAt(0)}.`;
-  }
-
-  static _pseudo(profile) {
-    return `${profile.firstName.substring(0, 6)}${profile.lastName.charAt(0)}`;
-  }
-
   static addGeo(userId, reqBody) {
     return new Promise((resolve, reject) => {
       super.find(userId, 'profile')
@@ -161,7 +154,7 @@ class Profile extends User {
   }
 
   static _formatProfile(profile) {
-    profile.displayName = Profile._displayName(profile);
+    profile.displayName = displayName(profile);
     delete profile.firstName;
     delete profile.lastName;
     const ageDate = new Date(Date.now() - new Date(profile.birthdate).getTime());

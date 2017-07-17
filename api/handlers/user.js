@@ -2,6 +2,9 @@
 
 const db = require('../database');
 const Handler = require('./_handler').Handler;
+const visitManager = require('../managers/visit');
+const userManager = require('../managers/user');
+const Advert = require('./advert').Advert;
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const emailService = require('../email-service');
@@ -65,22 +68,7 @@ class User extends Handler {
   }
 
   static findInIds(userIds, selectFields = '', updatable = false) {
-    return new Promise((resolve, reject) => {
-      let query = db.Users.find()
-        .where('_id')
-        .in(userIds)
-        .select(selectFields);
-
-      if (updatable === false) {
-        query = query.lean();
-      }
-
-      query.exec((err, users) => {
-        if (err) { return reject({ code: 1, message: err.message }); }
-
-        resolve(users);
-      });
-    });
+    return userManager.findInIds(userIds, selectFields, updatable);
   }
 
   static findAll(selectFields = '') {
@@ -264,25 +252,47 @@ class User extends Handler {
 
   static retire(userId) {
     return new Promise((resolve, reject) => {
-      db.Users
-        .findByIdAndUpdate(userId, { isGuide: false }, { new: true }, (err, user) => {
-          if (err) { return reject({ code: 1, message: err.message }); }
-          if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
+      visitManager
+        .findAllFrom(userId)
+        .then(visits =>
+          Promise.all(
+            visits.map(visit => visitManager.deny(userId, visit._id, { reason: 'Guide retired' }))
+          )
+        )
+        .then(() => Advert.findAllFromHim(userId))
+        .then(adverts =>
+          Promise.all(
+            adverts.map(advert => Advert.toggleOff(userId, advert._id))
+          )
+        )
+        .then(() => {
+          db.Users
+            .findByIdAndUpdate(userId, { isGuide: false }, { new: true }, (err, user) => {
+              if (err) { return reject({ code: 1, message: err.message }); }
+              if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
 
-          resolve({ id: userId, isGuide: user.isGuide });
-        });
+              resolve({ id: userId, isGuide: user.isGuide });
+            });
+        })
+        .catch(err => reject(err));
     });
   }
 
   static findNear(geo, distance) {
     return new Promise((resolve, reject) => {
       db.Users
-        .find({'profile.geo': {$nearSphere: geo, $maxDistance: distance}, 'isGuide': true }, {'account': 0})
+        .find({
+          'profile.geo': {
+            $nearSphere: geo,
+            $maxDistance: distance,
+          },
+          isGuide: true,
+        }, { account: 0 })
+        .lean()
         .exec((err, users) => {
           if (err) { return reject({ code: 4, message: err.message }); }
           resolve(users);
-        })
-
+        });
     });
   }
 

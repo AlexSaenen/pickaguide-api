@@ -2,7 +2,7 @@
 
 const db = require('../database');
 const Handler = require('./_handler').Handler;
-const Profile = require('./profile').Profile;
+const displayName = require('./shared').displayName;
 
 
 class CommentAdvert extends Handler {
@@ -38,7 +38,7 @@ class CommentAdvert extends Handler {
 
           commentsForAd.comments.forEach((comment) => {
             if (comment.owner.displayName === undefined) {
-              comment.owner.displayName = Profile._displayName(comment.owner.profile);
+              comment.owner.displayName = displayName(comment.owner.profile);
             }
 
             delete comment.owner.profile;
