@@ -4,7 +4,7 @@ const profileHandler = require('../handlers/profile').Profile;
 
 const router = express.Router();
 
-router.post('/become-guide', (req, res) => {
+router.post('/becomeGuide', (req, res) => {
   profileHandler.update(req.user.userId, { profile: req.body })
     .then((updatedUser) => {
       userHandler.becomeGuide(req.user.userId)
