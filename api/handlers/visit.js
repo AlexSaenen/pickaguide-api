@@ -12,6 +12,10 @@ class Visit {
     return visitManager.create(by, about, reqBody);
   }
 
+  static find(visitId) {
+    return visitManager.find(visitId);
+  }
+
   static findAsGuide(visitId, userId) {
     return visitManager.findAsGuide(visitId, userId);
   }

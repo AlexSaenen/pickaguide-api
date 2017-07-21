@@ -139,6 +139,26 @@ const create = (by, about, reqBody) => {
   });
 };
 
+const find = (visitId) => {
+  return new Promise((resolve, reject) => {
+    db.Visits
+      .findById(String(visitId))
+      .populate({ path: 'by', select: 'profile.firstName profile.lastName' })
+      .populate({ path: 'about', select: 'title photoUrl' })
+      .lean()
+      .exec((err, visit) => {
+        if (err) { return reject({ code: 1, message: err.message }); }
+        if (visit == null) { return reject({ code: 2, message: 'Visit not found' }); }
+
+        visit.with = (visit.by ? displayName(visit.by.profile) : 'Deleted user');
+        delete visit.by;
+
+        resolve({ visit });
+      });
+  });
+};
+
+
 const findAllFrom = (userId) => {
   return new Promise((resolve, reject) => {
     db.Visits
@@ -300,4 +320,4 @@ const accept = (userId, visitId, reqBody) => {
 //   });
 // }
 
-module.exports = { create, getCreator, findAllFrom, findAllFor, findAsGuide, findAsVisitor, cancel, deny, finish, accept };
+module.exports = { create, getCreator, find, findAllFrom, findAllFor, findAsGuide, findAsVisitor, cancel, deny, finish, accept };
