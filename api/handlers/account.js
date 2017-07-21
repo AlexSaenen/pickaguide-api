@@ -3,6 +3,7 @@
 const User = require('./user').User;
 const assertInput = require('./_handler').assertInput;
 const accountManager = require('../managers/account');
+const blacklistManager = require('../managers/blacklist');
 const validator = require('validator');
 const emailService = require('../email-service');
 const jwt = require('jsonwebtoken');
@@ -91,8 +92,17 @@ class Account extends User {
       if (!validator.isLength(profile.firstName, { min: 2, max: 50 })) { return reject({ code: 4, message: 'Invalid firstName' }); }
       if (!validator.isLength(profile.lastName, { min: 2, max: 50 })) { return reject({ code: 5, message: 'Invalid lastName' }); }
 
-      super.add({ account, profile })
-        .then(res => resolve(res))
+      blacklistManager
+        .findByEmail(account.email)
+        .then((blacklist) => {
+          if (blacklist) {
+            reject({ code: 6, message: 'You previously made an account with this email' });
+          } else {
+            super.add({ account, profile })
+              .then(res => resolve(res))
+              .catch(err => reject(err));
+          }
+        })
         .catch(err => reject(err));
     });
   }
