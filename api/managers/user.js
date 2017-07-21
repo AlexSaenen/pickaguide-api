@@ -173,11 +173,7 @@ const remove = (reqBody) => {
           if (err) { return reject({ code: 2, message: err.message }); }
           if (!isMatch) { return reject({ code: 3, message: 'Invalid password' }); }
 
-          user.remove((removalErr) => {
-            if (err) { return reject({ code: 4, message: removalErr.message }); }
-
-            resolve({ code: 0, message: 'Account deleted' });
-          });
+          resolve(user);
         });
       })
       .catch(err => reject({ code: 5, message: err }));

@@ -25,7 +25,7 @@ class Visit {
       visitManager
         .findAsVisitor(visitId, userId)
         .then((visit) => {
-          if (visit.about) {
+          if (visit.about && visit.about.owner) {
             userManager
               .findInIds([visit.about.owner], 'profile.firstName profile.lastName profile.phone account.email')
               .then((users) => {
@@ -40,6 +40,7 @@ class Visit {
               })
               .catch(findGuideErr => reject(findGuideErr));
           } else {
+            delete visit.about;
             visit.with = 'Unknown';
             resolve({ visit });
           }
@@ -88,8 +89,12 @@ class Visit {
               const userHash = _.map(users, '_id').map(String);
 
               visits.forEach((visit) => {
-                const index = userHash.indexOf(String(visit.by));
-                visit.byName = displayName(users[index].profile);
+                if (visit.by) {
+                  const index = userHash.indexOf(String(visit.by));
+                  visit.byName = displayName(users[index].profile);
+                } else {
+                  visit.byName = 'Deleted user';
+                }
               });
 
               resolve(visits);

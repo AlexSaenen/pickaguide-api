@@ -60,10 +60,14 @@ const find = (advertId) => {
         if (err) { return reject({ code: 1, message: err.message }); }
         if (advert == null) { return reject({ code: 2, message: 'Advert not found' }); }
 
-        advert.owner = advert.owner.profile;
-        advert.owner.displayName = displayName(advert.owner);
-        delete advert.owner.firstName;
-        delete advert.owner.lastName;
+        if (advert.owner) {
+          advert.owner = advert.owner.profile;
+          advert.owner.displayName = displayName(advert.owner);
+          delete advert.owner.firstName;
+          delete advert.owner.lastName;
+        } else {
+          advert.owner = { displayName: 'Deleted user' };
+        }
 
         resolve({ advert });
       });
@@ -147,7 +151,11 @@ const search = (regexSearch) => {
       .exec((err, adverts) => {
         if (err) { return reject({ code: 1, message: err.message }); }
 
-        adverts.forEach((advert) => { advert.owner = displayName(advert.owner.profile); });
+        adverts.forEach((advert) => {
+          if (advert.owner) {
+            advert.owner = displayName(advert.owner.profile);
+          }
+        });
 
         resolve(adverts);
       });
@@ -175,8 +183,13 @@ const update = (userId, advertId, advertBody) => {
           if (updatedAdvert === null) { return reject({ code: 4, message: 'Failed to update advert' }); }
 
           const jsonAdvert = JSON.parse(JSON.stringify(updatedAdvert));
-          jsonAdvert.owner.displayName = displayName(jsonAdvert.owner.profile);
-          delete jsonAdvert.owner.profile;
+
+          if (jsonAdvert.owner) {
+            jsonAdvert.owner.displayName = displayName(jsonAdvert.owner.profile);
+            delete jsonAdvert.owner.profile;
+          } else {
+            jsonAdvert.owner = { displayName: 'Deleted user' };
+          }
 
           resolve({ advert: jsonAdvert });
         });

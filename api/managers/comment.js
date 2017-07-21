@@ -30,11 +30,15 @@ const findByCommentsAdvert = (idAdvert) => {
         if (err) return reject({ code: 1, message: err.message });
 
         commentsForAd.comments.forEach((comment) => {
-          if (comment.owner.displayName === undefined) {
-            comment.owner.displayName = displayName(comment.owner.profile);
-          }
+          if (comment.owner) {
+            if (comment.owner.displayName === undefined) {
+              comment.owner.displayName = displayName(comment.owner.profile);
+            }
 
-          delete comment.owner.profile;
+            delete comment.owner.profile;
+          } else {
+            comment.owner = { displayName: 'Deleted user' };
+          }
         });
 
         resolve(commentsForAd);

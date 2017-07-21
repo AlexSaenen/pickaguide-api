@@ -213,10 +213,12 @@ const findAsGuide = (visitId, userId) => {
             if (err) { return reject({ code: 1, message: err.message }); }
             if (visit == null) { return reject({ code: 2, message: 'Visit not found' }); }
 
-            visit.with = displayName(visit.by.profile);
+            visit.with = (visit.by ? displayName(visit.by.profile) : 'Deleted user');
+
             if (visit.status[visit.status.length - 1].label === 'accepted') {
               visit.contact = { phone: visit.by.profile.phone, email: visit.by.account.email };
             }
+
             delete visit.by;
 
             resolve({ visit });
