@@ -61,7 +61,9 @@ const find = (advertId) => {
         if (advert == null) { return reject({ code: 2, message: 'Advert not found' }); }
 
         if (advert.owner) {
+          const ownerId = advert.owner._id;
           advert.owner = advert.owner.profile;
+          advert.owner._id = ownerId;
           advert.owner.displayName = displayName(advert.owner);
           delete advert.owner.firstName;
           delete advert.owner.lastName;
