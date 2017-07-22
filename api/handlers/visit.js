@@ -1,6 +1,7 @@
 'use strict';
 
 const visitManager = require('../managers/visit');
+const advertManager = require('../managers/advert');
 const userManager = require('../managers/user');
 const displayName = require('../managers/profile').displayName;
 const _ = require('lodash');
@@ -9,7 +10,24 @@ const _ = require('lodash');
 class Visit {
 
   static create(by, about, reqBody) {
-    return visitManager.create(by, about, reqBody);
+    return new Promise((resolve, reject) => {
+      advertManager
+        .find(about)
+        .then((advert) => {
+          console.log(advert.advert.owner, by);
+          if (advert.advert.owner._id === undefined) {
+            return reject({ code: 1, message: 'The user has been deleted' });
+          }
+          if (String(advert.advert.owner._id) === by) {
+            return reject({ code: 2, message: 'You cannot ask yourself for a visit' });
+          }
+
+          visitManager.create(by, about, reqBody)
+            .then(result => resolve(result))
+            .catch(createErr => reject(createErr));
+        })
+        .catch(err => reject(err));
+    });
   }
 
   static find(visitId) {
