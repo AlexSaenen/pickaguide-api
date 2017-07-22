@@ -51,45 +51,26 @@ class User {
   static remove(userId, reqBody) {
     return new Promise((resolve, reject) => {
       userManager
-        .remove(reqBody)
+        .remove(userId, reqBody)
         .then((user) => {
-          new Promise((resolveRetire, rejectRetire) => {
-            userManager
-              .isGuide(userId)
-              .then((res) => {
-                if (res.isGuide) {
-                  User
-                    .retire(userId)
-                    .then(() => resolveRetire())
-                    .catch(err => rejectRetire(err));
-                } else {
-                  resolveRetire();
-                }
-              })
-              .catch(err => rejectRetire(err));
-          })
+          visitManager.cancelAll(userId)
             .then(() =>
-              visitManager
-                .findAllFrom(userId)
-                .then(visits =>
-                  Promise.all(
-                    visits
-                      .filter(visit => visit.hasEnded === false)
-                      .map(visit =>
-                        new Promise((resolveCancel, rejectCancel) => {
-                          visitManager.cancel(userId, visit._id, { reason: 'User deleted' })
-                            .then(() => resolveCancel())
-                            .catch((err) => {
-                              if (err.code === 1 && err.message === 'You cannot change the visit in this current state') {
-                                return resolveCancel();
-                              }
-
-                              return rejectCancel(err);
-                            });
-                        })
-                    )
-                  )
-                )
+              new Promise((resolveRetire, rejectRetire) => {
+                userManager
+                  .isGuide(userId)
+                  .then((res) => {
+                    if (res.isGuide) {
+                      User
+                        .retire(userId)
+                        .then(() => advertManager.removeAll(userId))
+                        .then(() => resolveRetire())
+                        .catch(err => rejectRetire(err));
+                    } else {
+                      resolveRetire();
+                    }
+                  })
+                  .catch(err => rejectRetire(err));
+              })
             )
             .then(() => blacklistManager.add({ email: user.account.email }))
             .then(() => {
@@ -119,33 +100,8 @@ class User {
 
   static retire(userId) {
     return new Promise((resolve, reject) =>
-      visitManager
-        .findAllFor(userId)
-        .then(visits =>
-          Promise.all(
-            visits
-              .filter(visit => visit.hasEnded === false)
-              .map(visit =>
-                new Promise((resolveDeny, rejectDeny) => {
-                  visitManager.deny(userId, visit._id, { reason: 'Guide retired' })
-                  .then(() => resolveDeny())
-                  .catch((err) => {
-                    if (err.code === 1 && err.message === 'You cannot change the visit in this current state') {
-                      return resolveDeny();
-                    }
-
-                    return rejectDeny(err);
-                  });
-                })
-            )
-          )
-        )
-        .then(() => advertManager.findAllFromHim(userId))
-        .then(adverts =>
-          Promise.all(
-            adverts.map(advert => advertManager.toggleOff(userId, advert._id))
-          )
-        )
+      visitManager.denyAll(userId)
+        .then(() => advertManager.toggleAllOff(userId))
         .then(() =>
           userManager
             .findByIdAndUpdate(userId, { isGuide: false })

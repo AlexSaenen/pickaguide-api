@@ -161,7 +161,7 @@ const findByIdAndUpdate = (userId, fields) => {
   );
 };
 
-const remove = (reqBody) => {
+const remove = (userId, reqBody) => {
   return new Promise((resolve, reject) => {
     const failed = assertInput(['email', 'password'], reqBody);
 
@@ -170,13 +170,14 @@ const remove = (reqBody) => {
     findByEmail(reqBody.email)
       .then((user) => {
         user.comparePassword(reqBody.password, (err, isMatch) => {
-          if (err) { return reject({ code: 2, message: err.message }); }
-          if (!isMatch) { return reject({ code: 3, message: 'Invalid password' }); }
+          if (err) { return reject({ code: 3, message: err.message }); }
+          if (!isMatch) { return reject({ code: 4, message: 'Invalid password' }); }
+          if (userId !== String(user._id)) { return reject({ code: 2, message: 'No account with this email' }); }
 
           resolve(user);
         });
       })
-      .catch(err => reject({ code: 5, message: err }));
+      .catch(err => reject(err));
   });
 };
 

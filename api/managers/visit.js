@@ -259,6 +259,29 @@ const cancel = (userId, visitId, reqBody) => {
   }, ['waiting', 'accepted'], 'cancelled');
 };
 
+const cancelAll = (userId) => {
+  return findAllFrom(userId)
+    .then(visits =>
+      Promise.all(
+        visits
+          .filter(visit => visit.hasEnded === false)
+          .map(visit =>
+            new Promise((resolveCancel, rejectCancel) => {
+              cancel(userId, visit._id, { reason: 'User deleted' })
+                .then(() => resolveCancel())
+                .catch((err) => {
+                  if (err.code === 1 && err.message === 'You cannot change the visit in this current state') {
+                    return resolveCancel();
+                  }
+
+                  return rejectCancel(err);
+                });
+            })
+        )
+      )
+    );
+};
+
 const deny = (userId, visitId, reqBody) => {
   return changeStatus({
     userId,
@@ -267,6 +290,29 @@ const deny = (userId, visitId, reqBody) => {
     assertUserType: isForGuide,
     defaultReason: 'No reason',
   }, ['waiting', 'accepted'], 'denied');
+};
+
+const denyAll = (userId) => {
+  return findAllFor(userId)
+    .then(visits =>
+      Promise.all(
+        visits
+          .filter(visit => visit.hasEnded === false)
+          .map(visit =>
+            new Promise((resolveDeny, rejectDeny) => {
+              deny(userId, visit._id, { reason: 'Guide retired' })
+                .then(() => resolveDeny())
+                .catch((err) => {
+                  if (err.code === 1 && err.message === 'You cannot change the visit in this current state') {
+                    return resolveDeny();
+                  }
+
+                  return rejectDeny(err);
+                });
+            })
+        )
+      )
+    );
 };
 
 const finish = (userId, visitId, reqBody) => {
@@ -322,4 +368,4 @@ const accept = (userId, visitId, reqBody) => {
 //   });
 // }
 
-module.exports = { create, getCreator, find, findAllFrom, findAllFor, findAsGuide, findAsVisitor, cancel, deny, finish, accept };
+module.exports = { create, getCreator, find, findAllFrom, findAllFor, findAsGuide, findAsVisitor, cancel, cancelAll, deny, denyAll, finish, accept };
