@@ -1,12 +1,12 @@
 const express = require('express');
 const paymentService = require('../payment-service');
-const userHandler = require('../handlers/user').User;
+const userManager = require('../managers/user');
 
 
 const router = express.Router();
 
 router.get('/getInfos', (req, res) => {
-  userHandler.find(req.user.userId, 'account', true)
+  userManager.find(req.user.userId, 'account', true)
     .then((account) => {
       if (account.account.paymentId == null) {
         paymentService.createUser(account)
@@ -22,7 +22,7 @@ router.get('/getInfos', (req, res) => {
 });
 
 router.post('/addCard', (req, res) => {
-  userHandler.find(req.user.userId, 'account', true)
+  userManager.find(req.user.userId, 'account', true)
     .then((account) => {
       paymentService.addCard(account.account.paymentId, req.body)//, 10, 2018, '4242 4242 4242 4242', 100)
         .then((result) => {console.log(result);res.status(200).send(result)})
@@ -32,7 +32,7 @@ router.post('/addCard', (req, res) => {
 });
 
 router.post('/pay', (req, res) => {
-  userHandler.find(req.user.userId, 'account', true)
+  userManager.find(req.user.userId, 'account', true)
     .then((account) => {
       paymentService.createPayment(account.account.paymentId, req.body)//"card_1AaTypLfhKZNuiQ3L2NfUH4h", 42, "eur", "Paiement pour la visite de boston")
         .then((result) => {console.log(result);res.sendStatus(200)})
@@ -42,15 +42,15 @@ router.post('/pay', (req, res) => {
 });
 
 
-// temporary
+// TODO temporary
 router.post('/unblock', (req, res) => {
-  userHandler.setBlocking(req.user.userId, false)
+  userManager.setBlocking(req.user.userId, false)
     .then(result => res.status(200).send(result))
     .catch(err => res.status(500).send(err));
 });
 
 router.get('/list', (req, res) => {
-  userHandler.find(req.user.userId, 'account', true)
+  userManager.find(req.user.userId, 'account', true)
     .then((account) => {
       paymentService.listPaymentFromUser(account.account.paymentId)
         .then((result) => {console.log(result);res.sendStatus(200)})

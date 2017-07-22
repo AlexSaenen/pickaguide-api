@@ -1,289 +1,163 @@
 'use strict';
 
-const db = require('../database');
-const Handler = require('./_handler').Handler;
-const jwt = require('jsonwebtoken');
-const config = require('config');
+const userManager = require('../managers/user');
+const visitManager = require('../managers/visit');
+const advertManager = require('../managers/advert');
+const blacklistManager = require('../managers/blacklist');
 const emailService = require('../email-service');
-const _ = require('lodash');
 
 
-class User extends Handler {
-
-  static _capitalize(user) {
-    const fieldsToCapitalize = ['city', 'country', 'firstName', 'lastName'];
-
-    fieldsToCapitalize.forEach((fieldName) => {
-      const fieldValue = user.profile[fieldName];
-      if (fieldValue && fieldValue.constructor === String) {
-        user.profile[fieldName] = user.profile[fieldName].capitalize();
-      }
-    });
-  }
+class User {
 
   static add(fields) {
-    return new Promise((resolve, reject) => {
-      const newUser = new db.Users(fields);
-      newUser.hash(fields.account.password, (hashed) => {
-        newUser.account.token = jwt.sign({ userId: newUser._id }, config.jwtSecret);
-        newUser.account.password = hashed;
-
-        User._capitalize(newUser);
-
-        newUser.save((err) => {
-          if (err) {
-            let message;
-            if (err.code === 11000) { message = 'This account already exists'; } else { message = 'Invalid data'; }
-            return reject({ code: 1, message });
-          }
-
+    return new Promise((resolve, reject) =>
+      userManager
+        .add(fields)
+        .then(newUser =>
           emailService.sendEmailConfirmation(newUser)
             .then(() => resolve({ code: 0, message: 'Account created' }))
             .catch((mailErr) => {
               if (mailErr.code === 1) { resolve({ code: 0, message: 'Account created' }); } else { reject(mailErr); }
-            });
-        });
-      });
-    });
+            })
+        )
+        .catch(addErr => reject(addErr))
+    );
   }
 
   static find(userId, selectFields = '', updatable = false) {
-    return new Promise((resolve, reject) => {
-      let query = db.Users.findById(userId, selectFields);
-
-      if (updatable === false) {
-        query = query.lean();
-      }
-
-      query.exec((err, user) => {
-        if (err) { return reject({ code: 1, message: err.message }); }
-        if (user === null) { return reject({ code: 2, message: 'No user with this id' }); }
-
-        resolve(user);
-      });
-    });
+    return userManager.find(userId, selectFields, updatable);
   }
 
   static findInIds(userIds, selectFields = '', updatable = false) {
-    return new Promise((resolve, reject) => {
-      let query = db.Users.find()
-        .where('_id')
-        .in(userIds)
-        .select(selectFields);
-
-      if (updatable === false) {
-        query = query.lean();
-      }
-
-      query.exec((err, users) => {
-        if (err) { return reject({ code: 1, message: err.message }); }
-
-        resolve(users);
-      });
-    });
+    return userManager.findInIds(userIds, selectFields, updatable);
   }
 
   static findAll(selectFields = '') {
-    return new Promise((resolve, reject) => {
-      db.Users
-        .find({}, selectFields)
-        .lean()
-        .exec((err, users) => {
-          if (err) { return reject({ code: 1, message: err.message }); }
-
-          resolve(users);
-        });
-    });
+    return userManager.findAll(selectFields);
   }
 
   static findByEmail(email) {
-    return new Promise((resolve, reject) => {
-      if (email === undefined) { return reject({ code: 2, message: 'No account with this email' }); }
-
-      db.Users
-        .findOne({ 'account.email': email })
-        .exec((err, user) => {
-          if (err) { return reject({ code: 1, message: err.message }); }
-          if (user == null) { return reject({ code: 2, message: 'No account with this email' }); }
-
-          resolve(user);
-        });
-    });
+    return userManager.findByEmail(email);
   }
 
   static findByTerms(terms) {
-    const fields = {
-      account: 0,
-      'profile.gender': 0,
-      'profile.phone': 0,
-    };
-
-    if (!terms || terms.length === 0) { return User.findAll(fields); }
-
-    return new Promise((resolve, reject) => {
-      const regexes = terms.split(' ').map(term => new RegExp(term, 'i'));
-      const regexSearch = [];
-      ['firstName', 'lastName', 'city', 'country', 'description', 'interests'].forEach((field) => {
-        const searchElement = {};
-        searchElement[`profile.${field}`] = { $in: regexes };
-        regexSearch.push(searchElement);
-      });
-
-      db.Users
-        .find({ $or: regexSearch }, fields)
-        .lean()
-        .exec((err, users) => {
-          if (err) { return reject({ code: 1, message: err.message }); }
-
-          resolve(users);
-        });
-    });
+    return userManager.findByTerms(terms);
   }
 
   static update(userId, reqBody) {
-    return new Promise((resolve, reject) => {
-      db.Users
-       .findById(userId)
-       .exec((err, user) => {
-         if (err) { return reject({ code: 1, message: err.message }); }
-         if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
-
-         const mergedUser = _.merge(user, reqBody);
-         User._capitalize(mergedUser);
-
-         if (reqBody.profile && reqBody.profile.interests !== undefined) {
-           mergedUser.profile.interests = reqBody.profile.interests;
-           mergedUser.markModified('profile.interests');
-         }
-
-         mergedUser.save((saveErr, updatedUser) => {
-           if (saveErr) {
-             let message;
-             if (saveErr.code === 11000) { message = 'This account already exists'; } else { message = 'Invalid update'; }
-             return reject({ code: 3, message });
-           }
-
-           if (updatedUser === null) { return reject({ code: 4, message: 'Failed to update user' }); }
-
-           resolve(updatedUser);
-         });
-       });
-    });
+    return userManager.update(userId, reqBody);
   }
 
-  static remove(reqBody) {
+  static remove(userId, reqBody) {
     return new Promise((resolve, reject) => {
-      const failed = this.assertInput(['email', 'password'], reqBody);
-
-      if (failed) { return reject({ code: 1, error: `We need your ${failed}` }); }
-
-      this.findByEmail(reqBody.email)
+      userManager
+        .remove(reqBody)
         .then((user) => {
-          user.comparePassword(reqBody.password, (err, isMatch) => {
-            if (err) { return reject({ code: 2, message: err.message }); }
-            if (!isMatch) { return reject({ code: 3, message: 'Invalid password' }); }
+          new Promise((resolveRetire, rejectRetire) => {
+            userManager
+              .isGuide(userId)
+              .then((res) => {
+                if (res.isGuide) {
+                  User
+                    .retire(userId)
+                    .then(() => resolveRetire())
+                    .catch(err => rejectRetire(err));
+                } else {
+                  resolveRetire();
+                }
+              })
+              .catch(err => rejectRetire(err));
+          })
+            .then(() =>
+              visitManager
+                .findAllFrom(userId)
+                .then(visits =>
+                  Promise.all(
+                    visits
+                      .filter(visit => visit.hasEnded === false)
+                      .map(visit =>
+                        new Promise((resolveCancel, rejectCancel) => {
+                          visitManager.cancel(userId, visit._id, { reason: 'User deleted' })
+                            .then(() => resolveCancel())
+                            .catch((err) => {
+                              if (err.code === 1 && err.message === 'You cannot change the visit in this current state') {
+                                return resolveCancel();
+                              }
 
-            user.remove((removalErr) => {
-              if (err) { return reject({ code: 4, message: removalErr.message }); }
+                              return rejectCancel(err);
+                            });
+                        })
+                    )
+                  )
+                )
+            )
+            .then(() => blacklistManager.add({ email: user.account.email }))
+            .then(() => {
+              user.remove((removalErr) => {
+                if (removalErr) { return reject({ code: 1, message: removalErr.message }); }
 
-              resolve({ code: 0, message: 'Account deleted' });
-            });
-          });
+                resolve({ code: 0, message: 'Account deleted' });
+              });
+            })
+            .catch(err => reject(err));
         })
-        .catch(err => reject({ code: 5, message: err }));
+        .catch(err => reject(err));
     });
   }
 
   static isGuide(userId) {
-    return new Promise((resolve, reject) => {
-      db.Users
-       .findById(userId, { isGuide: 1 })
-       .lean()
-       .exec((err, user) => {
-         if (err) { return reject({ code: 1, message: err.message }); }
-         if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
-
-         resolve({ id: userId, isGuide: user.isGuide });
-       });
-    });
+    return userManager.isGuide(userId);
   }
 
   static isBlocking(userId) {
-    return new Promise((resolve, reject) => {
-      db.Users
-       .findById(userId, { isBlocking: 1 })
-       .lean()
-       .exec((err, user) => {
-         if (err) { return reject({ code: 1, message: err.message }); }
-         if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
-
-         resolve({ id: userId, isBlocking: user.isBlocking });
-       });
-    });
-  }
-
-  static setBlocking(userId, isBlocking) {
-    return new Promise((resolve, reject) => {
-      db.Users
-       .findByIdAndUpdate(userId, { isBlocking }, { new: true }, (err, user) => {
-         if (err) { return reject({ code: 1, message: err.message }); }
-         if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
-
-         resolve({ id: userId, isBlocking: user.isBlocking });
-       });
-    });
+    return userManager.isBlocking(userId);
   }
 
   static becomeGuide(userId) {
-    return new Promise((resolve, reject) => {
-      db.Users
-       .findById(userId)
-       .exec((err, user) => {
-         if (err) { return reject({ code: 1, message: err.message }); }
-         if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
-
-         if (user.account.emailConfirmation === false) {
-           return reject({ code: 3, message: 'You need to confirm your email address' });
-         }
-
-         const fieldsToValidate = ['phone', 'city', 'country', 'description', 'interests'];
-         if (fieldsToValidate.every(field => ([undefined, null].indexOf(user.profile[field]) === -1)) === false) {
-           return reject({ code: 4, message: 'You need to fill in all fields' });
-         }
-
-         user.isGuide = true;
-         user.save((saveErr, updatedUser) => {
-           if (saveErr) { return reject({ code: 3, message: saveErr.message }); }
-           if (updatedUser === null) { return reject({ code: 4, message: 'Failed to update user' }); }
-
-           resolve({ id: userId, isGuide: updatedUser.isGuide });
-         });
-       });
-    });
+    return userManager.becomeGuide(userId);
   }
 
   static retire(userId) {
-    return new Promise((resolve, reject) => {
-      db.Users
-        .findByIdAndUpdate(userId, { isGuide: false }, { new: true }, (err, user) => {
-          if (err) { return reject({ code: 1, message: err.message }); }
-          if (user === null) { return reject({ code: 2, message: 'Cannot find user' }); }
+    return new Promise((resolve, reject) =>
+      visitManager
+        .findAllFor(userId)
+        .then(visits =>
+          Promise.all(
+            visits
+              .filter(visit => visit.hasEnded === false)
+              .map(visit =>
+                new Promise((resolveDeny, rejectDeny) => {
+                  visitManager.deny(userId, visit._id, { reason: 'Guide retired' })
+                  .then(() => resolveDeny())
+                  .catch((err) => {
+                    if (err.code === 1 && err.message === 'You cannot change the visit in this current state') {
+                      return resolveDeny();
+                    }
 
-          resolve({ id: userId, isGuide: user.isGuide });
-        });
-    });
+                    return rejectDeny(err);
+                  });
+                })
+            )
+          )
+        )
+        .then(() => advertManager.findAllFromHim(userId))
+        .then(adverts =>
+          Promise.all(
+            adverts.map(advert => advertManager.toggleOff(userId, advert._id))
+          )
+        )
+        .then(() =>
+          userManager
+            .findByIdAndUpdate(userId, { isGuide: false })
+            .then(user => resolve({ id: userId, isGuide: user.isGuide }))
+            .catch(updateErr => reject(updateErr))
+        )
+        .catch(err => reject(err))
+    );
   }
 
   static findNear(geo, distance) {
-    return new Promise((resolve, reject) => {
-      db.Users
-        .find({'profile.geo': {$nearSphere: geo, $maxDistance: distance}, 'isGuide': true }, {'account': 0})
-        .exec((err, users) => {
-          if (err) { return reject({ code: 4, message: err.message }); }
-          resolve(users);
-        })
-
-    });
+    return userManager.findNear(geo, distance);
   }
 
 }

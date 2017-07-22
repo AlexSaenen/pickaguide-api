@@ -46,6 +46,18 @@ exports.downloadImage = (idImage) => {
   });
 };
 
+exports.findDefaultAvatarId = (imageName, hash) => {
+  return new Promise((resolve, reject) => {
+    const gfs = Grid(db.conn.db);
+
+    gfs.files.find({ filename: imageName, md5: hash }).toArray((err, files) => {
+      if (files.length === 0 || err) return reject({ code: 1, message: err });
+
+      resolve(files[0]._id);
+    });
+  });
+};
+
 exports.deleteImage = (idImage) => {
   return new Promise((resolve, reject) => {
     const gfs = Grid(db.conn.db);

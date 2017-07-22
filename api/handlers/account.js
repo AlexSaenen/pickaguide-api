@@ -1,11 +1,13 @@
 'use strict';
 
 const User = require('./user').User;
+const assertInput = require('./_handler').assertInput;
+const accountManager = require('../managers/account');
+const blacklistManager = require('../managers/blacklist');
 const validator = require('validator');
 const emailService = require('../email-service');
 const jwt = require('jsonwebtoken');
 const config = require('config');
-const db = require('../database');
 
 
 class Account extends User {
@@ -31,7 +33,7 @@ class Account extends User {
 
   static updatePassword(userId, reqBody) {
     return new Promise((resolve, reject) => {
-      const failed = this.assertInput(['password', 'currentPassword'], reqBody);
+      const failed = assertInput(['password', 'currentPassword'], reqBody);
 
       if (failed) { return reject({ code: 1, message: `We need your ${failed}` }); }
 
@@ -58,7 +60,7 @@ class Account extends User {
 
   static updateMail(userId, reqBody) {
     return new Promise((resolve, reject) => {
-      const failed = this.assertInput(['email'], reqBody);
+      const failed = assertInput(['email'], reqBody);
 
       if (failed) { return reject({ code: 1, message: `We need your ${failed}` }); }
 
@@ -78,7 +80,7 @@ class Account extends User {
 
   static signup(reqBody) {
     return new Promise((resolve, reject) => {
-      const failed = this.assertInput(['firstName', 'lastName', 'password', 'email'], reqBody);
+      const failed = assertInput(['firstName', 'lastName', 'password', 'email'], reqBody);
 
       if (failed) { return reject({ code: 1, message: `We need your ${failed}` }); }
 
@@ -90,8 +92,17 @@ class Account extends User {
       if (!validator.isLength(profile.firstName, { min: 2, max: 50 })) { return reject({ code: 4, message: 'Invalid firstName' }); }
       if (!validator.isLength(profile.lastName, { min: 2, max: 50 })) { return reject({ code: 5, message: 'Invalid lastName' }); }
 
-      super.add({ account, profile })
-        .then(res => resolve(res))
+      blacklistManager
+        .findByEmail(account.email)
+        .then((blacklist) => {
+          if (blacklist) {
+            reject({ code: 6, message: 'You previously made an account with this email' });
+          } else {
+            super.add({ account, profile })
+              .then(res => resolve(res))
+              .catch(err => reject(err));
+          }
+        })
         .catch(err => reject(err));
     });
   }
@@ -193,38 +204,11 @@ class Account extends User {
   }
 
   static validateToken(token) {
-    return new Promise((resolve, reject) => {
-      db.Users.findOne({ 'account.resetPasswordToken': token }, (err, user) => {
-        if (err || user === null) {
-          reject({ code: 1, message: 'Password reset token is invalid' });
-        } else {
-          resolve({ code: 0, message: 'Password reset token is valid' });
-        }
-      });
-    });
+    return accountManager.validateToken(token);
   }
 
   static resetPassword(token, password) {
-    return new Promise((resolve, reject) => {
-      db.Users.findOne({ 'account.resetPasswordToken': token }, (err, user) => {
-        if (err || user === null) {
-          reject({ code: 1, message: 'Password reset token is invalid' });
-        } else {
-          if (!validator.isLength(password, { min: 4, max: undefined })) { return reject({ code: 3, message: 'Invalid new Password' }); }
-          user.hash(password, (hashed) => {
-            user.account.password = hashed;
-            user.account.resetPasswordToken = null;
-            user.save((saveErr) => {
-              if (saveErr) {
-                reject({ code: 2, message: saveErr.message });
-              } else {
-                resolve({ code: 0, message: 'Password reset token is valid' });
-              }
-            });
-          });
-        }
-      });
-    });
+    return accountManager.resetPassword(token, password);
   }
 
   static logout(userId) {

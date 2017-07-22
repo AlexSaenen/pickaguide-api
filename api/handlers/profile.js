@@ -2,6 +2,8 @@
 
 const User = require('./user').User;
 const uploadService = require('../upload-service');
+const profileManager = require('../managers/profile');
+const userManager = require('../managers/user');
 const ObjectId = require('../database').ObjectId;
 const _ = require('lodash');
 
@@ -28,7 +30,7 @@ class Profile extends User {
     return new Promise((resolve, reject) => {
       super.find(userId, 'profile', false)
         .then((user) => {
-          Profile._formatProfile(user.profile);
+          profileManager.formatProfile(user.profile);
           delete user.profile.phone;
           resolve(user.profile);
         })
@@ -48,7 +50,7 @@ class Profile extends User {
       super.findAll(fields)
         .then((users) => {
           const displayableProfiles = users.map((user) => {
-            Profile._formatProfile(user.profile);
+            profileManager.formatProfile(user.profile);
             return user.profile;
           });
 
@@ -65,7 +67,7 @@ class Profile extends User {
           const displayableProfiles = users.map((user) => {
             const profile = user.profile;
             const names = { first: profile.firstName, last: profile.lastName };
-            Profile._formatProfile(user.profile);
+            profileManager.formatProfile(user.profile);
             profile.displayName = `${names.first} ${names.last.charAt(0)}.`;
             return profile;
           });
@@ -110,13 +112,22 @@ class Profile extends User {
     });
   }
 
+  static downloadDefault() {
+    return new Promise((resolve, reject) => {
+      uploadService.findDefaultAvatarId('medium-default-avatar.png', '2e22edeba8bf5260fc60e15986c3854b')
+        .then(id => uploadService.downloadImage(id))
+        .then(value => resolve(value))
+        .catch(err => reject(err));
+    });
+  }
+
   static deleteAvatar(userId) {
     return new Promise((resolve, reject) => {
       super.find(userId, 'profile')
         .then((user) => {
           uploadService.deleteImage(user.profile._fsId)
             .then(() => {
-              User.update(userId, { profile: { _fsId: null } })
+              userManager.update(userId, { profile: { _fsId: null } })
                 .then(() => resolve())
                 .catch(err => reject(err));
             })
@@ -126,21 +137,13 @@ class Profile extends User {
     });
   }
 
-  static _displayName(profile) {
-    return `${profile.firstName} ${profile.lastName.charAt(0)}.`;
-  }
-
-  static _pseudo(profile) {
-    return `${profile.firstName.substring(0, 6)}${profile.lastName.charAt(0)}`;
-  }
-
   static addGeo(userId, reqBody) {
     return new Promise((resolve, reject) => {
       super.find(userId, 'profile')
         .then((user) => {
           const array = [];
           user.profile.geo =
-          User.update(userId, { profile: { geo: _.concat(array, reqBody.x, reqBody.y) } })
+          userManager.update(userId, { profile: { geo: _.concat(array, reqBody.x, reqBody.y) } })
             .then(updatedUser => resolve({ id: userId, geo: updatedUser.profile.geo }))
             .catch(err => reject(err));
         })
@@ -158,17 +161,6 @@ class Profile extends User {
             .catch(err => reject(err));
         });
     });
-  }
-
-  static _formatProfile(profile) {
-    profile.displayName = Profile._displayName(profile);
-    delete profile.firstName;
-    delete profile.lastName;
-    const ageDate = new Date(Date.now() - new Date(profile.birthdate).getTime());
-    profile.age = Math.abs(ageDate.getUTCFullYear() - 1970);
-    delete profile.birthdate;
-    profile.hasAvatar = profile._fsId !== null;
-    delete profile._fsId;
   }
 
 }

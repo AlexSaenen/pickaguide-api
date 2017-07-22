@@ -15,8 +15,9 @@ const visitSchema = new Schema({
     date: { type: Date, default: Date.now },
   }],
   special: { type: String, default: null },
-  guideRate: { type: Number, default: null},
-  visitorRate: { type: Number, default: null}
+  guideRate: { type: Number, default: null },
+  visitorRate: { type: Number, default: null },
+  hasEnded: { type: Boolean, default: false },
 }).index({ by: 1, about: 1, when: 1 }, { unique: true });
 
 exports.Visits = mongoose.model('Visits', visitSchema);
