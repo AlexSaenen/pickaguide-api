@@ -37,7 +37,7 @@ class Advert {
   static search(terms) {
     if (!terms || terms.length === 0) { return advertManager.findAll(); }
 
-    const regexes = terms.split(' ').map(term => new RegExp(term, 'i'));
+    const regexes = terms.trim().split(' ').filter(term => term.length > 2).map(term => new RegExp(term, 'i'));
     const regexSearch = [];
     ['title', 'description'].forEach((field) => {
       const searchElement = {};
