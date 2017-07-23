@@ -14,7 +14,6 @@ class Visit {
       advertManager
         .find(about)
         .then((advert) => {
-          console.log(advert.advert.owner, by);
           if (advert.advert.owner._id === undefined) {
             return reject({ code: 1, message: 'The user has been deleted' });
           }

@@ -50,6 +50,29 @@ const remove = (userId, advertId) => {
   });
 };
 
+const removeAll = (userId) => {
+  return new Promise((resolve, reject) => {
+    db.Adverts
+      .find({ owner: userId })
+      .exec((err, adverts) => {
+        if (err) { return reject({ code: 1, message: err.message }); }
+
+        Promise
+          .all(adverts.map(advert =>
+            new Promise((resolveRemove, rejectRemove) => {
+              advert.remove((removeErr) => {
+                if (removeErr) { return rejectRemove({ code: 2, message: removeErr.message }); }
+
+                resolveRemove();
+              });
+            })
+          ))
+          .then(() => resolve())
+          .catch(removeAllErr => reject(removeAllErr));
+      });
+  });
+};
+
 const find = (advertId) => {
   return new Promise((resolve, reject) => {
     db.Adverts
@@ -244,5 +267,14 @@ const toggleOff = (userId, advertId) => {
   });
 };
 
+const toggleAllOff = (userId) => {
+  return findAllFromHim(userId)
+    .then(adverts =>
+      Promise.all(
+        adverts.map(advert => toggleOff(userId, advert._id))
+      )
+    );
+};
 
-module.exports = { add, remove, find, findAll, findMain, findAllFrom, findAllFromHim, search, toggle, toggleOff, update };
+
+module.exports = { add, remove, removeAll, find, findAll, findMain, findAllFrom, findAllFromHim, search, toggle, toggleOff, toggleAllOff, update };
