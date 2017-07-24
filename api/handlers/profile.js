@@ -114,7 +114,7 @@ class Profile extends User {
 
   static downloadDefault() {
     return new Promise((resolve, reject) => {
-      uploadService.findDefaultAvatarId('medium-default-avatar.png', '2e22edeba8bf5260fc60e15986c3854b')
+      uploadService.findDefaultAvatarId('default.png', '2e22edeba8bf5260fc60e15986c3854b')
         .then(id => uploadService.downloadImage(id))
         .then(value => resolve(value))
         .catch(err => reject(err));
