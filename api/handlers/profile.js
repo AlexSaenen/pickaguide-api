@@ -88,12 +88,26 @@ class Profile extends User {
 
   static upload(userId, file) {
     return new Promise((resolve, reject) => {
-      uploadService.uploadImage(file.path, file.originalname, file.mimetype)
-        .then((value) => {
-          super.update(userId, { profile: { _fsId: new ObjectId(value) } })
-            .then(() => resolve())
-            .catch(err => reject(err));
-        })
+      super.find(userId, 'profile._fsId')
+        .then(user =>
+          new Promise((resolveDelete, rejectDelete) => {
+            if (user.profile._fsId) {
+              uploadService.deleteImage(user.profile._fsId)
+                .then(() => resolveDelete())
+                .catch(err => rejectDelete(err));
+            } else {
+              resolveDelete();
+            }
+          })
+        )
+        .then(() =>
+          uploadService.uploadImage(file.path, file.originalname, file.mimetype)
+            .then((value) => {
+              super.update(userId, { profile: { _fsId: new ObjectId(value) } })
+                .then(() => resolve())
+                .catch(err => reject(err));
+            })
+        )
         .catch(err => reject(err));
     });
   }
