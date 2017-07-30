@@ -38,6 +38,7 @@ const run = function run(next) {
       app.use('/', require('./api/middleware-service').errorsTokenMissing);
       app.use('/', require('./api/handlers/account').Account.isAuthorised);
       app.use('/', require('./api/middleware-service').checkContentTypeHeader);
+      app.use('/', require('./api/middleware-service').checkUserIsBlocked);
       app.use('/', require('./api/middleware-service').trimForm);
 
       app.use('/profiles', require('./api/routes/profile'));
