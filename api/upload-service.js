@@ -35,7 +35,7 @@ exports.downloadImage = (idImage) => {
     gfs.files.find({ _id: idImage }).toArray((err, files) => {
       if (files.length === 0 || err) return reject({ code: 1, message: err });
 
-      const name = idImage + '.' + mime.extension(files[0].contentType);
+      const name = `${idImage}_${Date.now()}.${mime.extension(files[0].contentType)}`;
       const fsWriteStream = fs.createWriteStream(path.join(path.join(__dirname, '/../assets/'), name));
       const readstream = gfs.createReadStream({
         _id: idImage,
