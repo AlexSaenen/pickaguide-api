@@ -88,6 +88,10 @@ class Profile extends User {
 
   static upload(userId, file) {
     return new Promise((resolve, reject) => {
+      if (file.size > uploadService.maxFileSize().size) {
+        return reject({ code: 1, message: `File size exceeds ${uploadService.maxFileSize().label}` });
+      }
+
       super.find(userId, 'profile._fsId')
         .then(user =>
           new Promise((resolveDelete, rejectDelete) => {
@@ -102,11 +106,11 @@ class Profile extends User {
         )
         .then(() =>
           uploadService.uploadImage(file.path, file.originalname, file.mimetype)
-            .then((value) => {
+            .then(value =>
               super.update(userId, { profile: { _fsId: new ObjectId(value) } })
                 .then(() => resolve())
-                .catch(err => reject(err));
-            })
+                .catch(err => reject(err))
+            )
         )
         .catch(err => reject(err));
     });
@@ -128,7 +132,7 @@ class Profile extends User {
 
   static downloadDefault() {
     return new Promise((resolve, reject) => {
-      uploadService.findDefaultAvatarId('default.png', '2e22edeba8bf5260fc60e15986c3854b')
+      uploadService.findFileId('default.png', '2e22edeba8bf5260fc60e15986c3854b')
         .then(id => uploadService.downloadImage(id))
         .then(value => resolve(value))
         .catch(err => reject(err));

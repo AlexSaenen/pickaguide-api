@@ -6,6 +6,13 @@ const mime = require('mime-types');
 const path = require('path');
 const Grid = require('gridfs-stream');
 
+const MAX_FILE_SIZE = 2097151;
+const MAX_FILE_SIZE_STR = '2mb';
+
+exports.maxFileSize = () => {
+  return { size: MAX_FILE_SIZE, label: MAX_FILE_SIZE_STR };
+};
+
 exports.uploadImage = (pathFile, fileName, mimetype, willUnlink = true) => {
   return new Promise((resolve, reject) => {
     const gfs = Grid(db.conn.db, db.mongo);
@@ -49,7 +56,7 @@ exports.downloadImage = (idImage) => {
   });
 };
 
-exports.findDefaultAvatarId = (imageName, hash) => {
+exports.findFileId = (imageName, hash) => {
   return new Promise((resolve, reject) => {
     const gfs = Grid(db.conn.db, db.mongo);
 

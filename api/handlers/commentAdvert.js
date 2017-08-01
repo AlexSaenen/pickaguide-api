@@ -15,9 +15,6 @@ class CommentAdvert {
     return commentManager.findByCommentsAdvert(idAdvert);
   }
 
-  /*
-  Need to store the list of users who liked a post
-   */
   static like(idAdvert, idComment) {
     return commentManager.like(idAdvert, idComment);
   }
@@ -44,10 +41,6 @@ class CommentAdvert {
         .catch(error => reject(error));
     });
   }
-
-  /*
-  Unlike
-  */
 
 }
 
