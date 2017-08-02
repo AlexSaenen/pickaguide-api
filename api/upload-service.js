@@ -9,13 +9,15 @@ const Grid = require('gridfs-stream');
 const MAX_FILE_SIZE = 2097151;
 const MAX_FILE_SIZE_STR = '2mb';
 
+Grid.mongo = db.mongo;
+
 exports.maxFileSize = () => {
   return { size: MAX_FILE_SIZE, label: MAX_FILE_SIZE_STR };
 };
 
 exports.uploadImage = (pathFile, fileName, mimetype, willUnlink = true) => {
   return new Promise((resolve, reject) => {
-    const gfs = Grid(db.conn.db, db.mongo);
+    const gfs = Grid(db.conn.db);
 
     const writestream = gfs.createWriteStream({
       filename: fileName,
@@ -37,7 +39,7 @@ exports.uploadImage = (pathFile, fileName, mimetype, willUnlink = true) => {
 
 exports.downloadImage = (idImage) => {
   return new Promise((resolve, reject) => {
-    const gfs = Grid(db.conn.db, db.mongo);
+    const gfs = Grid(db.conn.db);
 
     gfs.files.find({ _id: idImage }).toArray((err, files) => {
       if (files.length === 0 || err) return reject({ code: 1, message: err });
@@ -56,21 +58,9 @@ exports.downloadImage = (idImage) => {
   });
 };
 
-exports.findFileId = (imageName, hash) => {
-  return new Promise((resolve, reject) => {
-    const gfs = Grid(db.conn.db, db.mongo);
-
-    gfs.files.find({ filename: imageName, md5: hash }).toArray((err, files) => {
-      if (files.length === 0 || err) return reject({ code: 1, message: err });
-
-      resolve(files[0]._id);
-    });
-  });
-};
-
 exports.deleteImage = (idImage) => {
   return new Promise((resolve, reject) => {
-    const gfs = Grid(db.conn.db, db.mongo);
+    const gfs = Grid(db.conn.db);
 
     gfs.remove({
       _id: idImage,

@@ -124,15 +124,6 @@ class Advert {
     });
   }
 
-  static downloadDefault() {
-    return new Promise((resolve, reject) => {
-      uploadService.findFileId('default.png', '2e22edeba8bf5260fc60e15986c3854b')
-        .then(id => uploadService.downloadImage(id))
-        .then(value => resolve(value))
-        .catch(err => reject(err));
-    });
-  }
-
   static deleteCover(advertId, userId) {
     return new Promise((resolve, reject) => {
       advertManager.find(advertId)

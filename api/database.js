@@ -1,7 +1,5 @@
 const mongoose = require('mongoose');
 const config = require('config');
-const path = require('path');
-const uploadService = require('./upload-service');
 
 mongoose.Promise = global.Promise;
 
@@ -10,7 +8,6 @@ const connectionUrl = (['staging', 'production'].indexOf(process.env.NODE_ENV) !
   config.mongo.url);
 
 const init = () => mongoose.connect(connectionUrl);
-const initDefaultAvatar = () => uploadService.uploadImage(path.resolve(__dirname, '../assets/default.png'), 'default.png', 'image/png', false);
 
 exports.ObjectId = mongoose.Types.ObjectId;
 
@@ -27,4 +24,3 @@ exports.Blacklists = require('./models/blacklist').Blacklists;
 exports.conn = mongoose.connection;
 exports.mongo = mongoose.mongo;
 exports.init = init;
-exports.initDefaultAvatar = initDefaultAvatar;

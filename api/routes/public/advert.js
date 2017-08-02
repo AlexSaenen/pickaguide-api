@@ -11,21 +11,6 @@ router.get('/', (req, res) => {
     .catch(error => res.status(500).send(error));
 });
 
-router.get('/cover', (req, res) => {
-  advertHandler.downloadDefault()
-    .then((result) => {
-      res.sendFile(result, (err) => {
-        if (err) res.status(500).send(err);
-        fs.unlink(result, (unlinkErr) => {
-          if (unlinkErr) {
-            console.log('Encountered an error unlinking a file:', unlinkErr);
-          }
-        });
-      });
-    })
-    .catch(error => res.status(404).send(error));
-});
-
 router.get('/:id/cover', (req, res) => {
   advertHandler.download(req.params.id)
     .then((result) => {
