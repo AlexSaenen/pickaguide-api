@@ -1,8 +1,6 @@
 'use strict';
 
 const advertManager = require('../managers/advert');
-const uploadService = require('../upload-service');
-const ObjectId = require('../database').ObjectId;
 
 
 class Advert {
@@ -68,78 +66,6 @@ class Advert {
     return advertManager
       .remove(userId, advertId)
       .then(() => Advert.findAllFrom(userId));
-  }
-
-  static hasCover(advertId) {
-    return new Promise((resolve, reject) => {
-      advertManager.find(advertId)
-        .then(advert => resolve({ id: advertId, hasCover: advert._fsId !== null }))
-        .catch(err => reject(err));
-    });
-  }
-
-  static upload(advertId, userId, file) {
-    return new Promise((resolve, reject) => {
-      if (file.size > uploadService.maxFileSize().size) {
-        return reject({ code: 1, message: `File size exceeds ${uploadService.maxFileSize().label}` });
-      }
-
-      advertManager.find(advertId)
-        .then((advert) => {
-          if (advert.owner !== userId) { return reject({ code: 2, message: 'This is not your advert' }); }
-
-          return new Promise((resolveDelete, rejectDelete) => {
-            if (advert._fsId) {
-              uploadService.deleteImage(advert._fsId)
-                .then(() => resolveDelete())
-                .catch(err => rejectDelete(err));
-            } else {
-              resolveDelete();
-            }
-          });
-        })
-        .then(() =>
-          uploadService.uploadImage(file.path, file.originalname, file.mimetype)
-            .then(value =>
-              advertManager.update(userId, advertId, { _fsId: new ObjectId(value) })
-                .then(() => resolve())
-                .catch(err => reject(err))
-            )
-        )
-        .catch(err => reject(err));
-    });
-  }
-
-  static download(advertId) {
-    return new Promise((resolve, reject) => {
-      advertManager.find(advertId)
-        .then((advert) => {
-          uploadService.downloadImage(advert._fsId)
-            .then((value) => {
-              resolve(value);
-            })
-            .catch(err => reject(err));
-        })
-        .catch(err => reject(err));
-    });
-  }
-
-  static deleteCover(advertId, userId) {
-    return new Promise((resolve, reject) => {
-      advertManager.find(advertId)
-        .then((advert) => {
-          if (advert.owner !== userId) { return reject({ code: 1, message: 'This is not your advert' }); }
-
-          uploadService.deleteImage(advert._fsId)
-            .then(() => {
-              advertManager.update(userId, advertManager, { _fsId: null })
-                .then(() => resolve())
-                .catch(err => reject(err));
-            })
-            .catch(err => reject(err));
-        })
-        .catch(err => reject(err));
-    });
   }
 
 }
