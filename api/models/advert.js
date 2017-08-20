@@ -15,6 +15,7 @@ const advertSchema = new Schema({
   // availability: [{ from: { type: Date, required: true }, to: { type: Date, required: true } }],
 
   _fsId: { type: Schema.Types.ObjectId, ref: 'fs.files', default: null },
+  // photoUrl: { type: String, required: true },
   owner: { type: Schema.Types.ObjectId, ref: 'Users', required: true, index: true, sparse: true },
   active: { type: Boolean, default: false },
   comments: [commentSchema],
