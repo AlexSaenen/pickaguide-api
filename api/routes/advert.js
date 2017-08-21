@@ -54,11 +54,11 @@ router.post('/:id/comments', (req, res) => {
     .catch(error => res.status(500).send(error));
 });
 
-router.put('/:id/comments/:idcomment', (req, res) => {
-  commentAdvert.like(req.params.id, req.params.idcomment)
-    .then(result => res.status(200).send(result))
-    .catch(error => res.status(500).send(error));
-});
+// router.put('/:id/comments/:idcomment', (req, res) => {
+//   commentAdvert.edit(req.user.userId, req.params.id, req.params.idcomment)
+//     .then(result => res.status(200).send(result))
+//     .catch(error => res.status(500).send(error));
+// });
 
 router.delete('/:id/comments/:idcomment', (req, res) => {
   commentAdvert.remove(req.user.userId, req.params.id, req.params.idcomment)
@@ -66,8 +66,26 @@ router.delete('/:id/comments/:idcomment', (req, res) => {
     .catch(error => res.status(500).send(error));
 });
 
-// router.put('/:id/availability', (req, res) => {
-//   advertHandler.setAvailability(req.user.userId, req.params.id, req.body)
+router.put('/:id/comments/:idcomment/likes', (req, res) => {
+  commentAdvert.toggleLike(req.user.userId, req.params.id, req.params.idcomment)
+    .then(result => res.status(200).send(result))
+    .catch(error => res.status(500).send(error));
+});
+
+// router.put('/:id/occupied', (req, res) => {
+//   advertHandler.addOccupied(req.user.userId, req.params.id, req.body)
+//     .then(result => res.status(200).send(result))
+//     .catch(error => res.status(500).send(error));
+// });
+//
+// router.delete('/:id/occupied', (req, res) => {
+//   advertHandler.removeOccupied(req.user.userId, req.params.id, req.body)
+//     .then(result => res.status(200).send(result))
+//     .catch(error => res.status(500).send(error));
+// });
+//
+// router.get('/:id/occupied', (req, res) => {
+//   advertHandler.getOccupied(req.user.userId, req.params.id)
 //     .then(result => res.status(200).send(result))
 //     .catch(error => res.status(500).send(error));
 // });

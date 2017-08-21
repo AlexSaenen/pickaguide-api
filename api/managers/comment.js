@@ -46,7 +46,7 @@ const findByCommentsAdvert = (idAdvert) => {
   });
 };
 
-const like = (idAdvert, idComment) => {
+const toggleLike = (idUser, idAdvert, idComment) => {
   return new Promise((resolve, reject) => {
     db.Adverts
       .findById(idAdvert)
@@ -55,11 +55,16 @@ const like = (idAdvert, idComment) => {
         if (advert === null) { return reject({ code: 2, message: 'No such advert' }); }
 
         const comment = advert.comments.id(idComment);
-        comment.like += 1;
+        if (comment.likes.indexOf(idUser) !== -1) {
+          comment.likes.remove(idUser);
+        } else {
+          comment.likes.push(idUser);
+        }
 
         advert.save((saveErr) => {
           if (saveErr) return reject({ code: 3, message: saveErr });
-          resolve(comment);
+
+          resolve();
         });
       });
   });
@@ -82,4 +87,4 @@ const findByIdAndUpdate = (advertId, fields) => {
 };
 
 
-module.exports = { create, findByCommentsAdvert, like, findByIdAndUpdate };
+module.exports = { create, findByCommentsAdvert, toggleLike, findByIdAndUpdate };

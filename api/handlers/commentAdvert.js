@@ -15,8 +15,10 @@ class CommentAdvert {
     return commentManager.findByCommentsAdvert(idAdvert);
   }
 
-  static like(idAdvert, idComment) {
-    return commentManager.like(idAdvert, idComment);
+  static toggleLike(idUser, idAdvert, idComment) {
+    return commentManager
+      .toggleLike(idUser, idAdvert, idComment)
+      .then(() => CommentAdvert.findByCommentsAdvert(idAdvert));
   }
 
   static remove(userId, advertId, commentId) {

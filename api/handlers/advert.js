@@ -68,6 +68,14 @@ class Advert {
       .then(() => Advert.findAllFrom(userId));
   }
 
+  static getAvailability(userId, advertId) {
+    return advertManager.getAvailability(userId, advertId);
+  }
+
+  static setAvailability(userId, advertId, reqBody) {
+    return advertManager.setAvailability(userId, advertId, reqBody);
+  }
+
 }
 
 exports.Advert = Advert;
