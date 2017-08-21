@@ -16,7 +16,6 @@ const upload = multer({
 });
 
 const avatarUpload = upload.single('avatar');
-
 const router = express.Router();
 
 router.post('/geo', (req, res) => {

@@ -10,17 +10,6 @@ router.get('/', (req, res) => {
     .catch(error => res.status(400).send(error));
 });
 
-router.get('/avatar', (req, res) => {
-  profileHandler.downloadDefault()
-    .then((result) => {
-      res.sendFile(result, (err) => {
-        if (err) res.status(500).send(err);
-        fs.unlink(result);
-      });
-    })
-    .catch(error => res.status(404).send(error));
-});
-
 router.get('/:id', (req, res) => {
   profileHandler.findPublic(req.params.id)
     .then(result => res.status(200).send(result))
@@ -32,7 +21,11 @@ router.get('/:id/avatar', (req, res) => {
     .then((result) => {
       res.sendFile(result, (err) => {
         if (err) res.status(500).send(err);
-        fs.unlink(result);
+        fs.unlink(result, (unlinkErr) => {
+          if (unlinkErr) {
+            console.log('Encountered an error unlinking a file:', unlinkErr);
+          }
+        });
       });
     })
     .catch(error => res.status(404).send(error));

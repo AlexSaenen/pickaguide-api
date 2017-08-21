@@ -222,20 +222,124 @@ const update = (userId, advertId, advertBody) => {
   });
 };
 
-// static setAvailability(userId, advertId, advertBody) {
+// const addOccupied = (userId, advertId, reqBody) => {
 //   return new Promise((resolve, reject) => {
-//     const availability = advertBody.availability;
+//     const occupied = reqBody.occupied;
 //
-//     if (availability === undefined) { return reject({ code: 1, message: 'Need availability' }); }
-//     if (availability.constructor !== Array) { return reject({ code: 2, message: 'Availability has to be an array' }); }
-//     if (availability.some(el => el.from === undefined || el.to === undefined)) {
-//       return reject({ code: 3, message: 'Availability has to be well formatted' });
+//     if (occupied === undefined) { return reject({ code: 1, message: 'Need occupied' }); }
+//     if (occupied.from === undefined || occupied.to === undefined) {
+//       return reject({ code: 2, message: 'Occupied has to be well formatted' });
 //     }
-//     if (availability.some(el => el.from.constructor !== Date || el.to.constructor !== Date)) {
-//       return reject({ code: 4, message: 'Availability has to be expressed in Date' });
+//     if (occupied.from.constructor !== Date || occupied.to.constructor !== Date) {
+//       return reject({ code: 3, message: 'Occupied has to be expressed in Date' });
 //     }
+//
+//     db.Adverts
+//       .findOne({
+//         owner: userId,
+//         _id: advertId,
+//       }, 'occupied')
+//       .exec((err, advert) => {
+//         if (err) { return reject({ code: 1, message: err.message }); }
+//         if (advert === null) { return reject({ code: 2, message: 'Cannot find advert' }); }
+//
+//         advert.occupied.sort((a, b) => a.from - b.from);
+//         const isNotPossible = advert.occupied.some((block) => {
+//           if (block.from <= occupied.from && block.to > occupied.from) {
+//             return true;
+//           }
+//
+//           if (occupied.from <= block.from && occupied.to > block.from) {
+//             return true;
+//           }
+//
+//           return false;
+//         });
+//
+//         if (isNotPossible) { return reject({ code: 3, message: 'Cannot fit this occupied in' }); }
+//
+//         advert.occupied.push(occupied);
+//         advert.occupied.sort((a, b) => a.from - b.from);
+//         advert.save((saveErr, updatedAdvert) => {
+//           if (saveErr) { return reject({ code: 4, messages: saveErr.message }); }
+//           if (updatedAdvert === null) { return reject({ code: 5, message: 'Failed to update advert' }); }
+//
+//           const jsonAdvert = JSON.parse(JSON.stringify(updatedAdvert));
+//
+//           if (jsonAdvert.owner) {
+//             jsonAdvert.owner.displayName = displayName(jsonAdvert.owner.profile);
+//             delete jsonAdvert.owner.profile;
+//           } else {
+//             jsonAdvert.owner = { displayName: 'Deleted user' };
+//           }
+//
+//           resolve({ advert: jsonAdvert });
+//         });
+//       });
 //   });
-// }
+// };
+
+// const removeOccupied = (userId, advertId, reqBody) => {
+//   return new Promise((resolve, reject) => {
+//     const occupied = reqBody.occupied;
+//
+//     if (occupied === undefined) { return reject({ code: 1, message: 'Need occupied' }); }
+//     if (occupied.from === undefined || occupied.to === undefined) {
+//       return reject({ code: 2, message: 'Occupied has to be well formatted' });
+//     }
+//     if (occupied.from.constructor !== Date || occupied.to.constructor !== Date) {
+//       return reject({ code: 3, message: 'Occupied has to be expressed in Date' });
+//     }
+//
+//     db.Adverts
+//       .findOne({
+//         owner: userId,
+//         _id: advertId,
+//       }, 'occupied')
+//       .exec((err, advert) => {
+//         if (err) { return reject({ code: 1, message: err.message }); }
+//         if (advert === null) { return reject({ code: 2, message: 'Cannot find advert' }); }
+//
+//         const index = advert.occupied.findIndex(occupy => occupy.from === occupied.from && occupy.to === occupy.to);
+//         if (index !== -1) {
+//           advert.occupied.remove(index);
+//           advert.save((saveErr, updatedAdvert) => {
+//             if (saveErr) { return reject({ code: 4, messages: saveErr.message }); }
+//             if (updatedAdvert === null) { return reject({ code: 5, message: 'Failed to update advert' }); }
+//
+//             const jsonAdvert = JSON.parse(JSON.stringify(updatedAdvert));
+//
+//             if (jsonAdvert.owner) {
+//               jsonAdvert.owner.displayName = displayName(jsonAdvert.owner.profile);
+//               delete jsonAdvert.owner.profile;
+//             } else {
+//               jsonAdvert.owner = { displayName: 'Deleted user' };
+//             }
+//
+//             resolve({ advert: jsonAdvert });
+//           });
+//         }
+//
+//         resolve({ advert });
+//       });
+//   });
+// };
+
+// const getOccupied = (userId, advertId) => {
+//   return new Promise((resolve, reject) => {
+//     db.Adverts
+//       .findOne({
+//         owner: userId,
+//         _id: advertId,
+//       }, 'occupied')
+//       .exec((err, advert) => {
+//         if (err) { return reject({ code: 1, message: err.message }); }
+//         if (advert === null) { return reject({ code: 2, message: 'Cannot find advert' }); }
+//
+//         resolve(advert.occupied);
+//       });
+//   });
+// };
 
 const toggle = (userId, advertId) => {
   return new Promise((resolve, reject) => {

@@ -123,7 +123,52 @@ class Visit {
   }
 
   static findToReview(userId) {
-    return visitManager.findToReview(userId);
+    return new Promise((resolve, reject) => {
+      const results = {};
+
+      visitManager
+        .findToReview(userId, 'visitor')
+        .then((visits) => {
+          const ids = _.map(visits, 'about.owner');
+
+          return userManager
+            .findInIds(ids, 'profile.firstName profile.lastName')
+            .then((users) => {
+              const userHash = _.map(users, '_id').map(String);
+
+              visits.forEach((visit) => {
+                if (visit.about) {
+                  const index = userHash.indexOf(String(visit.about.owner));
+
+                  visit.about.ownerName = (index !== -1 ? displayName(users[index].profile) : 'User deleted');
+                }
+              });
+
+              results.myVisits = visits;
+              return visitManager.findToReview(userId, 'guide');
+            });
+        })
+        .then((visits) => {
+          const ids = _.map(visits, 'by');
+
+          userManager
+            .findInIds(ids, 'profile.firstName profile.lastName')
+            .then((users) => {
+              const userHash = _.map(users, '_id').map(String);
+
+              visits.forEach((visit) => {
+                const index = userHash.indexOf(String(visit.by));
+
+                visit.byName = (index !== -1 ? displayName(users[index].profile) : 'User deleted');
+              });
+
+              results.theirVisits = visits;
+              resolve(results);
+            })
+            .catch(findErr => reject(findErr));
+        })
+        .catch(err => reject(err));
+    });
   }
 
   static cancel(userId, visitId, reqBody) {
@@ -151,6 +196,25 @@ class Visit {
         })
         .catch(err => reject(err))
     );
+  }
+
+  static review(userId, visitId, reqBody) {
+    return new Promise((resolve, reject) => {
+      visitManager
+        .review(userId, visitId, reqBody)
+        .then(() => Visit.findToReview(userId))
+        .then((results) => {
+          if (results.theirVisits.length === 0 && results.myVisits.length === 0) {
+            userManager
+              .setBlocking(userId, false)
+              .then(() => resolve(results))
+              .catch(err => reject(err));
+          } else {
+            resolve(results);
+          }
+        })
+        .catch(err => reject(err));
+    });
   }
 
 }

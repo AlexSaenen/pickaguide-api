@@ -41,14 +41,6 @@ router.post('/pay', (req, res) => {
     .catch(error => res.status(404).send(error));
 });
 
-
-// TODO temporary
-router.post('/unblock', (req, res) => {
-  userManager.setBlocking(req.user.userId, false)
-    .then(result => res.status(200).send(result))
-    .catch(err => res.status(500).send(err));
-});
-
 router.get('/list', (req, res) => {
   userManager.find(req.user.userId, 'account', true)
     .then((account) => {

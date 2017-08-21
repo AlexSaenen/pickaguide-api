@@ -32,11 +32,13 @@ const isFromVisitor = (visitId, userId) => {
 };
 
 const updateStatus = (visitId, label, message) => {
+  const endStates = ['finished', 'denied', 'cancelled'];
+
   return new Promise((resolve, reject) => {
     db.Visits
       .findByIdAndUpdate(
         visitId,
-        { $push: { status: { label, message } } },
+        { $push: { status: { label, message } }, $set: { hasEnded: endStates.indexOf(label) !== -1 } },
         { new: true },
         (saveErr, updatedVisit) => {
           if (saveErr) { return reject({ code: 1, saveErr }); }
@@ -158,11 +160,10 @@ const find = (visitId) => {
   });
 };
 
-
 const findAllFrom = (userId) => {
   return new Promise((resolve, reject) => {
     db.Visits
-      .find({ by: String(userId) }, 'about when status hasEnded')
+      .find({ by: String(userId) })
       .populate({ path: 'about', select: 'title photoUrl owner' })
       .lean()
       .sort('-when')
@@ -170,7 +171,7 @@ const findAllFrom = (userId) => {
         if (err) { return reject({ code: 1, message: err.message }); }
 
         visits.forEach((visit) => {
-          visit.status = visit.status[visit.status.length - 1];
+          visit.finalStatus = visit.status[visit.status.length - 1];
         });
 
         resolve(visits);
@@ -181,7 +182,7 @@ const findAllFrom = (userId) => {
 const findAllFor = (userId) => {
   return new Promise((resolve, reject) => {
     db.Visits
-      .find({}, 'by about when status hasEnded')
+      .find({})
       .populate({ path: 'about', match: { owner: String(userId) }, select: 'title photoUrl owner' })
       .lean()
       .sort('-when')
@@ -190,7 +191,7 @@ const findAllFor = (userId) => {
 
         visits = visits.filter(visit => visit.about !== null);
         visits.forEach((visit) => {
-          visit.status = visit.status[visit.status.length - 1];
+          visit.finalStatus = visit.status[visit.status.length - 1];
         });
 
         resolve(visits);
@@ -244,6 +245,20 @@ const findAsVisitor = (visitId, userId) => {
 
             resolve(visit);
           });
+      })
+      .catch(err => reject(err));
+  });
+};
+
+const findToReview = (userId, as) => {
+  return new Promise((resolve, reject) => {
+    const findMethod = (as === 'visitor' ? findAllFrom : findAllFor);
+
+    findMethod(userId)
+      .then((visits) => {
+        const visitsToReview = visits.filter(visit => visit.hasEnded && visit[as === 'visitor' ? 'visitorRate' : 'guideRate'] === null);
+
+        resolve(visitsToReview);
       })
       .catch(err => reject(err));
   });
@@ -335,37 +350,29 @@ const accept = (userId, visitId, reqBody) => {
   }, 'waiting', 'accepted');
 };
 
-// static findToReview(userId) {
-//   return new Promise((resolve, reject) => {
-//     db.Visits
-//       .find({ by: String(userId) }, 'about when status')
-//       .lean()
-//       .exec((err, visits) => {
-//         if (err) { return reject({ code: 1, message: err.message }); }
-//
-//         visits.forEach((visit) => {
-//           visit.status = visit.status[visit.status.length - 1];
-//         });
-//
-//         const ids = _.map(visits, 'about.owner');
-//
-//         User
-//           .findInIds(ids, 'profile.firstName profile.lastName')
-//           .then((users) => {
-//             const userHash = _.map(users, '_id').map(String);
-//
-//             visits.forEach((visit) => {
-//               if (visit.about) {
-//                 const index = userHash.indexOf(String(visit.about.owner));
-//                 visit.about.ownerName = displayName(users[index].profile);
-//               }
-//             });
-//
-//             resolve(visits);
-//           })
-//           .catch(findGuideErr => reject(findGuideErr));
-//       });
-//   });
-// }
+const review = (userId, visitId, reqBody) => {
+  return new Promise((resolve, reject) => {
+    if (userId === reqBody.for) { return reject({ code: 3, message: 'Cannot rate yourself' }); }
 
-module.exports = { create, getCreator, find, findAllFrom, findAllFor, findAsGuide, findAsVisitor, cancel, cancelAll, deny, denyAll, finish, accept };
+    db.Visits
+      .findById(visitId, 'about by')
+      .populate({ path: 'about', select: 'owner' })
+      .exec((err, visit) => {
+        if (String(visit.by) === reqBody.for) {
+          visit.guideRate = reqBody.rate;
+        } else if (visit.about === null || String(visit.about.owner) === reqBody.for) {
+          visit.visitorRate = reqBody.rate;
+        }
+
+        visit.save((saveErr, updatedVisit) => {
+          if (saveErr) { return reject({ code: 1, saveErr }); }
+          if (updatedVisit === null) { return reject({ code: 2, message: 'Failed to update visit' }); }
+
+          resolve({ visit: updatedVisit });
+        });
+      });
+  });
+};
+
+
+module.exports = { create, getCreator, find, findAllFrom, findToReview, findAllFor, findAsGuide, findAsVisitor, cancel, cancelAll, deny, denyAll, finish, accept, review };

@@ -6,13 +6,13 @@ const commentSchema = new Schema({
   owner: { type: Schema.Types.ObjectId, ref: 'Users', required: true, index: true, sparse: true },
   date: { type: Date, default: Date.now },
   post: { type: String, required: true },
-  like: { type: Number, default: 0 },
+  likes: [{ type: Schema.Types.ObjectId, ref: 'Users' }],
 });
 
 const advertSchema = new Schema({
   title: { type: String, required: true, index: true, unique: true, sparse: true },
   description: { type: String, required: true },
-  // availability: [{ from: { type: Date, required: true }, to: { type: Date, required: true } }],
+  // occupied: [{ from: { type: Date, required: true }, to: { type: Date, required: true } }],
 
   photoUrl: { type: String, required: true },
   owner: { type: Schema.Types.ObjectId, ref: 'Users', required: true, index: true, sparse: true },

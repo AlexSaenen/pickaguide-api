@@ -29,6 +29,7 @@ prod:
 	npm run start
 
 dev:
+	docker start container_databaseMongoDev
 	npm install
 	npm run start:dev
 

@@ -38,6 +38,7 @@ const run = function run(next) {
       app.use('/', require('./api/middleware-service').errorsTokenMissing);
       app.use('/', require('./api/handlers/account').Account.isAuthorised);
       app.use('/', require('./api/middleware-service').checkContentTypeHeader);
+      app.use('/', require('./api/middleware-service').checkUserIsBlocked);
       app.use('/', require('./api/middleware-service').trimForm);
 
       app.use('/profiles', require('./api/routes/profile'));
@@ -46,7 +47,6 @@ const run = function run(next) {
       app.use('/proposals', require('./api/routes/advert'));
       app.use('/visits', require('./api/routes/visit'));
       app.use('/payment', require('./api/routes/payment'))
-      
 
       app.set('port', config.port);
 

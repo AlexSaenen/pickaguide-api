@@ -15,11 +15,10 @@ class CommentAdvert {
     return commentManager.findByCommentsAdvert(idAdvert);
   }
 
-  /*
-  Need to store the list of users who liked a post
-   */
-  static like(idAdvert, idComment) {
-    return commentManager.like(idAdvert, idComment);
+  static toggleLike(idUser, idAdvert, idComment) {
+    return commentManager
+      .toggleLike(idUser, idAdvert, idComment)
+      .then(() => CommentAdvert.findByCommentsAdvert(idAdvert));
   }
 
   static remove(userId, advertId, commentId) {
@@ -44,10 +43,6 @@ class CommentAdvert {
         .catch(error => reject(error));
     });
   }
-
-  /*
-  Unlike
-  */
 
 }
 

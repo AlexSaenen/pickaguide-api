@@ -6,21 +6,33 @@ const mime = require('mime-types');
 const path = require('path');
 const Grid = require('gridfs-stream');
 
+const MAX_FILE_SIZE = 2097151;
+const MAX_FILE_SIZE_STR = '2mb';
+
 Grid.mongo = db.mongo;
 
-exports.uploadImage = (pathFile, fileName, mimetype) => {
+exports.maxFileSize = () => {
+  return { size: MAX_FILE_SIZE, label: MAX_FILE_SIZE_STR };
+};
+
+exports.uploadImage = (pathFile, fileName, mimetype, willUnlink = true) => {
   return new Promise((resolve, reject) => {
     const gfs = Grid(db.conn.db);
+
     const writestream = gfs.createWriteStream({
       filename: fileName,
       content_type: mimetype,
     });
     fs.createReadStream(pathFile).pipe(writestream);
     writestream.on('close', (file) => {
-      fs.unlink(pathFile, ((err) => {
-        if (err) return reject({ code: 1, message: err });
+      if (willUnlink) {
+        fs.unlink(pathFile, ((err) => {
+          if (err) return reject({ code: 1, message: err });
+          resolve(file._id);
+        }));
+      } else {
         resolve(file._id);
-      }));
+      }
     });
   });
 };
@@ -32,7 +44,7 @@ exports.downloadImage = (idImage) => {
     gfs.files.find({ _id: idImage }).toArray((err, files) => {
       if (files.length === 0 || err) return reject({ code: 1, message: err });
 
-      const name = idImage + '.' + mime.extension(files[0].contentType);
+      const name = `${idImage}_${Date.now()}.${mime.extension(files[0].contentType)}`;
       const fsWriteStream = fs.createWriteStream(path.join(path.join(__dirname, '/../assets/'), name));
       const readstream = gfs.createReadStream({
         _id: idImage,
@@ -42,18 +54,6 @@ exports.downloadImage = (idImage) => {
       fsWriteStream.on('close', () => {
         resolve(path.resolve(path.join(path.join(__dirname, '/../assets/'), name)));
       });
-    });
-  });
-};
-
-exports.findDefaultAvatarId = (imageName, hash) => {
-  return new Promise((resolve, reject) => {
-    const gfs = Grid(db.conn.db);
-
-    gfs.files.find({ filename: imageName, md5: hash }).toArray((err, files) => {
-      if (files.length === 0 || err) return reject({ code: 1, message: err });
-
-      resolve(files[0]._id);
     });
   });
 };
