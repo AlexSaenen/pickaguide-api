@@ -47,6 +47,7 @@ const run = function run(next) {
       app.use('/proposals', require('./api/routes/advert'));
       app.use('/visits', require('./api/routes/visit'));
       app.use('/payment', require('./api/routes/payment'))
+      app.use('/notifications', require('./api/routes/notification'))
 
       app.set('port', config.port);
 

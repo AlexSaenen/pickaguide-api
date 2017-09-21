@@ -19,7 +19,8 @@ const create = (forWhom, notifBody, by = null) => {
     const newNotification = new db.Notifications({
       forWhom,
       by,
-      ...notifBody,
+      title: notifBody.title,
+      body: notifBody.body,
     });
 
     newNotification.save((err) => {
