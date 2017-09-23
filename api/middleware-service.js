@@ -2,7 +2,7 @@
 
 const userManager = require('./managers/user');
 
-exports.errorsTokenMissing = function errorsTokenMissing(err, req, res, next) {
+exports.errorsTokenMissing = function errorsTokenMissing(err, req, res, next) { // eslint-disable-line no-unused-vars
   if (err.name === 'UnauthorizedError') {
     return res.status(401).send({
       code: 1,
