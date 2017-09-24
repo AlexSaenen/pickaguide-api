@@ -48,7 +48,7 @@
     "start": "node ./index.js",
     "start:dev": "NODE_ENV=dev ENVIRONMENT=dev nodemon ./index.js",
     "dev": "nodemon ./index.js",
-    "test": "npm install && ./scripts/run-backend-tests.sh"
+    "test": "npm config set registry http://registry.npmjs.org/ && npm install && ./scripts/run-backend-tests.sh"
   },
   "repository": {
     "type": "git",
