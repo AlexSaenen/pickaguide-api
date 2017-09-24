@@ -1,4 +1,5 @@
 version: 2
+
 jobs:
   build_and_test:
     docker:
@@ -24,6 +25,9 @@ jobs:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - node_modules
+      - run:
+          name: Running tests
+          command: npm test
   push:
     machine: true
     steps:
@@ -33,10 +37,24 @@ jobs:
             make pull
             make build
             make push
+  staging:
+    machine: true
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "3e:be:05:27:97:c4:1c:8e:6b:0e:a5:ed:2e:bf:aa:4f"
+      - run: ssh root@82.223.82.41 "bash -ic deploy-web-staging"
+  production:
+    machine: true
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "3e:be:05:27:97:c4:1c:8e:6b:0e:a5:ed:2e:bf:aa:4f"
+      - run: ssh root@82.223.82.41 "bash -ic deploy-web-production"
 
 workflows:
   version: 2
-  test-deploy:
+  build_test_and_deploy:
     jobs:
       - build_and_test
       - push:
@@ -45,3 +63,15 @@ workflows:
           filters:
             branches:
               only: dev
+      - staging:
+          requires:
+            - push
+          filters:
+            branches:
+              only: dev
+      - production:
+          requires:
+            - build_and_test
+          filters:
+            branches:
+              only: master
