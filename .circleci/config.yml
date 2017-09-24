@@ -31,11 +31,11 @@ jobs:
   push:
     - machine: true
     - run:
-      command: |
-        docker login -e "alexander.saenen@epitech.eu" -u $DOCKER_USER -p $DOCKER_PASSWORD
-        make pull
-        make build
-        make push
+        command: |
+          docker login -e "alexander.saenen@epitech.eu" -u $DOCKER_USER -p $DOCKER_PASSWORD
+          make pull
+          make build
+          make push
   staging:
     - machine: true
     - add_ssh_keys:
