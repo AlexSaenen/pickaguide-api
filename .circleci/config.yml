@@ -24,6 +24,7 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Rebuild docker image and push to registry
           command: |
             docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
             make pull
