@@ -55,20 +55,20 @@ workflows:
     jobs:
       - build_and_test
       - push:
-        require:
-          - build_and_test
-        filters:
-          branches:
-            only: dev
+          require:
+            - build_and_test
+          filters:
+            branches:
+              only: dev
       - staging:
-        requires:
-          - push
-        filters:
-          branches:
-            only: dev
+          requires:
+            - push
+          filters:
+            branches:
+              only: dev
       - production:
-        require:
-          - build_and_test
-        filters:
-          branches:
-            only: master
+          require:
+            - build_and_test
+          filters:
+            branches:
+              only: master
