@@ -7,7 +7,11 @@ const connectionUrl = (['staging', 'production'].indexOf(process.env.NODE_ENV) !
   `${config.mongo.user}:${config.mongo.password}@${config.mongo.url}?authSource=admin` :
   config.mongo.url);
 
-const init = () => mongoose.connect(connectionUrl);
+const init = () => mongoose.connect(connectionUrl, {
+  keepAlive: true,
+  reconnectTries: Number.MAX_VALUE,
+  useMongoClient: true,
+});
 
 exports.ObjectId = mongoose.Types.ObjectId;
 
