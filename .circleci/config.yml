@@ -25,16 +25,23 @@ jobs:
           paths:
             - node_modules
   push:
-    - machine: true
-    - run:
-        command: |
-          docker login -e "alexander.saenen@epitech.eu" -u $DOCKER_USER -p $DOCKER_PASSWORD
-          make pull
-          make build
-          make push
+    machine: true
+    steps:
+      - run:
+          command: |
+            docker login -e "alexander.saenen@epitech.eu" -u $DOCKER_USER -p $DOCKER_PASSWORD
+            make pull
+            make build
+            make push
 
 workflows:
   version: 2
   test-deploy:
     jobs:
       - build_and_test
+      - push:
+          requires:
+            - build_and_test
+          filters:
+            branches:
+              only: dev
