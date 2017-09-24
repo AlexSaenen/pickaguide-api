@@ -5,9 +5,6 @@ jobs:
     docker:
       - image: anshulguleria/ubuntu-node-mongo:latest
     steps:
-      - run:
-          name: Update npm
-          command: npm install -g npm@latest
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
