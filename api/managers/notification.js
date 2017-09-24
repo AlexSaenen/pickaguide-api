@@ -48,7 +48,7 @@ const read = (idNotif, idUser) => {
 const readAll = (idUser) => {
   return new Promise((resolve, reject) => {
     db.Notifications
-      .findAndUpdate({ forWhom: idUser, readAt: null }, { readAt: Date.now() }, { multi: true }, (err, notif) => {
+      .update({ forWhom: idUser, readAt: null }, { readAt: Date.now() }, { multi: true }, (err, notif) => {
         if (err) { return reject({ code: 1, message: err.message }); }
         if (notif === null) { return reject({ code: 2, message: 'No such notifications to be read' }); }
 

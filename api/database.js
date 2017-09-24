@@ -4,10 +4,14 @@ const config = require('config');
 mongoose.Promise = global.Promise;
 
 const connectionUrl = (['staging', 'production'].indexOf(process.env.NODE_ENV) !== -1 ?
-  `${config.mongo.user}:${config.mongo.password}@${config.mongo.url}?authSource=admin` :
-  config.mongo.url);
+  `mongodb://${config.mongo.user}:${config.mongo.password}@${config.mongo.url}?authSource=admin` :
+  `mongodb://${config.mongo.url}`);
 
-const init = () => mongoose.connect(connectionUrl);
+const init = () => mongoose.connect(connectionUrl, {
+  keepAlive: true,
+  reconnectTries: Number.MAX_VALUE,
+  useMongoClient: true,
+});
 
 exports.ObjectId = mongoose.Types.ObjectId;
 
