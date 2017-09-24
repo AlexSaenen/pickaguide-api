@@ -1,0 +1,74 @@
+version: 2
+
+jobs:
+  build_and_test:
+    docker:
+      - image: circleci/node:8.1.4
+    steps:
+      - run:
+          command: |
+            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 0C49F3730359A14518585931BC711F9BA15703C6
+            echo "deb http://repo.mongodb.org/apt/ubuntu precise/mongodb-org/3.4 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.4.list
+            sudo apt-get update
+            sudo apt-get install -y mongodb-org
+            sudo apt-get autoremove
+            sudo service mongod restart
+      - run:
+          name: Update npm
+          command: sudo npm install -g npm@latest
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: Install modules
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - node_modules
+      - run:
+          name: Running tests
+          command: npm test
+  push:
+    - machine: true
+    - run:
+        command: |
+          docker login -e "alexander.saenen@epitech.eu" -u $DOCKER_USER -p $DOCKER_PASSWORD
+          make pull
+          make build
+          make push
+  staging:
+    - machine: true
+    - add_ssh_keys:
+        fingerprints:
+          - "3e:be:05:27:97:c4:1c:8e:6b:0e:a5:ed:2e:bf:aa:4f"
+    - run: ssh root@82.223.82.41 "bash -ic deploy-web-staging"
+  production:
+    - machine: true
+    - add_ssh_keys:
+        fingerprints:
+          - "3e:be:05:27:97:c4:1c:8e:6b:0e:a5:ed:2e:bf:aa:4f"
+    - run: ssh root@82.223.82.41 "bash -ic deploy-web-production"
+
+workflows:
+  version: 2
+  build_test_and_deploy:
+    jobs:
+      - build_and_test
+      - push:
+          requires:
+            - build_and_test
+          filters:
+            branches:
+              only: dev
+      - staging:
+          requires:
+            - push
+          filters:
+            branches:
+              only: dev
+      - production:
+          requires:
+            - build_and_test
+          filters:
+            branches:
+              only: master
