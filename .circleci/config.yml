@@ -38,9 +38,3 @@ workflows:
   test-deploy:
     jobs:
       - build_and_test
-      - push:
-          requires:
-            - build_and_test
-          filters:
-            branches:
-              only: dev
