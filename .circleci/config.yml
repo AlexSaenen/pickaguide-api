@@ -22,9 +22,10 @@ jobs:
   push:
     machine: true
     steps:
+      - checkout
       - run:
           command: |
-            docker login -e "alexander.saenen@epitech.eu" -u $DOCKER_USER -p $DOCKER_PASSWORD
+            docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
             make pull
             make build
             make push
