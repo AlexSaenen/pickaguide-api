@@ -55,7 +55,7 @@ workflows:
     jobs:
       - build_and_test
       - push:
-          require:
+          requires:
             - build_and_test
           filters:
             branches:
@@ -67,7 +67,7 @@ workflows:
             branches:
               only: dev
       - production:
-          require:
+          requires:
             - build_and_test
           filters:
             branches:
