@@ -3,7 +3,7 @@ version: 2
 jobs:
   build_and_test:
     docker:
-      - image: spittet/node-mongodb:latest
+      - image: anshulguleria/ubuntu-node-mongo:latest
     steps:
       - run:
           name: Update npm
