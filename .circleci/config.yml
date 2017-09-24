@@ -5,6 +5,7 @@ jobs:
     docker:
       - image: anshulguleria/ubuntu-node-mongo:latest
     steps:
+      - checkout
       - run:
           name: Install modules
           command: ls
