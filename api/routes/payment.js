@@ -24,7 +24,7 @@ router.get('/getInfos', (req, res) => {
 router.post('/addCard', (req, res) => {
   userManager.find(req.user.userId, 'account', true)
     .then((account) => {
-      paymentService.addCard(account.account.paymentId, req.body)//, 10, 2018, '4242 4242 4242 4242', 100)
+      paymentService.addCard(account.account.paymentId, req.body) // 10, 2018, '4242 4242 4242 4242', 100)
         .then((result) => {console.log(result);res.status(200).send(result)})
         .catch((err) => {console.log(err);res.status(500).send(err)});
     })
@@ -33,9 +33,11 @@ router.post('/addCard', (req, res) => {
 
 router.post('/pay', (req, res) => {
   userManager.find(req.user.userId, 'account', true)
-    .then((account) => {
-      paymentService.createPayment(account.account.paymentId, req.body)//"card_1AaTypLfhKZNuiQ3L2NfUH4h", 42, "eur", "Paiement pour la visite de boston")
-        .then((result) => {console.log(result);res.sendStatus(200)})
+    .then((result) => {
+      req.body.currency = 'eur';
+      req.body.description = 'Gratification visite PickaGuide';
+      paymentService.createPayment(result.account.paymentId, req.body) // "card_1AaTypLfhKZNuiQ3L2NfUH4h", 42, "eur", "Paiement pour la visite de boston")
+        .then((result) => {console.log(result);res.status(200).send({ ok: true }) })
         .catch((err) => {console.log(err);res.status(500).send(err)});
     })
     .catch(error => res.status(404).send(error));
@@ -45,7 +47,7 @@ router.get('/list', (req, res) => {
   userManager.find(req.user.userId, 'account', true)
     .then((account) => {
       paymentService.listPaymentFromUser(account.account.paymentId)
-        .then((result) => {console.log(result);res.sendStatus(200)})
+        .then((result) => {console.log(result);res.status(200).send({ ok: true }) })
         .catch((err) => {console.log(err);res.status(500).send(err)});
     })
 })

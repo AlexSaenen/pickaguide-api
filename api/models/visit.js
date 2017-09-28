@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 
 const visitSchema = new Schema({
   by: { type: Schema.Types.ObjectId, ref: 'Users', required: true },
-  about: { type: Schema.Types.ObjectId, ref: 'Adverts', required: true },
+  about: { type: Schema.Types.ObjectId, ref: 'Adverts' },
   when: { type: Date, required: true },
   creationDate: { type: Date, default: Date.now },
 
