@@ -5,7 +5,6 @@ const uploadService = require('../upload-service');
 const profileManager = require('../managers/profile');
 const userManager = require('../managers/user');
 const ObjectId = require('../database').ObjectId;
-const _ = require('lodash');
 
 
 class Profile extends User {
@@ -148,13 +147,14 @@ class Profile extends User {
 
   static addGeo(userId, reqBody) {
     return new Promise((resolve, reject) => {
-      super.find(userId, 'profile')
+      super.find(userId, 'profile', true)
         .then((user) => {
-          const array = [];
-          user.profile.geo =
-          userManager.update(userId, { profile: { geo: _.concat(array, reqBody.x, reqBody.y) } })
-            .then(updatedUser => resolve({ id: userId, geo: updatedUser.profile.geo }))
-            .catch(err => reject(err));
+          user.profile.geo = [reqBody.x, reqBody.y];
+          user.save((err, updatedUser) => {
+            if (err) { return reject({ code: 1, message: err.message }); }
+
+            return resolve({ id: userId, geo: updatedUser.profile.geo });
+          });
         })
         .catch(err => reject(err));
     });
