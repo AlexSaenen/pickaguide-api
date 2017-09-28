@@ -4,7 +4,7 @@ const config = require('config');
 mongoose.Promise = global.Promise;
 
 const connectionUrl = (['staging', 'production'].indexOf(process.env.NODE_ENV) !== -1 ?
-  `mongodb://${config.mongo.user}:${config.mongo.password}@${config.mongo.url}?authSource=admin` :
+  `${config.mongo.user}:${config.mongo.password}@${config.mongo.url}?authSource=admin` :
   `mongodb://${config.mongo.url}`);
 
 const init = () => mongoose.connect(connectionUrl, {
