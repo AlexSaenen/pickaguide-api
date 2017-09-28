@@ -4,8 +4,10 @@ const config = require('config');
 mongoose.Promise = global.Promise;
 
 const connectionUrl = (['staging', 'production'].indexOf(process.env.NODE_ENV) !== -1 ?
-  `${config.mongo.user}:${config.mongo.password}@${config.mongo.url}?authSource=admin` :
+  `mongodb://${config.mongo.user}:${config.mongo.password}@${config.mongo.url}?authSource=admin` :
   `mongodb://${config.mongo.url}`);
+
+console.log(connectionUrl);
 
 const init = () => mongoose.connect(connectionUrl, {
   keepAlive: true,
