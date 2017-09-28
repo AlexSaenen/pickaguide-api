@@ -101,6 +101,10 @@ exports.createPayment = (idUser, body) => { // idCard, amount, currency, descrip
 
 exports.listPaymentFromUser = (idUser) => {
   return new Promise((resolve, reject) => {
+    if (idUser === null) {
+      return resolve({ data: [] });
+    }
+
     stripe.charges
       .list({
         customer: idUser,
