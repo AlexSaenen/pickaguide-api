@@ -41,6 +41,7 @@ const findByCommentsAdvert = (idAdvert) => {
           }
         });
 
+        commentsForAd.comments.reverse();
         resolve(commentsForAd);
       });
   });

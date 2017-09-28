@@ -1,6 +1,8 @@
 'use strict';
 
 const commentManager = require('../managers/comment');
+const advertManager = require('../managers/advert');
+const notifManager = require('../managers/notification');
 
 
 class CommentAdvert {
@@ -8,6 +10,11 @@ class CommentAdvert {
   static create(userId, idAdvert, reqBody) {
     return commentManager
       .create(userId, idAdvert, reqBody)
+      .then(() => advertManager.find(idAdvert))
+      .then(result => notifManager.create(result.advert.owner._id, {
+        title: 'You got a comment !',
+        body: `Someone left a comment on your advert '${result.advert.title}'`,
+      }))
       .then(() => CommentAdvert.findByCommentsAdvert(idAdvert));
   }
 

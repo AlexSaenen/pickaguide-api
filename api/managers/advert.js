@@ -76,7 +76,7 @@ const removeAll = (userId) => {
 const find = (advertId) => {
   return new Promise((resolve, reject) => {
     db.Adverts
-      .findById(String(advertId))
+      .findById(String(advertId), '-comments')
       .populate({ path: 'owner', select: 'profile.firstName profile.lastName' })
       .lean()
       .exec((err, advert) => {
@@ -183,6 +183,20 @@ const search = (regexSearch) => {
         });
 
         resolve(adverts);
+      });
+  });
+};
+
+const findOwner = (advertId) => {
+  return new Promise((resolve, reject) => {
+    db.Adverts
+      .findById(String(advertId))
+      .lean()
+      .exec((err, advert) => {
+        if (err) { return reject({ code: 1, message: err.message }); }
+        if (advert == null) { return reject({ code: 2, message: 'Advert not found' }); }
+
+        resolve(advert.owner);
       });
   });
 };
@@ -381,4 +395,4 @@ const toggleAllOff = (userId) => {
 };
 
 
-module.exports = { add, remove, removeAll, find, findAll, findMain, findAllFrom, findAllFromHim, search, toggle, toggleOff, toggleAllOff, update };
+module.exports = { add, remove, removeAll, findOwner, find, findAll, findMain, findAllFrom, findAllFromHim, search, toggle, toggleOff, toggleAllOff, update };

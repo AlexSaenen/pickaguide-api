@@ -63,6 +63,21 @@ const getCreator = (visitId) => {
   });
 };
 
+const getGuide = (visitId) => {
+  return new Promise((resolve, reject) => {
+    db.Visits
+      .findById(String(visitId), 'about')
+      .populate({ path: 'about', select: 'owner' })
+      .lean()
+      .exec((err, visit) => {
+        if (err) { return reject({ code: 1, message: err.message }); }
+        if (visit == null) { return reject({ code: 2, message: 'Visit not found' }); }
+
+        resolve(visit.about.owner);
+      });
+  });
+};
+
 const isStatus = (visitId, status) => {
   return new Promise((resolve, reject) => {
     if (status.constructor !== Array) {
@@ -256,9 +271,10 @@ const findToReview = (userId, as) => {
 
     findMethod(userId)
       .then((visits) => {
-        const visitsToReview = visits.filter(visit => visit.hasEnded && visit[as === 'visitor' ? 'visitorRate' : 'guideRate'] === null);
+        const visitsEnded = visits.filter(visit => visit.hasEnded && visit[as === 'visitor' ? 'visitorRate' : 'guideRate'] === null);
+        const visitsFinished = visitsEnded.filter(visit => visit.status[visit.status.length - 1].label === 'finished');
 
-        resolve(visitsToReview);
+        resolve(visitsFinished);
       })
       .catch(err => reject(err));
   });
@@ -375,4 +391,4 @@ const review = (userId, visitId, reqBody) => {
 };
 
 
-module.exports = { create, getCreator, find, findAllFrom, findToReview, findAllFor, findAsGuide, findAsVisitor, cancel, cancelAll, deny, denyAll, finish, accept, review };
+module.exports = { create, getCreator, getGuide, find, findAllFrom, findToReview, findAllFor, findAsGuide, findAsVisitor, cancel, cancelAll, deny, denyAll, finish, accept, review };
