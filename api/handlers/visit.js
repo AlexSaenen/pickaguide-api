@@ -3,6 +3,7 @@
 const visitManager = require('../managers/visit');
 const advertManager = require('../managers/advert');
 const userManager = require('../managers/user');
+const notifManager = require('../managers/notification');
 const displayName = require('../managers/profile').displayName;
 const _ = require('lodash');
 
@@ -13,17 +14,22 @@ class Visit {
     return new Promise((resolve, reject) => {
       advertManager
         .find(about)
-        .then((advert) => {
-          if (advert.advert.owner._id === undefined) {
+        .then((result) => {
+          if (result.advert.owner._id === undefined) {
             return reject({ code: 1, message: 'The user has been deleted' });
           }
-          if (String(advert.advert.owner._id) === by) {
+
+          if (String(result.advert.owner._id) === by) {
             return reject({ code: 2, message: 'You cannot ask yourself for a visit' });
           }
 
           visitManager.create(by, about, reqBody)
-            .then(result => resolve(result))
-            .catch(createErr => reject(createErr));
+            .then(visit => resolve(visit))
+            .catch(createErr => reject(createErr))
+            .then(() => notifManager.create(result.advert.owner._id, {
+              title: 'You got a visitor !',
+              body: `Someone is asking to visit '${result.advert.title}' with you`,
+            }));
         })
         .catch(err => reject(err));
     });
@@ -172,15 +178,42 @@ class Visit {
   }
 
   static cancel(userId, visitId, reqBody) {
-    return visitManager.cancel(userId, visitId, reqBody);
+    return new Promise((resolve, reject) => {
+      visitManager.cancel(userId, visitId, reqBody)
+        .then(result => resolve(result))
+        .catch(error => reject(error))
+        .then(() => visitManager.getGuide(visitId))
+        .then(guide => notifManager.create(guide, {
+          title: 'Your visit was cancelled',
+          body: 'One of your visits was cancelled',
+        }));
+    });
   }
 
   static deny(userId, visitId, reqBody) {
-    return visitManager.deny(userId, visitId, reqBody);
+    return new Promise((resolve, reject) => {
+      visitManager.deny(userId, visitId, reqBody)
+        .then(result => resolve(result))
+        .catch(error => reject(error))
+        .then(() => visitManager.getCreator(visitId))
+        .then(creator => notifManager.create(creator, {
+          title: 'Your visit was denied',
+          body: 'One of your visits was denied by the guide',
+        }));
+    });
   }
 
   static accept(userId, visitId, reqBody) {
-    return visitManager.accept(userId, visitId, reqBody);
+    return new Promise((resolve, reject) => {
+      visitManager.accept(userId, visitId, reqBody)
+        .then(result => resolve(result))
+        .catch(error => reject(error))
+        .then(() => visitManager.getCreator(visitId))
+        .then(creator => notifManager.create(creator, {
+          title: 'Your visit was accepted !',
+          body: 'One of your visits was accepted by the guide, you will be exploring the city soon !',
+        }));
+    });
   }
 
   static finish(userId, visitId, reqBody) {
@@ -189,7 +222,13 @@ class Visit {
         .finish(userId, visitId, reqBody)
         .then((result) => {
           visitManager.getCreator(visitId)
-            .then(creator => userManager.setBlocking(creator, true))
+            .then(creator =>
+              userManager.setBlocking(creator, true)
+              .then(() => notifManager.create(creator, {
+                title: 'Your visit finished',
+                body: 'One of your visits has been marked as completed by the guide',
+              }))
+            )
             .then(() => userManager.setBlocking(userId, true))
             .then(() => resolve(result))
             .catch(blockErr => reject(blockErr));

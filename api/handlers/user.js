@@ -14,11 +14,12 @@ class User {
       userManager
         .add(fields)
         .then(newUser =>
-          emailService.sendEmailConfirmation(newUser)
-            .then(() => resolve({ code: 0, message: 'Account created' }))
-            .catch((mailErr) => {
-              if (mailErr.code === 1) { resolve({ code: 0, message: 'Account created' }); } else { reject(mailErr); }
-            })
+          resolve({ code: 0, message: 'Account created' })
+          // emailService.sendEmailConfirmation(newUser)
+          //   .then(() => resolve({ code: 0, message: 'Account created' }))
+          //   .catch((mailErr) => {
+          //     if (mailErr.code === 1) { resolve({ code: 0, message: 'Account created' }); } else { reject(mailErr); }
+          //   })
         )
         .catch(addErr => reject(addErr))
     );

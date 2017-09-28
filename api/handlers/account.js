@@ -5,7 +5,7 @@ const assertInput = require('./_handler').assertInput;
 const accountManager = require('../managers/account');
 const blacklistManager = require('../managers/blacklist');
 const validator = require('validator');
-const emailService = require('../email-service');
+// const emailService = require('../email-service');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 
@@ -176,9 +176,10 @@ class Account extends User {
     return new Promise((resolve, reject) => {
       super.find(userId)
         .then((user) => {
-          emailService.sendEmailConfirmation(user)
-            .then(() => resolve({ code: 0, message: 'Confirmation email has been resent' }))
-            .catch(err => reject(err));
+          resolve({ code: 0, message: 'Need to reactivate emails' });
+          // emailService.sendEmailConfirmation(user)
+          //   .then(() => resolve({ code: 0, message: 'Confirmation email has been resent' }))
+          //   .catch(err => reject(err));
         })
         .catch(err => reject(err));
     });
@@ -193,9 +194,10 @@ class Account extends User {
             if (err) {
               reject({ code: 1, message: err.message });
             } else {
-              emailService.sendEmailPasswordReset(user)
-                .then(() => resolve({ code: 0, message: 'Reset password email has been sent' }))
-                .catch(emailErr => reject(emailErr));
+              resolve({ code: 0, message: 'Need to reactivate emails' });
+              // emailService.sendEmailPasswordReset(user)
+              //   .then(() => resolve({ code: 0, message: 'Reset password email has been sent' }))
+              //   .catch(emailErr => reject(emailErr));
             }
           });
         })

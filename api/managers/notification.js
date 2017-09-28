@@ -5,6 +5,7 @@ const findAllFrom = (idUser) => {
   return new Promise((resolve, reject) => {
     db.Notifications
       .find({ forWhom: idUser })
+      .sort('-creationDate')
       .lean()
       .exec((err, notifs) => {
         if (err) { return reject({ code: 1, message: err.message }); }
