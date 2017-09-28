@@ -43,11 +43,11 @@ router.post('/pay', (req, res) => {
     .catch(error => res.status(404).send(error));
 });
 
-router.get('/list', (req, res) => {
+router.get('/', (req, res) => {
   userManager.find(req.user.userId, 'account', true)
-    .then((account) => {
-      paymentService.listPaymentFromUser(account.account.paymentId)
-        .then((result) => {console.log(result);res.status(200).send({ ok: true }) })
+    .then((result) => {
+      paymentService.listPaymentFromUser(result.account.paymentId)
+        .then((result) => {console.log(result);res.status(200).send(result.data) })
         .catch((err) => {console.log(err);res.status(500).send(err)});
     })
 })
