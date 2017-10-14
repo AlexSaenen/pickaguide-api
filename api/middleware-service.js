@@ -44,6 +44,10 @@ exports.trimForm = function trimForm(req, res, next) {
 };
 
 exports.checkUserIsBlocked = function checkUserIsBlocked(req, res, next) {
+  if (req.user === undefined) {
+    return next(); // the user is not logged in
+  }
+
   const whitelisted = [
     new RegExp(/^\/users\/isBlocking$/),
     new RegExp(/^\/accounts\/logout$/),

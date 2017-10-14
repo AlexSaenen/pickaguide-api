@@ -39,6 +39,8 @@
     "eslint-plugin-import": "^1.14.0",
     "eslint-plugin-jsx-a11y": "^2.2.1",
     "eslint-plugin-react": "^6.2.0",
+    "grunt": "^1.0.1",
+    "grunt-apidoc": "^0.11.0",
     "mocha": "^3.2.0",
     "nock": "^9.0.2",
     "nodemon": "^1.11.0",
@@ -47,8 +49,9 @@
   "scripts": {
     "start": "node ./index.js",
     "start:dev": "NODE_ENV=dev ENVIRONMENT=dev nodemon ./index.js",
-    "dev": "nodemon ./index.js",
-    "test": "./scripts/run-backend-tests.sh"
+    "test": "./scripts/run-backend-tests.sh",
+    "docs:generate": "node_modules/.bin/grunt",
+    "docs:view": "open ./docs/index.html"
   },
   "repository": {
     "type": "git",

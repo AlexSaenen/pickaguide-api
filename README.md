@@ -1,5 +1,19 @@
 # pickaguide-api
 
+## Documentation
+
+### Generate
+
+    npm run docs:generate
+
+Cette commande va générer la documentation de l'api
+
+### View
+
+    npm run docs:View
+
+Ceci va ouvrir la documentation actuelle dans un nouvel onglet du navigateur
+
 ## Launch in dev mode
 
     make dev
