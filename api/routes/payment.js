@@ -89,6 +89,7 @@ router.post('/card', (req, res) => {
  * @apiHeader {String} Authorization The jsonwebtoken given on <code>/public/sign-in</code> preceded by <code>Bearer</code>
  * @apiParam {Number} amount Amount in currency units (for instance <code>23</code> as in <code>$23</code>)
  * @apiParam {String} idCard The id of the card used for this payment
+ * @apiParam {String} description A description to explain the reason of this payment
  *
  * @apiSuccess {Object} charge The newly created Charge object for the selected Card Source <a>https://stripe.com/docs/api/node#create_charge</a>.
  * @apiUse DatabaseError
@@ -98,7 +99,6 @@ router.post('/card', (req, res) => {
 router.post('/pay', (req, res) => {
   const user = req.loadedUser;
   req.body.currency = 'eur';
-  req.body.description = 'Gratification visite PickaGuide';
 
   paymentService.createPayment(user.account.paymentId, req.body)
     .then(payment => res.status(200).send(payment))
