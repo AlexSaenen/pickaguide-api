@@ -22,7 +22,7 @@ router.put('/password', (req, res) => {
 });
 
 router.post('/signout', (req, res) => {
-  accountHandler.remove(req.body)
+  accountHandler.remove(req.user.userId, req.body)
     .then(result => res.status(200).send(result))
     .catch(error => res.status(400).send(error));
 });
