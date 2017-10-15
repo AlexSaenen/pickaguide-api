@@ -90,11 +90,11 @@ describe('Public Routes', () => {
     it('should return 201 and create an user', (done) => {
       let body;
       let emailSent = nock('https://api.mailgun.net/v3/mg.pickaguide.fr')
-        .post(/messages/, function (b) {
-          body = b;
+        .post(/messages/, (result) => {
+          body = result;
           return true;
         })
-        .reply(200, {status: 'sent'});
+        .reply(200, { status: 'sent' });
 
       request(app)
         .post('/public/sign-up')
@@ -295,7 +295,7 @@ describe('Public Routes', () => {
           message: 'Password reset token is invalid'
         }, done);
     });
-  
+
     it('should return error if password shorter', (done) => {
       request(app)
         .post('/public/reset/' + userTokenResetPassword)
@@ -305,7 +305,7 @@ describe('Public Routes', () => {
           message: 'Invalid new Password'
         }, done);
     });
-    
+
     it('should update password of the user', (done) => {
       request(app)
         .post('/public/reset/' + userTokenResetPassword)
