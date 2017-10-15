@@ -42,8 +42,8 @@ exports.addCard = (idUser, body) => {
       .createSource(idUser, {
         source: {
           object: 'card',
-          exp_month: body.exp_month,
-          exp_year: body.exp_year,
+          exp_month: body.expirationMonth,
+          exp_year: body.expirationYear,
           number: body.number,
           cvc: body.cvc,
         },

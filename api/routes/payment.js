@@ -34,6 +34,8 @@ router.use((req, res, next) => { // middleware to get the account for every requ
  * @apiGroup Payment
  * @apiVersion 0.3.2
  *
+ * @apiHeader {String} Authorization The jsonwebtoken given on <code>/public/sign-in</code> preceded by <code>Bearer</code>
+ *
  * @apiSuccess {Object} customer A Stripe Customer object <a>https://stripe.com/docs/api/node#customer_object</a>.
  * @apiUse DatabaseError
  * @apiUse UserNotConnected
@@ -59,6 +61,12 @@ router.get('/', (req, res) => {
  * @apiGroup Payment
  * @apiVersion 0.3.2
  *
+ * @apiHeader {String} Authorization The jsonwebtoken given on <code>/public/sign-in</code> preceded by <code>Bearer</code>
+ * @apiParam {Number} expirationMonth The expiration month of the card
+ * @apiParam {Number} expirationYear The expiration year of the card
+ * @apiParam {String} number The card number
+ * @apiParam {String} cvc The security code of the card (3 numbers behind the card)
+ *
  * @apiSuccess {Object} source The newly created Bank Account object <a>https://stripe.com/docs/api/node#customer_create_bank_account</a>.
  * @apiUse DatabaseError
  * @apiUse UserNotConnected
@@ -77,6 +85,10 @@ router.post('/card', (req, res) => {
  * @apiName createPayment
  * @apiGroup Payment
  * @apiVersion 0.3.2
+ *
+ * @apiHeader {String} Authorization The jsonwebtoken given on <code>/public/sign-in</code> preceded by <code>Bearer</code>
+ * @apiParam {Number} amount Amount in currency units (for instance <code>23</code> as in <code>$23</code>)
+ * @apiParam {String} idCard The id of the card used for this payment
  *
  * @apiSuccess {Object} charge The newly created Charge object for the selected Card Source <a>https://stripe.com/docs/api/node#create_charge</a>.
  * @apiUse DatabaseError
@@ -98,6 +110,8 @@ router.post('/pay', (req, res) => {
  * @apiName getAllPayments
  * @apiGroup Payment
  * @apiVersion 0.3.2
+ *
+ * @apiHeader {String} Authorization The jsonwebtoken given on <code>/public/sign-in</code> preceded by <code>Bearer</code>
  *
  * @apiSuccess {Object[]} payments All Payments made by this User <a>https://stripe.com/docs/api/node#list_charges</a>.
  * @apiUse DatabaseError
