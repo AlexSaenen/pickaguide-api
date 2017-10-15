@@ -2,6 +2,9 @@
   "mailgun": {
     "apiKey": "MAILGUN_APIKEY"
   },
+  "stripe": {
+    "apiKey": "STRIPE_APIKEY"
+  },
   "mongo": {
     "password": "MONGO_PASS"
   }

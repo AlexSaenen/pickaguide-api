@@ -1,40 +1,10 @@
 'use strict';
 
+const config = require('config');
 const stripePackage = require('stripe');
-// const userHandler = require('./handlers/user').User;
 
-const stripe = stripePackage('sk_test_LsvsnxVyCIQplUZ7oZioWvcL');
+const stripe = stripePackage(config.stripe.apiKey);
 
-// exports.createUserCharge = () => {
-//   return new Promise((resolve, reject) => {
-//     stripe.customers.create({
-//       email: 'toto@example.com'
-//     })
-//     .then(function(customer){
-//       return stripe.customers.createSource(customer.id, {
-//         source: {
-//            object: 'card',
-//            exp_month: 10,
-//            exp_year: 2018,
-//            number: '4242 4242 4242 4242',
-//            cvc: 100
-//         }
-//       });
-//     }).then(function(source) {
-//         stripe.charges.create({
-//         amount: 1650,
-//         currency: 'eur',
-//         customer: source.customer
-//       }).then(function(charge) {
-//         // New charge created on a new customer
-//         resolve(charge);
-//       }).catch(function(err) {
-//         // Deal with an error
-//         reject(err);
-//       });
-//     });
-//   });
-// }
 
 exports.createUser = (user) => {
   return new Promise((resolve, reject) => {
@@ -66,7 +36,7 @@ exports.getUser = (user) => {
   });
 };
 
-exports.addCard = (idUser, body) => { // exp_month, exp_year, number, cvc) => {
+exports.addCard = (idUser, body) => {
   return new Promise((resolve, reject) => {
     stripe.customers
       .createSource(idUser, {
@@ -83,7 +53,7 @@ exports.addCard = (idUser, body) => { // exp_month, exp_year, number, cvc) => {
   });
 };
 
-exports.createPayment = (idUser, body) => { // idCard, amount, currency, description) => {
+exports.createPayment = (idUser, body) => {
   return new Promise((resolve, reject) => {
     stripe.charges
       .create({
@@ -99,7 +69,7 @@ exports.createPayment = (idUser, body) => { // idCard, amount, currency, descrip
   });
 };
 
-exports.listPaymentFromUser = (idUser) => {
+exports.getAllPayments = (idUser) => {
   return new Promise((resolve, reject) => {
     if (idUser === null) {
       return resolve({ data: [] });
@@ -114,38 +84,3 @@ exports.listPaymentFromUser = (idUser) => {
       .catch(err => reject(err));
   });
 };
-
-// exports.createCard = (userId, exp_month, exp_year, number, cvc) => {
-//   return new Promise((resolve, reject) => {
-//     stripe.customers.createSource(userId, {
-//       source: {
-//          object: 'card',
-//          exp_month: exp_month,
-//          exp_year: exp_year,
-//          number: number,
-//          cvc: cvc
-//       }
-//     }).then(function(card) {
-//       resolve(card);
-//     }).catch(function(err) {
-//       reject(err);
-//     })
-//   });
-// }
-
-// exports.pay = (userId, amount, currency, source, description) => {
-//   return new Promise((resolve, reject) => {
-//     stripe.charges.create({
-//       amount: amount,
-//       currency: currency,
-//       customer: userId,
-//       source: source,
-//       description: description
-// //      metadata: meta
-//     }).then(function(payment) {
-//       resolve(payment);
-//     }).catch(function(err) {
-//       reject(err);
-//     })
-//   });
-// }

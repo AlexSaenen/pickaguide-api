@@ -36,3 +36,7 @@ dev:
 test:
 	npm install
 	npm test
+
+docs:
+	npm run docs:generate
+	npm run docs:view

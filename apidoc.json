@@ -1,7 +1,7 @@
 {
   "name": "pickaguide",
-  "version": "0.1.0",
+  "version": "0.3.2",
   "description": "Documentation of the pickaguide api",
   "title": "Pickaguide API",
-  "url" : "https://github.com/AlexSaenen/pickaguide-api.git"
+  "url" : ""
 }

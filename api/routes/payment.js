@@ -5,51 +5,111 @@ const userManager = require('../managers/user');
 
 const router = express.Router();
 
-router.get('/getInfos', (req, res) => {
-  userManager.find(req.user.userId, 'account', true)
-    .then((account) => {
-      if (account.account.paymentId == null) {
-        paymentService.createUser(account)
-          .then((result) => {console.log(result);res.status(200).send(result)})
-          .catch((err) => {console.log(err);res.status(500).send(err)});
-      } else {
-        paymentService.getUser(account)
-          .then((result) => {console.log(result.sources.data);res.status(200).send(result)})
-          .catch((err) => {console.log(err);res.status(500).send(err)});
-      }
-    })
-    .catch(error => res.status(404).send(error));
+/**
+ * @apiDefine UserNotConnected
+ * @apiError (400) UserNotConnected The user is not logged in.
+ */
+
+/**
+ * @apiDefine StripeError
+ * @apiError (400) StripeError Encountered an error with Stripe, probably a bad request.
+ */
+
+router.use((req, res, next) => { // middleware to get the account for every request
+  if (req.user) {
+    userManager.find(req.user.userId, 'account', true)
+      .then((user) => {
+        req.loadedUser = user;
+        next();
+      })
+      .catch(error => res.status(500).send(error));
+  } else {
+    res.status(400).send({ code: 1, message: 'You need to be logged in' });
+  }
 });
 
-router.post('/addCard', (req, res) => {
-  userManager.find(req.user.userId, 'account', true)
-    .then((account) => {
-      paymentService.addCard(account.account.paymentId, req.body) // 10, 2018, '4242 4242 4242 4242', 100)
-        .then((result) => {console.log(result);res.status(200).send(result)})
-        .catch((err) => {console.log(err);res.status(500).send(err)});
-    })
-    .catch(error => res.status(404).send(error));
-});
-
-router.post('/pay', (req, res) => {
-  userManager.find(req.user.userId, 'account', true)
-    .then((result) => {
-      req.body.currency = 'eur';
-      req.body.description = 'Gratification visite PickaGuide';
-      paymentService.createPayment(result.account.paymentId, req.body) // "card_1AaTypLfhKZNuiQ3L2NfUH4h", 42, "eur", "Paiement pour la visite de boston")
-        .then((result) => {console.log(result);res.status(200).send({ ok: true }) })
-        .catch((err) => {console.log(err);res.status(500).send(err)});
-    })
-    .catch(error => res.status(404).send(error));
-});
-
+/**
+ * @api {get} /payment/ Find Stripe User
+ * @apiName getUser
+ * @apiGroup Payment
+ * @apiVersion 0.3.2
+ *
+ * @apiSuccess {Object} customer A Stripe Customer object <a>https://stripe.com/docs/api/node#customer_object</a>.
+ * @apiUse DatabaseError
+ * @apiUse UserNotConnected
+ * @apiUse StripeError
+ */
 router.get('/', (req, res) => {
-  userManager.find(req.user.userId, 'account', true)
-    .then((result) => {
-      paymentService.listPaymentFromUser(result.account.paymentId)
-        .then((result) => {console.log(result);res.status(200).send(result.data) })
-        .catch((err) => {console.log(err);res.status(500).send(err)});
-    })
-})
+  const user = req.loadedUser;
+
+  if (user.account.paymentId == null) {
+    paymentService.createUser(user)
+      .then(result => res.status(200).send(result))
+      .catch(err => res.status(400).send(err));
+  } else {
+    paymentService.getUser(user)
+      .then(result => res.status(200).send(result))
+      .catch(err => res.status(400).send(err));
+  }
+});
+
+/**
+ * @api {post} /payment/card Add Card
+ * @apiName addCard
+ * @apiGroup Payment
+ * @apiVersion 0.3.2
+ *
+ * @apiSuccess {Object} source The newly created Bank Account object <a>https://stripe.com/docs/api/node#customer_create_bank_account</a>.
+ * @apiUse DatabaseError
+ * @apiUse UserNotConnected
+ * @apiUse StripeError
+ */
+router.post('/card', (req, res) => {
+  const user = req.loadedUser;
+
+  paymentService.addCard(user.account.paymentId, req.body)
+    .then(result => res.status(200).send(result))
+    .catch(err => res.status(400).send(err));
+});
+
+/**
+ * @api {post} /payment/pay Create Payment
+ * @apiName createPayment
+ * @apiGroup Payment
+ * @apiVersion 0.3.2
+ *
+ * @apiSuccess {Object} charge The newly created Charge object for the selected Card Source <a>https://stripe.com/docs/api/node#create_charge</a>.
+ * @apiUse DatabaseError
+ * @apiUse UserNotConnected
+ * @apiUse StripeError
+ */
+router.post('/pay', (req, res) => {
+  const user = req.loadedUser;
+  req.body.currency = 'eur';
+  req.body.description = 'Gratification visite PickaGuide';
+
+  paymentService.createPayment(user.account.paymentId, req.body)
+    .then(payment => res.status(200).send(payment))
+    .catch(err => res.status(400).send(err));
+});
+
+/**
+ * @api {get} /payment/pay Get Payments
+ * @apiName getAllPayments
+ * @apiGroup Payment
+ * @apiVersion 0.3.2
+ *
+ * @apiSuccess {Object[]} payments All Payments made by this User <a>https://stripe.com/docs/api/node#list_charges</a>.
+ * @apiUse DatabaseError
+ * @apiUse UserNotConnected
+ * @apiUse StripeError
+ */
+router.get('/pay', (req, res) => {
+  const user = req.loadedUser;
+
+  paymentService.getAllPayments(user.account.paymentId)
+    .then(payments => res.status(200).send(payments.data))
+    .catch(err => res.status(400).send(err));
+});
 
 module.exports = router;

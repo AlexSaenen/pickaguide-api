@@ -5,5 +5,8 @@
   "mongo": {
     "url": "localhost/pickaguideDB"
   },
-  "mailgun": {}
+  "mailgun": {},
+  "stripe": {
+    "apiKey": "sk_test_LsvsnxVyCIQplUZ7oZioWvcL"
+  }
 }

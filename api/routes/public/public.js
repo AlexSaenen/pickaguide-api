@@ -3,6 +3,11 @@ const express = require('express');
 const router = express.Router();
 const accountHandler = require('../../handlers/account').Account;
 
+/**
+ * @apiDefine DatabaseError
+ * @apiError (400) DatabaseError The database encountered an unknown error.
+ */
+
 router.post('/sign-up', (req, res) => {
   accountHandler.signup(req.body)
     .then(result => res.status(201).send(result))
