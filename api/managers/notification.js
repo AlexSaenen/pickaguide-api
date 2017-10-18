@@ -58,7 +58,7 @@ const readAll = (idUser) => {
   });
 };
 
-const hasUnread = (idUser) => {
+const getUnread = (idUser) => {
   return new Promise((resolve, reject) => {
     db.Notifications
       .find({ forWhom: idUser, readAt: null }, '_id')
@@ -66,9 +66,17 @@ const hasUnread = (idUser) => {
       .exec((err, notifs) => {
         if (err) { return reject({ code: 1, message: err.message }); }
 
-        resolve({ forWhom: idUser, hasUnread: notifs.length > 0 });
+        resolve(notifs);
       });
   });
 };
 
-module.exports = { create, read, readAll, findAllFrom, hasUnread };
+const hasUnread = (idUser) => {
+  return new Promise((resolve, reject) => {
+    getUnread(idUser)
+    .then(notifs => resolve({ forWhom: idUser, hasUnread: notifs.length > 0 }))
+    .catch(error => reject(error));
+  });
+};
+
+module.exports = { create, read, readAll, findAllFrom, hasUnread, getUnread };

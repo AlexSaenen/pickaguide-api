@@ -16,6 +16,12 @@ router.get('/hasUnread', (req, res) => {
     .catch(error => res.status(400).send(error));
 });
 
+router.get('/unread', (req, res) => {
+  notificationHandler.getUnread(req.user.userId)
+    .then(result => res.status(200).send(result))
+    .catch(error => res.status(400).send(error));
+});
+
 router.put('/read', (req, res) => {
   notificationHandler.readAll(req.user.userId)
     .then(result => res.status(200).send(result))

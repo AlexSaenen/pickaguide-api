@@ -13,6 +13,10 @@ class Notification {
     return notificationManager.hasUnread(idUser);
   }
 
+  static getUnread(idUser) {
+    return notificationManager.getUnread(idUser);
+  }
+
   static read(idNotif, idUser) {
     return new Promise((resolve, reject) => {
       notificationManager.read(idNotif, idUser)
