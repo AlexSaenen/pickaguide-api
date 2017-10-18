@@ -78,9 +78,14 @@ const findNear = (geo, distance) => {
   return new Promise((resolve, reject) => {
     db.Users
       .find({
-        'profile.geo': {
-          $nearSphere: geo,
-          $maxDistance: distance,
+        'profile.point': {
+          $near: {
+            $geometry: {
+              type: 'Point',
+              coordinates: geo,
+            },
+            $maxDistance: distance,
+          },
         },
         isGuide: true,
       }, { account: 0 })

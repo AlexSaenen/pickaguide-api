@@ -149,11 +149,11 @@ class Profile extends User {
     return new Promise((resolve, reject) => {
       super.find(userId, 'profile', true)
         .then((user) => {
-          user.profile.geo = [reqBody.x, reqBody.y];
+          user.profile.point = [reqBody.x, reqBody.y];
           user.save((err, updatedUser) => {
             if (err) { return reject({ code: 1, message: err.message }); }
 
-            return resolve({ id: userId, geo: updatedUser.profile.geo });
+            return resolve({ id: userId, geo: updatedUser.profile.point });
           });
         })
         .catch(err => reject(err));
@@ -164,11 +164,12 @@ class Profile extends User {
     return new Promise((resolve, reject) => {
       super.find(userId, 'profile')
         .then((user) => {
-          if (!user.profile.geo) { return reject({ code: 3, message: 'User does not have localisation' }); }
-          super.findNear(user.profile.geo, distance)
+          if (!user.profile.point) { return reject({ code: 3, message: 'User does not have localisation' }); }
+          super.findNear(user.profile.point, distance)
             .then(users => resolve(users))
-            .catch(err => reject(err));
-        });
+            .catch(findNearError => reject(findNearError));
+        })
+        .catch(error => reject(error));
     });
   }
 

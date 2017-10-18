@@ -27,7 +27,7 @@ const userSchema = new Schema({
     description: { type: String, default: 'My personal description' },
     interests: [{ type: String }],
     _fsId: { type: Schema.Types.ObjectId, ref: 'fs.files', default: null },
-    geo: { type: [Number], index: '2dsphere' },
+    point: { type: [Number], index: '2dsphere' },
   },
   isGuide: { type: Boolean, default: false },
   isBlocking: { type: Boolean, default: false },
