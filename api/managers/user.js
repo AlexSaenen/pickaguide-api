@@ -74,21 +74,11 @@ const findInIds = (userIds, selectFields = '', updatable = false) => {
   });
 };
 
-const findNear = (geo, distance) => {
+const findNear = (center, maxDistance) => {
   return new Promise((resolve, reject) => {
     db.Users
-      .find({
-        'profile.point': {
-          $near: {
-            $geometry: {
-              type: 'Point',
-              coordinates: geo,
-            },
-            $maxDistance: distance,
-          },
-        },
-        isGuide: true,
-      }, { account: 0 })
+      .find({ isGuide: true }, { account: 0 })
+      .near('location', { center, maxDistance: Number(maxDistance), spherical: true })
       .lean()
       .exec((err, users) => {
         if (err) { return reject({ code: 4, message: err.message }); }

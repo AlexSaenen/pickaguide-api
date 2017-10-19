@@ -27,11 +27,22 @@ const userSchema = new Schema({
     description: { type: String, default: 'My personal description' },
     interests: [{ type: String }],
     _fsId: { type: Schema.Types.ObjectId, ref: 'fs.files', default: null },
-    point: { type: [Number], index: '2dsphere' },
+  },
+  location: {
+    type: {
+      type: String,
+      enum: 'Point',
+      default: 'Point',
+    },
+    coordinates: {
+      type: [Number],
+      default: [0, 0],
+    },
   },
   isGuide: { type: Boolean, default: false },
   isBlocking: { type: Boolean, default: false },
-});
+}).index({ location: '2dsphere' }, { sparse: true });
+
 
 userSchema.methods.hash = function hash(plainPassword, next) {
   bcrypt.hash(plainPassword, WORK_FORCE).then((hashed) => {

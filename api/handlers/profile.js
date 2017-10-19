@@ -147,13 +147,13 @@ class Profile extends User {
 
   static addGeo(userId, reqBody) {
     return new Promise((resolve, reject) => {
-      super.find(userId, 'profile', true)
+      super.find(userId, 'location', true)
         .then((user) => {
-          user.profile.point = [reqBody.x, reqBody.y];
+          user.location.coordinates = [reqBody.x, reqBody.y];
           user.save((err, updatedUser) => {
             if (err) { return reject({ code: 1, message: err.message }); }
 
-            return resolve({ id: userId, geo: updatedUser.profile.point });
+            return resolve({ id: userId, geo: updatedUser.location.coordinates });
           });
         })
         .catch(err => reject(err));
@@ -162,10 +162,10 @@ class Profile extends User {
 
   static findNear(userId, distance) {
     return new Promise((resolve, reject) => {
-      super.find(userId, 'profile')
+      super.find(userId, 'location', true)
         .then((user) => {
-          if (!user.profile.point) { return reject({ code: 3, message: 'User does not have localisation' }); }
-          super.findNear(user.profile.point, distance)
+          if (!user.location) { return reject({ code: 3, message: 'User does not have localisation' }); }
+          super.findNear(user.location.coordinates, distance)
             .then(users => resolve(users))
             .catch(findNearError => reject(findNearError));
         })
