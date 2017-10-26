@@ -134,7 +134,7 @@ const findByTerms = (terms) => {
     });
 
     db.Users
-      .find({ $or: regexSearch }, fields)
+      .find({ $or: regexSearch, 'account.emailConfirmation': true }, fields)
       .lean()
       .exec((err, users) => {
         if (err) { return reject({ code: 1, message: err.message }); }
