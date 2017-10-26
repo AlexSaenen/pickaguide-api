@@ -11,8 +11,8 @@ const commentSchema = new Schema({
 
 const advertSchema = new Schema({
   title: { type: String, required: true, index: true, unique: true, sparse: true },
-  country: { type: String, required: true, index: true, unique: true, sparse: true },
-  city: { type: String, required: true, index: true, unique: true, sparse: true },
+  country: { type: String, required: true, index: true, sparse: true },
+  city: { type: String, required: true, index: true, sparse: true },
   description: { type: String, required: true },
   // occupied: [{ from: { type: Date, required: true }, to: { type: Date, required: true } }],
 
