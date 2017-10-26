@@ -54,6 +54,8 @@ exports.checkUserIsBlocked = function checkUserIsBlocked(req, res, next) {
     new RegExp(`^/accounts/${req.user.userId}`),
     new RegExp(`^/profiles/${req.user.userId}`),
     new RegExp(/^\/notifications\/hasUnread/),
+    new RegExp(/^\/notifications\/unread/),
+    new RegExp(/^\/notifications/),
     new RegExp(/^\/proposals\/[a-z0-9]{24}\/comments/),
     new RegExp(/^\/payment\//),
     new RegExp(/^\/visits\/review$/),
