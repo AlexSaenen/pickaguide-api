@@ -39,7 +39,7 @@ class Advert {
 
     const regexes = terms.trim().split(' ').filter(term => term.length > 2).map(term => new RegExp(term, 'i'));
     const regexSearch = [];
-    ['title', 'description'].forEach((field) => {
+    ['title', 'description', 'city', 'country'].forEach((field) => {
       const searchElement = {};
       searchElement[field] = { $in: regexes };
       regexSearch.push(searchElement);

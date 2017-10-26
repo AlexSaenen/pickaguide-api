@@ -127,7 +127,7 @@ const findByTerms = (terms) => {
   return new Promise((resolve, reject) => {
     const regexes = terms.trim().split(' ').filter(term => term.length > 2).map(term => new RegExp(term, 'i'));
     const regexSearch = [];
-    ['firstName', 'lastName', 'city', 'country', 'description', 'interests'].forEach((field) => {
+    ['firstName', 'lastName', 'description', 'interests'].forEach((field) => {
       const searchElement = {};
       searchElement[`profile.${field}`] = { $in: regexes };
       regexSearch.push(searchElement);

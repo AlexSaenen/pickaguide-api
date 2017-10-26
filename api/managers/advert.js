@@ -4,7 +4,7 @@ const displayName = require('./profile').displayName;
 
 
 const capitalize = (advert) => {
-  const fieldsToCapitalize = ['title'];
+  const fieldsToCapitalize = ['title', 'city', 'country'];
 
   fieldsToCapitalize.forEach((fieldName) => {
     const fieldValue = advert[fieldName];
@@ -144,7 +144,7 @@ const findMain = () => {
 const findAllFrom = (userId) => {
   return new Promise((resolve, reject) => {
     db.Adverts
-      .find({ owner: String(userId) }, 'title description photoUrl active')
+      .find({ owner: String(userId) }, 'title description photoUrl active city country')
       .lean()
       .exec((err, adverts) => {
         if (err) { return reject({ code: 1, message: err.message }); }
@@ -157,7 +157,7 @@ const findAllFrom = (userId) => {
 const findAllFromHim = (userId) => {
   return new Promise((resolve, reject) => {
     db.Adverts
-      .find({ owner: String(userId), active: true }, 'title description photoUrl')
+      .find({ owner: String(userId), active: true }, 'title description photoUrl city country')
       .lean()
       .exec((err, adverts) => {
         if (err) { return reject({ code: 1, message: err.message }); }
