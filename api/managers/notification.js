@@ -61,7 +61,7 @@ const readAll = (idUser) => {
 const getUnread = (idUser) => {
   return new Promise((resolve, reject) => {
     db.Notifications
-      .find({ forWhom: idUser, readAt: null }, '_id')
+      .find({ forWhom: idUser, readAt: null })
       .lean()
       .exec((err, notifs) => {
         if (err) { return reject({ code: 1, message: err.message }); }
