@@ -63,11 +63,8 @@ exports.createPayment = (idUser, body) => {
         description: body.description,
         metadata: body.meta,
       })
-      .then((payment) => {
-        resolve(payment)
-        console.log("ici les amis");
-      })
-      .catch(err => reject(err));
+      .then(payment => resolve(payment))
+      .catch(error => reject(err));
   });
 };
 
@@ -86,18 +83,16 @@ exports.getAllPayments = (idUser) => {
       .catch(err => reject(err));
   });
 };
-// exports.getAllPayments = (idUser) => {
-//   return new Promise((resolve, reject) => {
-//     if (idUser === null) {
-//       return resolve({ data: [] });
-//     }
 
-//     stripe.charges
-//       .list({
-//         customer: idUser,
-//         limit: 100,
-//       })
-//       .then(payments => resolve(payments))
-//       .catch(err => reject(err));
-//   });
-// };
+exports.getPayment = (idPayment) => {
+  return new Promise((resolve, reject) => {
+    if (idPayment === null) {
+      return resolve({ data: [] });
+    }
+
+    stripe.charges
+      .retrieve(idPayment)
+      .then(payment => resolve(payment))
+      .catch(err => reject(err));
+  });
+};

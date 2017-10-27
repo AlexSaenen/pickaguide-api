@@ -122,8 +122,8 @@ router.post('/pay', (req, res) => {
 router.get('/pay', (req, res) => {
   const user = req.loadedUser;
 
-  paymentHandler.getAllPayments(user.account.paymentId)
-    .then(payments => res.status(200).send(payments.data))
+  paymentHandler.getAllPayments(user)
+    .then(payments => res.status(200).send(payments))
     .catch(err => res.status(400).send(err));
 });
 
@@ -144,10 +144,50 @@ router.get('/pay', (req, res) => {
 router.get('/refounds', (req, res) => {
   const user = req.loadedUser;
 
-  paymentHandler.getRefounds(user)
+  paymentHandler.getRefounds(user, false)
     .then(payments => res.status(200).send(payments))
     .catch(err => res.status(400).send(err));
 });
 
+/**
+ * @api {get} /payment/refounded Get Refounded payement for guide
+ * @apiName getAllPayments
+ * @apiGroup Payment
+ * @apiVersion 0.3.2
+ *
+ * @apiHeader {String} Authorization The jsonwebtoken given on <code>/public/sign-in</code> preceded by <code>Bearer</code>
+ *
+ * @apiSuccess {Object[]} payments All refounded for this User <a>https://stripe.com/docs/api/node#list_charges</a>.
+ * @apiUse DatabaseError
+ * @apiUse UserNotConnected
+ * @apiUse StripeError
+ */
+router.get('/refounded', (req, res) => {
+  const user = req.loadedUser;
+
+  paymentHandler.getRefounds(user, true)
+    .then(payments => res.status(200).send(payments))
+    .catch(err => res.status(400).send(err));
+});
+
+/**
+ * @api {get} /payment/pay/:id Get infos for one payment
+ * @apiName getAllPayments
+ * @apiGroup Payment
+ * @apiVersion 0.3.2
+ *
+ * @apiHeader {String} Authorization The jsonwebtoken given on <code>/public/sign-in</code> preceded by <code>Bearer</code>
+ *
+ * @apiSuccess {Object[]} return info of one payment <a>https://stripe.com/docs/api/node#list_charges</a>.
+ * @apiUse DatabaseError
+ * @apiUse UserNotConnected
+ * @apiUse StripeError
+ */
+
+router.get('/pay/:id', (req, res) => {
+    paymentHandler.getPayment(req.params.id)
+    .then(payments => res.status(200).send(payments))
+    .catch(err => res.status(400).send(err));
+})
 
 module.exports = router;

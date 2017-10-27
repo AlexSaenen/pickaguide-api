@@ -13,30 +13,57 @@ const create = (payerIdx, beneficiaryIdx, amountPayerx, amountBeneficiaryx) => {
       amountBeneficiary: amountBeneficiaryx,
     });
 
-    newPayment.save((err) => {
+    newPayment.save((err, payment) => {
       if (err) {
         let message;
         if (err.code === 11000) { message = 'This payment already exists'; } else { message = 'Invalid data'; }
         return reject({ code: 1, message });
       }
-      resolve({ code: 0, message: 'Payment requested' });
+      resolve(payment);
+      // resolve({ code: 0, message: 'Payment requested' });
     });
   });
 };
 
-const getRefounds = (user) => {
+const getRefounds = (user, refoundedx = false) => {
   return new Promise((resolve, reject) => {
-    db.Payments
-      .find({ beneficiaryId: user})
-      .lean()
-      .exec((err, Payments) => {
-        if (err) { return reject({ code: 1, message: err.message }); }
-        if (Payments == null) { return reject({ code: 2, message: 'You don\'t have any refound' }); }
+  db.Payments
+    .find({ beneficiaryId: user, refounded: refoundedx})
+    .lean()
+    .exec((err, Payments) => {
+      if (err) { return reject({ code: 1, message: err.message }); }
+      if (Payments == null) { return reject({ code: 2, message: 'You don\'t have any refound' }); }
 
-        resolve({ Payments });
-      });
+      resolve({ Payments });
+    });      
   });
 };
 
+const getPayments = (user, payedx = false) => {
+  return new Promise((resolve, reject) => {
+  db.Payments
+    .find({ payerId: user, payed: payedx})
+    .lean()
+    .exec((err, Payments) => {
+      if (err) { return reject({ code: 1, message: err.message }); }
+      if (Payments == null) { return reject({ code: 2, message: 'You don\'t have any payment' }); }
 
-module.exports = { create, getRefounds};
+      resolve({ Payments });
+    });      
+  });
+};
+
+const paymentPayed = (payment, paymentId) => {
+  return new Promise ((resolve, reject) => {
+    payment.payed = true;
+    payment.idPayment = paymentId
+    payment.save((saveErr, updatedPayment) => {
+      if (saveErr) { return reject({ code: 1, saveErr }); }
+      if (updatedPayment === null) { return reject({ code: 2, message: 'Failed to update payment' }); }
+
+      resolve({ visit: updatedPayment });
+    });
+  })
+}
+
+module.exports = { create, getRefounds, getPayments, paymentPayed};

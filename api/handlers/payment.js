@@ -33,38 +33,51 @@ class Payment {
 
     static createPayment(user, reqBody) {
     return new Promise((resolve, reject) => {
-      paymentService.createPayment(user.account.paymentId, reqBody)
-        .then((result) => {
-          return userManager
-              .find(reqBody.destination)
-              .then((userDestination) => {
-                return paymentManager
-                  .create(user, userDestination, reqBody.amount, reqBody.amount)
-                  .catch(error => reject(error))
-              })
-              .catch(error => reject(error))
-              .then(() => {
-                resolve(result)
-              })
+      userManager
+        .find(reqBody.destination)
+        .then((userDestination) => {
+          return paymentManager
+            .create(user, userDestination, reqBody.amount, reqBody.amount)
+            .catch(error => reject(error))
         })
         .catch(error => reject(error))
+        .then((paymentDb) => {
+          paymentService.createPayment(user.account.paymentId, reqBody)
+            .then((result) => {
+              return paymentManager
+                  .paymentPayed(paymentDb, result.id)
+                  .then(() => resolve(result))
+                  .catch(error => reject(error))
+            })
+        })
+      .catch(error => reject(error))
     });
   }
 
-    static getAllPayments(paymentId) {
+    static getAllPayments(user) {
     return new Promise((resolve, reject) => {
-      paymentService.getAllPayments(paymentId)
+      paymentManager.getPayments(user)
         .then(result => resolve(result))
         .catch(error => reject(error));
     });
-  }
 
-    static getRefounds(user) {
+    //   paymentService.getAllPayments(paymentId)
+    //     .then(result => resolve(result))
+    //     .catch(error => reject(error));
+    // });
+  }
+    static getPayment(paymentId) {
+      return new Promise((resolve, reject) => {
+        paymentService.getPayment(paymentId)
+        .then(result => resolve(result))
+        .catch(error => reject(error))
+      })
+    }
+
+    static getRefounds(user, refounded) {
     return new Promise((resolve, reject) => {
-      paymentManager.getRefounds(user)
-        .then((result) => {
-          resolve(result);
-        })
+      paymentManager.getRefounds(user, refounded)
+        .then(result => resolve(result))
         .catch(error => reject(error));
     });
   }
