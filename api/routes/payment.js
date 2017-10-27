@@ -1,5 +1,6 @@
 const express = require('express');
-const paymentService = require('../payment-service');
+//const paymentService = require('../payment-service');
+const paymentHandler = require('../handlers/payment').Payment;
 const userManager = require('../managers/user');
 
 
@@ -43,13 +44,13 @@ router.use((req, res, next) => { // middleware to get the account for every requ
  */
 router.get('/', (req, res) => {
   const user = req.loadedUser;
-
+  console.log(user.account);
   if (user.account.paymentId == null) {
-    paymentService.createUser(user)
+    paymentHandler.createUser(user)
       .then(result => res.status(200).send(result))
       .catch(err => res.status(400).send(err));
   } else {
-    paymentService.getUser(user)
+    paymentHandler.getUser(user)
       .then(result => res.status(200).send(result))
       .catch(err => res.status(400).send(err));
   }
@@ -75,7 +76,7 @@ router.get('/', (req, res) => {
 router.post('/card', (req, res) => {
   const user = req.loadedUser;
 
-  paymentService.addCard(user.account.paymentId, req.body)
+  paymentHandler.addCard(user.account.paymentId, req.body)
     .then(result => res.status(200).send(result))
     .catch(err => res.status(400).send(err));
 });
@@ -100,7 +101,7 @@ router.post('/pay', (req, res) => {
   const user = req.loadedUser;
   req.body.currency = 'eur';
 
-  paymentService.createPayment(user.account.paymentId, req.body)
+  paymentHandler.createPayment(user, req.body)
     .then(payment => res.status(200).send(payment))
     .catch(err => res.status(400).send(err));
 });
@@ -121,9 +122,32 @@ router.post('/pay', (req, res) => {
 router.get('/pay', (req, res) => {
   const user = req.loadedUser;
 
-  paymentService.getAllPayments(user.account.paymentId)
+  paymentHandler.getAllPayments(user.account.paymentId)
     .then(payments => res.status(200).send(payments.data))
     .catch(err => res.status(400).send(err));
 });
+
+
+/**
+ * @api {get} /payment/refounds Get Refound for guide
+ * @apiName getAllPayments
+ * @apiGroup Payment
+ * @apiVersion 0.3.2
+ *
+ * @apiHeader {String} Authorization The jsonwebtoken given on <code>/public/sign-in</code> preceded by <code>Bearer</code>
+ *
+ * @apiSuccess {Object[]} payments All refound for this User <a>https://stripe.com/docs/api/node#list_charges</a>.
+ * @apiUse DatabaseError
+ * @apiUse UserNotConnected
+ * @apiUse StripeError
+ */
+router.get('/refounds', (req, res) => {
+  const user = req.loadedUser;
+
+  paymentHandler.getRefounds(user)
+    .then(payments => res.status(200).send(payments))
+    .catch(err => res.status(400).send(err));
+});
+
 
 module.exports = router;

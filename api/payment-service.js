@@ -15,11 +15,10 @@ exports.createUser = (user) => {
       .then((customer) => {
         user.account.paymentId = customer.id;
 
-        user.account.save((saveErr) => {
+        user.save((saveErr) => {
           if (saveErr) {
             return reject(saveErr);
           }
-
           resolve(customer);
         });
       })
@@ -64,7 +63,10 @@ exports.createPayment = (idUser, body) => {
         description: body.description,
         metadata: body.meta,
       })
-      .then(payment => resolve(payment))
+      .then((payment) => {
+        resolve(payment)
+        console.log("ici les amis");
+      })
       .catch(err => reject(err));
   });
 };
@@ -84,3 +86,18 @@ exports.getAllPayments = (idUser) => {
       .catch(err => reject(err));
   });
 };
+// exports.getAllPayments = (idUser) => {
+//   return new Promise((resolve, reject) => {
+//     if (idUser === null) {
+//       return resolve({ data: [] });
+//     }
+
+//     stripe.charges
+//       .list({
+//         customer: idUser,
+//         limit: 100,
+//       })
+//       .then(payments => resolve(payments))
+//       .catch(err => reject(err));
+//   });
+// };
