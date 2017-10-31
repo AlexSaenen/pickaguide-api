@@ -10,17 +10,17 @@ const commentSchema = new Schema({
 });
 
 const advertSchema = new Schema({
-  title: { type: String, required: true, index: true, unique: true, sparse: true },
-  country: { type: String, required: true, index: true, sparse: true },
-  city: { type: String, required: true, index: true, sparse: true },
+  title: { type: String, required: true },
+  country: { type: String, required: true },
+  city: { type: String, required: true },
   description: { type: String, required: true },
   // occupied: [{ from: { type: Date, required: true }, to: { type: Date, required: true } }],
 
   photoUrl: { type: String, required: true },
-  owner: { type: Schema.Types.ObjectId, ref: 'Users', required: true, index: true, sparse: true },
+  owner: { type: Schema.Types.ObjectId, ref: 'Users', required: true },
   active: { type: Boolean, default: false },
   comments: [commentSchema],
-});
+}).index({ title: 1, country: 1, city: 1, owner: 1 }, { unique: true });
 
 
 exports.Adverts = mongoose.model('Adverts', advertSchema);

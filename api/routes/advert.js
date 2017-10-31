@@ -6,6 +6,32 @@ const commentAdvert = require('../handlers/commentAdvert').CommentAdvert;
 const router = express.Router();
 
 
+/**
+ * @api {post} /adverts/ Create Advert
+ * @apiName create
+ * @apiGroup Advert
+ * @apiVersion 0.3.2
+ *
+ * @apiHeader {String} Authorization The jsonwebtoken given on <code>/public/sign-in</code> preceded by <code>Bearer</code>
+ * @apiParam {String} title The title of the advert
+ * @apiParam {String} country The country where the advert places the visit
+ * @apiParam {String} city The city for the visit
+ * @apiParam {String} description The description of the advert
+ * @apiParam {String} photoUrl The web url to the cover for the advert
+ *
+ * @apiSuccess {Number} code Code representing the status of the request.
+ * @apiSuccess {String} message A message to indicate if the Advert has been created.
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "code": 0,
+ *       "message": "Advert created"
+ *     }
+ *
+ * @apiUse DatabaseError
+ * @apiUse UserNotFound
+ */
 router.post('/', (req, res) => {
   advertHandler.create(req.user.userId, req.body)
     .then(result => res.status(200).send(result))

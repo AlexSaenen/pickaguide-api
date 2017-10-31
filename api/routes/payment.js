@@ -1,5 +1,4 @@
 const express = require('express');
-//const paymentService = require('../payment-service');
 const paymentHandler = require('../handlers/payment').Payment;
 const userManager = require('../managers/user');
 
@@ -44,7 +43,6 @@ router.use((req, res, next) => { // middleware to get the account for every requ
  */
 router.get('/', (req, res) => {
   const user = req.loadedUser;
-  console.log(user.account);
   if (user.account.paymentId == null) {
     paymentHandler.createUser(user)
       .then(result => res.status(200).send(result))
@@ -183,11 +181,10 @@ router.get('/refounded', (req, res) => {
  * @apiUse UserNotConnected
  * @apiUse StripeError
  */
-
 router.get('/pay/:id', (req, res) => {
-    paymentHandler.getPayment(req.params.id)
+  paymentHandler.getPayment(req.params.id)
     .then(payments => res.status(200).send(payments))
     .catch(err => res.status(400).send(err));
-})
+});
 
 module.exports = router;
