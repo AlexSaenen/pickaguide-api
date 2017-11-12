@@ -5,8 +5,6 @@ const visitHandler = require('../handlers/visit').Visit;
 const advertHandler = require('../handlers/advert').Advert;
 const commentAdvert = require('../handlers/commentAdvert').CommentAdvert;
 
-
-
 const router = express.Router();
 
 

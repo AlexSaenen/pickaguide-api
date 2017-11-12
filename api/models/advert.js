@@ -18,6 +18,7 @@ const advertSchema = new Schema({
   owner: { type: Schema.Types.ObjectId, ref: 'Users', required: true, index: true, sparse: true },
   active: { type: Boolean, default: false },
   comments: [commentSchema],
+  _fsIds: [{ type: Schema.Types.ObjectId, ref: 'fs.files', default: null }],
 });
 
 

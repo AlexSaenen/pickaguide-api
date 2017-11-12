@@ -58,6 +58,32 @@ exports.downloadImage = (idImage) => {
   });
 };
 
+exports.downloadImages = (idsImages) => {
+  return new Promise((resolve, reject) => {
+    const gfs = Grid(db.conn.db);
+
+    gfs.files.find({
+      _id: {
+        $in: idsImages,
+      },
+    }).toArray((err, files) => {
+      if (files.length === 0 || err) return reject({ code: 1, message: err });
+
+      // TODO do this for multiple files
+      // const name = `${idImage}_${Date.now()}.${mime.extension(files[0].contentType)}`;
+      // const fsWriteStream = fs.createWriteStream(path.join(path.join(__dirname, '/../assets/'), name));
+      // const readstream = gfs.createReadStream({
+      //   _id: idImage,
+      // });
+      //
+      // readstream.pipe(fsWriteStream);
+      // fsWriteStream.on('close', () => {
+      //   resolve(path.resolve(path.join(path.join(__dirname, '/../assets/'), name)));
+      // });
+    });
+  });
+};
+
 exports.deleteImage = (idImage) => {
   return new Promise((resolve, reject) => {
     const gfs = Grid(db.conn.db);
