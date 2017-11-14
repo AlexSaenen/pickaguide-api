@@ -1,7 +1,15 @@
+const NodeGeocoder = require('node-geocoder');
 const db = require('../database');
 const _ = require('lodash');
 const displayName = require('./profile').displayName;
 
+
+const options = {
+  provider: 'google',
+  apiKey: 'AIzaSyBE5bc1-R4JKw8qENkfQQg9VBM8sZ2GMlY',
+};
+
+const geocoder = NodeGeocoder(options);
 
 const capitalize = (advert) => {
   const fieldsToCapitalize = ['title', 'city', 'country'];
@@ -14,21 +22,44 @@ const capitalize = (advert) => {
   });
 };
 
+const transformAdressToCoordinates = (fields) => {
+  return new Promise((resolve, reject) => {
+    let address = `${fields.city}, ${fields.country}`;
+    if (fields.location) {
+      address = `${fields.location}, ${fields.city}, ${fields.country}`;
+    }
+    geocoder.geocode(address)
+      .then((res) => {
+        if (res.length === 0) {
+          resolve('address not found');
+        }
+        resolve([res[0].latitude, res[0].longitude]);
+      })
+      .catch(err => reject(err));
+  });
+};
+
 const add = (creator, fields) => {
   return new Promise((resolve, reject) => {
     fields.owner = creator;
 
-    const newAd = new db.Adverts(fields);
-    capitalize(newAd);
-
-    newAd.save((err) => {
-      if (err) {
-        let message;
-        if (err.code === 11000) { message = 'This advert already exists'; } else { message = 'Invalid data'; }
-        return reject({ code: 1, message });
+    return transformAdressToCoordinates(fields)
+    .then((coordinatesTransformed) => {
+      if (coordinatesTransformed === 'address not found') {
+        coordinatesTransformed = [0, 0];
       }
+      fields.location = { coordinates: coordinatesTransformed };
+      const newAd = new db.Adverts(fields);
+      capitalize(newAd);
 
-      resolve({ code: 0, message: 'Advert created' });
+      newAd.save((err) => {
+        if (err) {
+          let message;
+          if (err.code === 11000) { message = 'This advert already exists'; } else { message = 'Invalid data'; }
+          return reject({ code: 1, message });
+        }
+        resolve({ code: 0, message: 'Advert created' });
+      });
     });
   });
 };
@@ -162,6 +193,19 @@ const findAllFromHim = (userId) => {
       .exec((err, adverts) => {
         if (err) { return reject({ code: 1, message: err.message }); }
 
+        resolve(adverts);
+      });
+  });
+};
+
+const findNear = (center, maxDistance) => {
+  return new Promise((resolve, reject) => {
+    db.Adverts
+      .find({ active: true })
+      .near('location', { center, maxDistance: Number(maxDistance), spherical: true })
+      .lean()
+      .exec((err, adverts) => {
+        if (err) { return reject({ code: 4, message: err.message }); }
         resolve(adverts);
       });
   });
@@ -395,4 +439,4 @@ const toggleAllOff = (userId) => {
 };
 
 
-module.exports = { add, remove, removeAll, findOwner, find, findAll, findMain, findAllFrom, findAllFromHim, search, toggle, toggleOff, toggleAllOff, update };
+module.exports = { add, remove, removeAll, findOwner, find, findAll, findMain, findAllFrom, findAllFromHim, findNear, search, toggle, toggleOff, toggleAllOff, update };

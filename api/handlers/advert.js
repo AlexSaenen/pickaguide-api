@@ -1,6 +1,7 @@
 'use strict';
 
 const advertManager = require('../managers/advert');
+const userManager = require('../managers/user');
 
 
 class Advert {
@@ -74,6 +75,15 @@ class Advert {
 
   static setAvailability(userId, advertId, reqBody) {
     return advertManager.setAvailability(userId, advertId, reqBody);
+  }
+
+  static findNear(userId, distance) {
+    return new Promise((resolve, reject) => {
+      userManager.find(userId, 'location')
+      .then(user => advertManager.findNear(user.location.coordinates, distance))
+      .then(adverts => resolve(adverts))
+      .catch(err => reject(err));
+    });
   }
 
 }

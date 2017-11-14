@@ -80,6 +80,12 @@ router.post('/:id/comments', (req, res) => {
     .catch(error => res.status(500).send(error));
 });
 
+router.get('/geo/:distance', (req, res) => {
+  advertHandler.findNear(req.user.userId, req.params.distance)
+    .then(result => res.status(200).send(result))
+    .catch(error => res.status(500).send(error));
+});
+
 // router.put('/:id/comments/:idcomment', (req, res) => {
 //   commentAdvert.edit(req.user.userId, req.params.id, req.params.idcomment)
 //     .then(result => res.status(200).send(result))

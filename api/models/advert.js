@@ -14,13 +14,24 @@ const advertSchema = new Schema({
   country: { type: String, required: true },
   city: { type: String, required: true },
   description: { type: String, required: true },
+  location: {
+    type: {
+      type: String,
+      enum: 'Point',
+      default: 'Point',
+    },
+    coordinates: {
+      type: [Number],
+      default: [0, 0],
+    },
+  },
   // occupied: [{ from: { type: Date, required: true }, to: { type: Date, required: true } }],
 
   photoUrl: { type: String, required: true },
   owner: { type: Schema.Types.ObjectId, ref: 'Users', required: true },
   active: { type: Boolean, default: false },
   comments: [commentSchema],
-}).index({ title: 1, country: 1, city: 1, owner: 1 }, { unique: true });
+}).index({ location: '2dsphere' }, { sparse: true }).index({ title: 1, country: 1, city: 1, owner: 1 }, { unique: true });
 
 
 exports.Adverts = mongoose.model('Adverts', advertSchema);
