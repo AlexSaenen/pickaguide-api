@@ -111,6 +111,7 @@ const findAll = () => {
 
         adverts.forEach((advert) => {
           if (advert.owner) {
+            advert.ownerId = advert.owner._id;
             advert.owner = displayName(advert.owner.profile);
           }
         });
@@ -179,6 +180,7 @@ const search = (regexSearch) => {
 
         adverts.forEach((advert) => {
           if (advert.owner) {
+            advert.ownerId = advert.owner._id;
             advert.owner = displayName(advert.owner.profile);
           }
         });

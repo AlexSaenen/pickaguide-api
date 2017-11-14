@@ -98,6 +98,21 @@ const isStatus = (visitId, status) => {
   });
 };
 
+const countAmountForAdvert = (idAdvert) => {
+  return new Promise((resolve, reject) => {
+    db.Visits
+      .count({
+        about: String(idAdvert),
+        hasEnded: true,
+        'status.label': 'finished',
+      })
+      .exec((err, counts) => {
+        if (err) { return reject({ code: 1, message: err.message }); }
+        resolve(counts);
+      });
+  });
+};
+
 const changeStatus = (input, allowedStatus, nextStatus) => {
   return new Promise((resolve, reject) => {
     Promise
@@ -391,4 +406,4 @@ const review = (userId, visitId, reqBody) => {
 };
 
 
-module.exports = { create, getCreator, getGuide, find, findAllFrom, findToReview, findAllFor, findAsGuide, findAsVisitor, cancel, cancelAll, deny, denyAll, finish, accept, review };
+module.exports = { create, getCreator, getGuide, countAmountForAdvert, find, findAllFrom, findToReview, findAllFor, findAsGuide, findAsVisitor, cancel, cancelAll, deny, denyAll, finish, accept, review };
