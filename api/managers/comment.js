@@ -28,6 +28,7 @@ const findByCommentsAdvert = (idAdvert) => {
       .lean()
       .exec((err, commentsForAd) => {
         if (err) return reject({ code: 1, message: err.message });
+        if (commentsForAd === null) { return reject({ code: 2, message: 'No such advert' }); }
 
         commentsForAd.comments.forEach((comment) => {
           if (comment.owner) {

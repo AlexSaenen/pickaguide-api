@@ -77,7 +77,11 @@ const findInIds = (userIds, selectFields = '', updatable = false) => {
 const findNear = (center, maxDistance) => {
   return new Promise((resolve, reject) => {
     db.Users
-      .find({ isGuide: true }, { account: 0 })
+      .find({ isGuide: true }, {
+        'profile.firstName': 1,
+        'profile.description': 1,
+        location: 1,
+      })
       .near('location', { center, maxDistance: Number(maxDistance), spherical: true })
       .lean()
       .exec((err, users) => {
