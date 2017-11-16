@@ -38,8 +38,8 @@ class Advert {
               advert.amountVisits = count;
               return advert;
             });
-          }),
-        ),
+          })
+        )
       )
       .then(adverts => resolve(adverts))
       .catch(err => reject(err));
@@ -57,8 +57,8 @@ class Advert {
               advert.amountVisits = count;
               return advert;
             });
-          }),
-        ),
+          })
+        )
       )
       .then(adverts => resolve(adverts))
       .catch(err => reject(err));
@@ -89,8 +89,8 @@ class Advert {
               advert.amountVisits = count;
               return advert;
             });
-          }),
-        ),
+          })
+        )
       )
       .then(adverts => resolve(adverts))
       .catch(err => reject(err));
