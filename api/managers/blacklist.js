@@ -7,7 +7,6 @@ const add = (fields) => {
     newBlacklist.save((err) => {
       if (err) {
         let message;
-        console.log(err);
         if (err.code === 11000) { message = 'This blacklist already exists'; } else { message = 'Invalid data'; }
         return reject({ code: 1, message });
       }
