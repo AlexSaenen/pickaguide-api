@@ -7,7 +7,7 @@ const Schema = mongoose.Schema;
 const userSchema = new Schema({
   account: {
     password: { type: String, required: true },
-    email: { type: String, required: true, unique: true, index: true },
+    email: { type: String },
     emailConfirmation: { type: Boolean, default: true },
     token: { type: String, index: true },
     resetPasswordToken: { type: String, index: true },
@@ -19,7 +19,7 @@ const userSchema = new Schema({
 
     birthdate: { type: Date, default: Date.now },
     gender: { type: String, default: 'm' },
-    phone: { type: String, unique: true, sparse: true, index: true },
+    phone: { type: String },
 
     city: { type: String },
     country: { type: String },
@@ -41,7 +41,7 @@ const userSchema = new Schema({
   },
   isGuide: { type: Boolean, default: false },
   isBlocking: { type: Boolean, default: false },
-}).index({ location: '2dsphere' }, { sparse: true });
+}).index({ location: '2dsphere' }, { sparse: true }).index({ 'account.email': 1, 'profile.phone': 1 }, { sparse: true, unique: true });
 
 
 userSchema.methods.hash = function hash(plainPassword, next) {
