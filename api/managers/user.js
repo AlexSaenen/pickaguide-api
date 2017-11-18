@@ -85,6 +85,7 @@ const findNear = (center, maxDistance) => {
       .near('location', { center, maxDistance: Number(maxDistance), spherical: true })
       .lean()
       .exec((err, users) => {
+        console.log(err);
         if (err) { return reject({ code: 4, message: err.message }); }
         resolve(users);
       });
