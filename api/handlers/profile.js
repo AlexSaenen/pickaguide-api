@@ -149,7 +149,7 @@ class Profile extends User {
     return new Promise((resolve, reject) => {
       super.find(userId, 'location', true)
         .then((user) => {
-          user.location.coordinates = [reqBody.x, reqBody.y];
+          user.location.coordinates = [reqBody.lng, reqBody.lat];
           user.save((err, updatedUser) => {
             if (err) { return reject({ code: 1, message: err.message }); }
 

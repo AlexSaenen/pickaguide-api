@@ -33,7 +33,7 @@ const transformAdressToCoordinates = (fields) => {
         if (res.length === 0) {
           resolve('address not found');
         }
-        resolve([res[0].latitude, res[0].longitude]);
+        resolve([res[0].longitude, res[0].latitude]);
       })
       .catch(err => reject(err));
   });
@@ -48,6 +48,7 @@ const add = (creator, fields) => {
       if (coordinatesTransformed === 'address not found') {
         coordinatesTransformed = [0, 0];
       }
+
       fields.location = { coordinates: coordinatesTransformed };
       const newAd = new db.Adverts(fields);
       capitalize(newAd);
