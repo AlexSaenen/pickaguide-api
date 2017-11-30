@@ -137,7 +137,6 @@ const findAll = () => {
       .find({ active: true })
       .populate({ path: 'owner', select: 'profile.firstName profile.lastName' })
       .lean()
-      .limit(10)
       .exec((err, adverts) => {
         if (err) { return reject({ code: 1, message: err.message }); }
 
