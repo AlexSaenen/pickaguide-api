@@ -28,8 +28,8 @@ class Visit {
             .catch(createErr => reject(createErr))
             .then(() => notifManager.create(result.advert.owner._id, {
               title: 'You got a visitor !',
-              body: `Someone is asking to visit '${result.advert.title}' with you`,
-            }));
+              body: `is asking to visit '${result.advert.title}' with you`,
+            }, by));
         })
         .catch(err => reject(err));
     });
@@ -185,8 +185,8 @@ class Visit {
         .then(() => visitManager.getGuide(visitId))
         .then(guide => notifManager.create(guide, {
           title: 'Your visit was cancelled',
-          body: 'One of your visits was cancelled',
-        }));
+          body: 'cancelled one of your visits',
+        }, userId));
     });
   }
 
@@ -198,8 +198,8 @@ class Visit {
         .then(() => visitManager.getCreator(visitId))
         .then(creator => notifManager.create(creator, {
           title: 'Your visit was denied',
-          body: 'One of your visits was denied by the guide',
-        }));
+          body: 'denied guiding you in one of your visits',
+        }, userId));
     });
   }
 
@@ -211,8 +211,8 @@ class Visit {
         .then(() => visitManager.getCreator(visitId))
         .then(creator => notifManager.create(creator, {
           title: 'Your visit was accepted !',
-          body: 'One of your visits was accepted by the guide, you will be exploring the city soon !',
-        }));
+          body: 'accepted to be guide in one of your visits, you will be exploring the city soon !',
+        }, userId));
     });
   }
 
@@ -226,8 +226,8 @@ class Visit {
               userManager.setBlocking(creator, true)
               .then(() => notifManager.create(creator, {
                 title: 'Your visit finished',
-                body: 'One of your visits has been marked as completed by the guide',
-              }))
+                body: 'marked one of your visits as completed',
+              }, userId))
             )
             .then(() => userManager.setBlocking(userId, true))
             .then(() => resolve(result))

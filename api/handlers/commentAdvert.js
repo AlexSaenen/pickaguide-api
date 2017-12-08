@@ -13,8 +13,8 @@ class CommentAdvert {
       .then(() => advertManager.find(idAdvert))
       .then(result => notifManager.create(result.advert.owner._id, {
         title: 'You got a comment !',
-        body: `Someone left a comment on your advert '${result.advert.title}'`,
-      }))
+        body: ` left a comment on your advert '${result.advert.title}'`,
+      }, userId))
       .then(() => CommentAdvert.findByCommentsAdvert(idAdvert));
   }
 
