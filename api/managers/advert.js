@@ -177,7 +177,7 @@ const findMain = () => {
 const findAllFrom = (userId) => {
   return new Promise((resolve, reject) => {
     db.Adverts
-      .find({ owner: String(userId) }, 'title description photoUrl active city country')
+      .find({ owner: String(userId) }, 'title description photoUrl active city country rate')
       .lean()
       .exec((err, adverts) => {
         if (err) { return reject({ code: 1, message: err.message }); }
@@ -190,7 +190,7 @@ const findAllFrom = (userId) => {
 const findAllFromHim = (userId) => {
   return new Promise((resolve, reject) => {
     db.Adverts
-      .find({ owner: String(userId), active: true }, 'title description photoUrl city country')
+      .find({ owner: String(userId), active: true }, 'title description photoUrl city country rate')
       .lean()
       .exec((err, adverts) => {
         if (err) { return reject({ code: 1, message: err.message }); }
@@ -281,6 +281,47 @@ const update = (userId, advertId, advertBody) => {
         });
       });
   });
+};
+
+const updateRate = (visitId) => {
+  return new Promise((resolve, reject) => {
+    db.Visits
+      .findById(visitId, 'about')
+      .lean()
+      .exec((err, visit) => {
+        if (err) { return reject({ code: 1, message: err.message }); }
+
+        resolve(visit.about);
+      });
+  })
+    .then((advertId) => {
+      return new Promise((resolve, reject) => {
+        db.Visits
+          .find({
+            about: String(advertId),
+            visitorRate: {
+              $ne: null,
+            },
+          }, 'visitorRate')
+          .lean()
+          .exec((err, visits) => {
+            if (err) { return reject({ code: 2, message: err.message }); }
+
+            const averageRate = visits.reduce((sum, visit) => sum + visit.visitorRate, 0) / visits.length;
+            resolve(averageRate);
+          });
+      })
+        .then((rate) => {
+          return new Promise((resolve, reject) => {
+            db.Adverts.findByIdAndUpdate(advertId, { rate })
+              .exec((err) => {
+                if (err) { return reject({ code: 3, message: err.message }); }
+
+                resolve();
+              });
+          });
+        });
+    });
 };
 
 // const addOccupied = (userId, advertId, reqBody) => {
@@ -442,4 +483,4 @@ const toggleAllOff = (userId) => {
 };
 
 
-module.exports = { add, remove, removeAll, findOwner, find, findAll, findMain, findAllFrom, findAllFromHim, findNear, search, toggle, toggleOff, toggleAllOff, update };
+module.exports = { add, remove, removeAll, findOwner, find, findAll, findMain, findAllFrom, findAllFromHim, findNear, search, toggle, toggleOff, toggleAllOff, update, updateRate };

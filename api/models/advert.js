@@ -27,6 +27,7 @@ const advertSchema = new Schema({
   },
   // occupied: [{ from: { type: Date, required: true }, to: { type: Date, required: true } }],
 
+  rate: { type: Number, default: null },
   photoUrl: { type: String, required: true },
   owner: { type: Schema.Types.ObjectId, ref: 'Users', required: true },
   active: { type: Boolean, default: false },

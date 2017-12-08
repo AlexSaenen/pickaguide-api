@@ -241,6 +241,8 @@ class Visit {
     return new Promise((resolve, reject) => {
       visitManager
         .review(userId, visitId, reqBody)
+        .then(() => userManager.updateRate(userId))
+        .then(() => advertManager.updateRate(visitId))
         .then(() => Visit.findToReview(userId))
         .then((results) => {
           if (results.theirVisits.length === 0 && results.myVisits.length === 0) {

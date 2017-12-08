@@ -80,6 +80,7 @@ const findNear = (center, maxDistance) => {
       .find({ isGuide: true }, {
         'profile.firstName': 1,
         'profile.description': 1,
+        'profile.rate': 1,
         location: 1,
       })
       .near('location', { center, maxDistance: Number(maxDistance), spherical: true })
@@ -223,6 +224,59 @@ const update = (userId, reqBody) => {
   });
 };
 
+const updateRate = (userId) => {
+  return new Promise((resolve, reject) => {
+    db.Adverts
+      .find({ owner: String(userId) }, '_id')
+      .lean()
+      .exec((err, adverts) => {
+        if (err) { return reject({ code: 1, message: err.message }); }
+
+        resolve(adverts);
+      });
+  })
+    .then((adverts) => {
+      return new Promise((resolve, reject) => {
+        db.Visits
+          .find({
+            $or: [{
+              about: {
+                $in: adverts,
+              },
+              visitorRate: {
+                $ne: null,
+              },
+            }, {
+              by: String(userId),
+              guideRate: {
+                $ne: null,
+              },
+            }],
+          }, 'by visitorRate guideRate')
+          .lean()
+          .exec((err, visits) => {
+            if (err) { return reject({ code: 2, message: err.message }); }
+
+            const averageRate = visits.reduce((sum, visit) => {
+              const toAdd = (String(visit.by) === userId ? visit.guideRate : visit.visitorRate);
+              return sum + toAdd;
+            }, 0) / visits.length;
+            resolve(averageRate);
+          });
+      });
+    })
+    .then((rate) => {
+      return new Promise((resolve, reject) => {
+        db.Users.findByIdAndUpdate(userId, { 'profile.rate': rate })
+          .exec((err) => {
+            if (err) { return reject({ code: 3, message: err.message }); }
+
+            resolve();
+          });
+      });
+    });
+};
+
 const isGuide = (userId) => {
   return new Promise((resolve, reject) => {
     db.Users
@@ -280,4 +334,4 @@ const becomeGuide = (userId) => {
 };
 
 
-module.exports = { add, remove, update, becomeGuide, isBlocking, isGuide, setBlocking, find, findByIdAndUpdate, findInIds, findAll, findNear, findByEmail, findByTerms };
+module.exports = { add, remove, update, becomeGuide, updateRate, isBlocking, isGuide, setBlocking, find, findByIdAndUpdate, findInIds, findAll, findNear, findByEmail, findByTerms };

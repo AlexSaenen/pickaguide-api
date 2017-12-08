@@ -24,6 +24,7 @@ const userSchema = new Schema({
     city: { type: String },
     country: { type: String },
 
+    rate: { type: Number, default: null },
     description: { type: String, default: 'My personal description' },
     interests: [{ type: String }],
     _fsId: { type: Schema.Types.ObjectId, ref: 'fs.files', default: null },
