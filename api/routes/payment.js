@@ -165,9 +165,12 @@ router.get('/refounds', (req, res) => {
 router.post('/refounds', (req, res) => {
   const user = req.loadedUser;
 
-  paymentHandler.getRefounds(user, false)
+  paymentHandler.postRefounds(user, req.body)
     .then(payments => res.status(200).send(payments))
-    .catch(err => res.status(400).send(err));
+    .catch(err => {
+      console.log(err);
+      res.status(400).send(err);
+    });
 });
 
 /**
