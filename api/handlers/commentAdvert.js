@@ -11,10 +11,14 @@ class CommentAdvert {
     return commentManager
       .create(userId, idAdvert, reqBody)
       .then(() => advertManager.find(idAdvert))
-      .then(result => notifManager.create(result.advert.owner._id, {
-        title: 'You got a comment !',
-        body: ` left a comment on your advert '${result.advert.title}'`,
-      }, userId))
+      .then((result) => {
+        if (String(result.advert.owner._id) !== userId) {
+          notifManager.create(result.advert.owner._id, {
+            title: 'You got a comment !',
+            body: ` left a comment on your advert '${result.advert.title}'`,
+          }, userId);
+        }
+      })
       .then(() => CommentAdvert.findByCommentsAdvert(idAdvert));
   }
 
