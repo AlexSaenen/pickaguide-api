@@ -120,9 +120,9 @@ router.post('/pay', (req, res) => {
 router.get('/pay', (req, res) => {
   const user = req.loadedUser;
 
-  paymentHandler.getAllPayments(user)
+  paymentHandler.getAllPayments(user._id)
     .then(payments => res.status(200).send(payments))
-    .catch(err => res.status(400).send(err));
+    .catch(err => {console.log(err);res.status(400).send(err)});
 });
 
 

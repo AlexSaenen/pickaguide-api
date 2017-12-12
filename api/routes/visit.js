@@ -31,7 +31,7 @@ router.get('/:id/:type', (req, res) => {
 router.put('/:id/review', (req, res) => {
   visitHandler.review(req.user.userId, req.params.id, req.body)
     .then(result => res.status(200).send(result))
-    .catch(error => res.status(500).send(error));
+    .catch(error => {console.log(error);res.status(500).send(error)});
 });
 
 router.put('/:id/cancel', (req, res) => {

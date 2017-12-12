@@ -1,5 +1,6 @@
 'use strict';
 
+const Promise = require('bluebird')
 const paymentService = require('../payment-service');
 const paymentManager = require('../managers/payment')
 const userManager = require('../managers/user');
@@ -35,11 +36,11 @@ class Payment {
   static createPayment(user, reqBody) {
     return new Promise((resolve, reject) => {
       visitManager.getGuide(reqBody.idVisit)
-        .then(guide => userManager.find(guide._id))
+        .then(guide => userManager.find(guide))
         .then((userDestination) => {
           return paymentManager
             .create(user, userDestination, reqBody.amount, reqBody.amount, reqBody.idVisit)
-            .catch(error => reject(error))
+            .catch(error => reject(error));
         })
         .catch(error => reject(error))
         .then((paymentDb) => {
@@ -58,7 +59,18 @@ class Payment {
   static getAllPayments(user) {
     return new Promise((resolve, reject) => {
       paymentManager.getPayments(user)
-        .then(result => resolve(result))
+        .then((result) => {
+          const payments = result.Payments;
+          return Promise.mapSeries(payments, payment => visitManager.find(payment.idVisit))
+          .then((visits) => {
+            payments.forEach((payment, index) => {
+              const visit = visits[index].visit;
+              payment.description = visit.about.title;
+            });
+
+            resolve({ Payments: payments });
+          });
+        })
         .catch(error => reject(error));
     });
   }

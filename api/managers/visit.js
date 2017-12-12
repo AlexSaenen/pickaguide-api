@@ -390,9 +390,9 @@ const review = (userId, visitId, reqBody) => {
       .populate({ path: 'about', select: 'owner' })
       .exec((err, visit) => {
         if (String(visit.by) === reqBody.for) {
-          visit.guideRate = reqBody.rate;
+          visit.guideRate = parseInt(reqBody.rate, 10);
         } else if (visit.about === null || String(visit.about.owner) === reqBody.for) {
-          visit.visitorRate = reqBody.rate;
+          visit.visitorRate = parseInt(reqBody.rate, 10);
         }
 
         visit.save((saveErr, updatedVisit) => {

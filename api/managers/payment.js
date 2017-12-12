@@ -2,8 +2,6 @@ const db = require('../database');
 const _ = require('lodash');
 const displayName = require('./profile').displayName;
 
-
-
 const create = (payerIdx, beneficiaryIdx, amountPayerx, amountBeneficiaryx, idVisitx) => {
   return new Promise((resolve, reject) => {
     const newPayment = new db.Payments({
@@ -35,21 +33,22 @@ const getRefounds = (user, refoundedx = false) => {
       if (Payments == null) { return reject({ code: 2, message: 'You don\'t have any refound' }); }
 
       resolve({ Payments });
-    });      
+    });
   });
 };
 
-const getPayments = (user, payedx = false) => {
+const getPayments = (user) => {
   return new Promise((resolve, reject) => {
   db.Payments
-    .find({ payerId: user, payed: payedx})
+    .find({ $or: [{ payerId: user }, { beneficiaryId: user }] })
     .lean()
+    .sort('-date')
     .exec((err, Payments) => {
       if (err) { return reject({ code: 1, message: err.message }); }
       if (Payments == null) { return reject({ code: 2, message: 'You don\'t have any payment' }); }
 
       resolve({ Payments });
-    });      
+    });
   });
 };
 
