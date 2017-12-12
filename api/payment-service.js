@@ -52,6 +52,18 @@ exports.addCard = (idUser, body) => {
   });
 };
 
+exports.deleteCard = (idUser, idCard) => {
+  return new Promise((resolve, reject) => {
+    stripe.customers
+      .deleteCard(
+        idUser,
+        idCard
+      )
+      .then(card => resolve(card))
+      .catch(err => reject(err));
+  });
+};
+
 exports.createPayment = (idUser, body) => {
   return new Promise((resolve, reject) => {
     stripe.charges
@@ -97,13 +109,14 @@ exports.getPayment = (idPayment) => {
   });
 };
 
-exports.createRefound = (idUser, body) => {
+exports.createRefound = (idUser, body, amount) => {
+  console.log(body);
   return new Promise((resolve, reject) => {
     stripe.payouts.create({
-      amount: 40,
-      currency: "usd"
+      amount: amount * 100,
+      currency: "eur",
     })
-    .then(payment => resolve(payments))
+    .then(payment => resolve(payment))
     .catch(err => reject(err));
   });
 };
