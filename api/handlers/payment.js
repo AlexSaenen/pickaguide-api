@@ -37,7 +37,7 @@ class Payment {
         .find(reqBody.destination)
         .then((userDestination) => {
           return paymentManager
-            .create(user, userDestination, reqBody.amount, reqBody.amount)
+            .create(user, userDestination, reqBody.amount, reqBody.amount, reqBody.idVisit)
             .catch(error => reject(error))
         })
         .catch(error => reject(error))

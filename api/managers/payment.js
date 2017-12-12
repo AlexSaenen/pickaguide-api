@@ -4,13 +4,14 @@ const displayName = require('./profile').displayName;
 
 
 
-const create = (payerIdx, beneficiaryIdx, amountPayerx, amountBeneficiaryx) => {
+const create = (payerIdx, beneficiaryIdx, amountPayerx, amountBeneficiaryx, idVisitx) => {
   return new Promise((resolve, reject) => {
     const newPayment = new db.Payments({
       payerId: payerIdx,
       beneficiaryId: beneficiaryIdx,
       amountPayer: amountPayerx,
       amountBeneficiary: amountBeneficiaryx,
+      idVisit: idVisitx,
     });
 
     newPayment.save((err, payment) => {
