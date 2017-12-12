@@ -122,7 +122,7 @@ router.get('/pay', (req, res) => {
 
   paymentHandler.getAllPayments(user._id)
     .then(payments => res.status(200).send(payments))
-    .catch(err => {console.log(err);res.status(400).send(err)});
+    .catch(err => res.status(400).send(err));
 });
 
 
@@ -228,11 +228,10 @@ router.get('/pay/:id', (req, res) => {
  * @apiUse UserNotConnected
  * @apiUse StripeError
  */
-router.delete('/card', (req, res) => {
+router.delete('/card/:id', (req, res) => {
   const user = req.loadedUser;
 
-  console.log('userrr', user, '|', req.body);
-  paymentHandler.deleteCard(user, req.body)
+  paymentHandler.deleteCard(user.account.paymentId, req.params.id)
     .then(payment => res.status(200).send(payment))
     .catch(err => res.status(400).send(err));
 });
