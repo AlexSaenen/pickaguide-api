@@ -27,8 +27,9 @@ const advertSchema = new Schema({
   },
   // occupied: [{ from: { type: Date, required: true }, to: { type: Date, required: true } }],
 
+  _fsIds: [{ type: Schema.Types.ObjectId, ref: 'fs.files', default: null }],
   rate: { type: Number, default: null },
-  photoUrl: { type: String, required: true },
+  photoUrl: { type: String },
   owner: { type: Schema.Types.ObjectId, ref: 'Users', required: true },
   active: { type: Boolean, default: false },
   comments: [commentSchema],

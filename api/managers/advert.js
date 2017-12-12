@@ -3,7 +3,6 @@ const db = require('../database');
 const _ = require('lodash');
 const displayName = require('./profile').displayName;
 
-
 const options = {
   provider: 'google',
   apiKey: 'AIzaSyBE5bc1-R4JKw8qENkfQQg9VBM8sZ2GMlY',
@@ -39,7 +38,7 @@ const transformAdressToCoordinates = (fields) => {
   });
 };
 
-const add = (creator, fields) => {
+const add = (creator, fields, files) => {
   return new Promise((resolve, reject) => {
     fields.owner = creator;
 
@@ -47,6 +46,12 @@ const add = (creator, fields) => {
     .then((coordinatesTransformed) => {
       if (coordinatesTransformed === 'address not found') {
         coordinatesTransformed = [0, 0];
+      }
+
+      fields._fsIds = files;
+
+      if (fields.photoUrl === undefined) {
+        fields.photoUrl = '';
       }
 
       fields.location = { coordinates: coordinatesTransformed };

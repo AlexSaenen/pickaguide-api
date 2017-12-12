@@ -1,8 +1,23 @@
 const express = require('express');
+const multer = require('multer');
+const mime = require('mime-types');
+const path = require('path');
 const advertHandler = require('../handlers/advert').Advert;
 const visitHandler = require('../handlers/visit').Visit;
 const commentAdvert = require('../handlers/commentAdvert').CommentAdvert;
 
+const upload = multer({
+  fileFilter(req, file, cb) {
+    if (!mime.extension(file.mimetype).match(/^(jpeg|jpg|png|gif)$/)) {
+      return cb(new Error(`The mimetype is not valid : ${file.mimetype}`));
+    }
+
+    cb(null, true);
+  },
+  dest: path.join(__dirname, '/../../assets/'),
+});
+
+const filesUpload = upload.any();
 const router = express.Router();
 
 
@@ -33,9 +48,12 @@ const router = express.Router();
  * @apiUse UserNotFound
  */
 router.post('/', (req, res) => {
-  advertHandler.create(req.user.userId, req.body)
+  filesUpload(req, res, (err) => {
+    if (err) return res.status(400).send({ code: 1, message: 'The mimetype is not valid must be jpeg|jpg|png|gif' });
+    advertHandler.create(req.user.userId, JSON.parse(req.body.proposalForm), req.files)
     .then(result => res.status(200).send(result))
-    .catch(error => res.status(500).send(error));
+    .catch(error => {console.log(error);res.status(500).send(error)});
+  });
 });
 
 router.get('/', (req, res) => {

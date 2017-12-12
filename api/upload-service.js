@@ -6,8 +6,8 @@ const mime = require('mime-types');
 const path = require('path');
 const Grid = require('gridfs-stream');
 
-const MAX_FILE_SIZE = 2097151;
-const MAX_FILE_SIZE_STR = '2mb';
+const MAX_FILE_SIZE = 5242880;
+const MAX_FILE_SIZE_STR = '5mb';
 
 Grid.mongo = db.mongo;
 

@@ -1,17 +1,24 @@
 'use strict';
 
+const Promise = require('bluebird');
 const advertManager = require('../managers/advert');
 const userManager = require('../managers/user');
 const visitManager = require('../managers/visit');
+const uploadService = require('../upload-service');
 
 class Advert {
 
-  static create(creator, reqBody) {
+  static create(creator, reqBody, reqFiles) {
     return new Promise((resolve, reject) => {
-      advertManager.add(creator, reqBody)
-        .then(() => advertManager.findAllFrom(creator))
-        .then(adverts => resolve({ adverts }))
-        .catch(err => reject(err));
+      if (reqFiles.some(file => file.size > uploadService.maxFileSize().size)) {
+        return reject({ code: 1, message: `File size exceeds ${uploadService.maxFileSize().label}` });
+      }
+
+      Promise.mapSeries(reqFiles, file => uploadService.uploadImage(file.path, file.originalname, file.mimetype))
+      .then(values => advertManager.add(creator, reqBody, values))
+      .then(() => advertManager.findAllFrom(creator))
+      .then(adverts => resolve({ adverts }))
+      .catch(err => reject(err));
     });
   }
 
