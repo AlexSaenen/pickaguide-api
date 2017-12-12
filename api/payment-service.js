@@ -64,7 +64,7 @@ exports.createPayment = (idUser, body) => {
         metadata: body.meta,
       })
       .then(payment => resolve(payment))
-      .catch(error => reject(err));
+      .catch(error => reject(error));
   });
 };
 
@@ -94,5 +94,11 @@ exports.getPayment = (idPayment) => {
       .retrieve(idPayment)
       .then(payment => resolve(payment))
       .catch(err => reject(err));
+  });
+};
+
+exports.createRefound = (idUser, body) => {
+  return new Promise((resolve, reject) => {
+    resolve({ data: "payment", amount: body });
   });
 };

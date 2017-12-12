@@ -12,6 +12,7 @@ const paymentSchema = new Schema({
   date: { type: Date, default: Date.now},
   idPayment: { type: String, default: null},
   idRefound: { type: String, default: null},
+  idVisit: { type: String, required: true},
 }).index({ payerId: 1, beneficiaryId: 1, date: 1 }, { unique: true });
 
 exports.Payments = mongoose.model('Payments', paymentSchema);
