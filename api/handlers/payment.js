@@ -23,7 +23,7 @@ class Payment {
     });
   }
 
-    static addCard(paymentId, reqBody) {
+  static addCard(paymentId, reqBody) {
     return new Promise((resolve, reject) => {
       paymentService.addCard(paymentId, reqBody)
         .then(result => resolve(result))
@@ -31,14 +31,14 @@ class Payment {
     });
   }
 
-    static createPayment(user, reqBody) {
+  static createPayment(user, reqBody) {
     return new Promise((resolve, reject) => {
       userManager
         .find(reqBody.destination)
         .then((userDestination) => {
           return paymentManager
             .create(user, userDestination, reqBody.amount, reqBody.amount, reqBody.idVisit)
-            .catch(error => reject(error))
+            .catch(error => reject(error));
         })
         .catch(error => reject(error))
         .then((paymentDb) => {
@@ -47,14 +47,14 @@ class Payment {
               return paymentManager
                   .paymentPayed(paymentDb, result.id)
                   .then(() => resolve(result))
-                  .catch(error => reject(error))
-            })
+                  .catch(error => reject(error));
+            });
         })
-      .catch(error => reject(error))
+      .catch(error => reject(error));
     });
   }
 
-    static getAllPayments(user) {
+  static getAllPayments(user) {
     return new Promise((resolve, reject) => {
       paymentManager.getPayments(user)
         .then(result => resolve(result))
@@ -103,6 +103,15 @@ class Payment {
         .catch(error => reject(error));
     });
   }
+
+  static deleteCard(user, idCard) {
+    return new Promise((resolve, reject) => {
+      paymentService.deleteCard(user, idCard)
+      .then(result => resolve(result))
+      .catch(error => reject(error));
+    });
+  }
+
 
 }
 

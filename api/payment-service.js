@@ -52,6 +52,18 @@ exports.addCard = (idUser, body) => {
   });
 };
 
+exports.deleteCard = (idUser, idCard) => {
+  return new Promise((resolve, reject) => {
+    stripe.customers
+      .deleteCard(
+        idUser,
+        idCard
+      )
+      .then(card => resolve(card))
+      .catch(err => reject(err));
+  });
+};
+
 exports.createPayment = (idUser, body) => {
   return new Promise((resolve, reject) => {
     stripe.charges

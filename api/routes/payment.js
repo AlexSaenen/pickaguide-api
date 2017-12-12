@@ -147,7 +147,6 @@ router.get('/refounds', (req, res) => {
     .catch(err => res.status(400).send(err));
 });
 
-
 /**
  * @api {post} /payment/refounds Guive Refound to guide
  * @apiName getAllPayments
@@ -210,6 +209,31 @@ router.get('/refounded', (req, res) => {
 router.get('/pay/:id', (req, res) => {
   paymentHandler.getPayment(req.params.id)
     .then(payments => res.status(200).send(payments))
+    .catch(err => res.status(400).send(err));
+});
+
+/**
+ * @api {post} /payment/pay Create Payment
+ * @apiName createPayment
+ * @apiGroup Payment
+ * @apiVersion 0.3.2
+ *
+ * @apiHeader {String} Authorization The jsonwebtoken given on <code>/public/sign-in</code> preceded by <code>Bearer</code>
+ * @apiParam {Number} amount Amount in currency units (for instance <code>23</code> as in <code>$23</code>)
+ * @apiParam {String} idCard The id of the card used for this payment
+ * @apiParam {String} description A description to explain the reason of this payment
+ *
+ * @apiSuccess {Object} charge The newly created Charge object for the selected Card Source <a>https://stripe.com/docs/api/node#create_charge</a>.
+ * @apiUse DatabaseError
+ * @apiUse UserNotConnected
+ * @apiUse StripeError
+ */
+router.delete('/card', (req, res) => {
+  const user = req.loadedUser;
+
+  console.log('userrr', user, '|', req.body);
+  paymentHandler.deleteCard(user, req.body)
+    .then(payment => res.status(200).send(payment))
     .catch(err => res.status(400).send(err));
 });
 
