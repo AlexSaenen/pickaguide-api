@@ -38,8 +38,8 @@ class Payment {
         .then(guide => userManager.find(guide._id))
         .then((userDestination) => {
           return paymentManager
-            .create(user, userDestination, reqBody.amount, reqBody.amount)
-            .catch(error => reject(error));
+            .create(user, userDestination, reqBody.amount, reqBody.amount, reqBody.idVisit)
+            .catch(error => reject(error))
         })
         .catch(error => reject(error))
         .then((paymentDb) => {

@@ -99,6 +99,11 @@ exports.getPayment = (idPayment) => {
 
 exports.createRefound = (idUser, body) => {
   return new Promise((resolve, reject) => {
-    resolve({ data: "payment", amount: body });
+    stripe.payouts.create({
+      amount: 40,
+      currency: "usd"
+    })
+    .then(payment => resolve(payments))
+    .catch(err => reject(err));
   });
 };
