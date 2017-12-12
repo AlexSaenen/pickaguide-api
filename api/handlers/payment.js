@@ -61,10 +61,6 @@ class Payment {
         .catch(error => reject(error));
     });
 
-    //   paymentService.getAllPayments(paymentId)
-    //     .then(result => resolve(result))
-    //     .catch(error => reject(error));
-    // });
   }
     static getPayment(paymentId) {
       return new Promise((resolve, reject) => {
@@ -78,6 +74,28 @@ class Payment {
     return new Promise((resolve, reject) => {
       paymentManager.getRefounds(user, refounded)
         .then(result => resolve(result))
+        .catch(error => reject(error));
+    });
+  }
+
+    static postRefounds(user, refounded) {
+    return new Promise((resolve, reject) => {
+      paymentManager.getRefounds(user, false)
+        .then((payments) => {
+          const totalAmount = payments.Payments.reduce((sum, x) => {
+            return sum + x.amountBeneficiary;
+          }, 0);
+          paymentService.createRefound(user, totalAmount)
+            .then((result) => {
+              Promise.all(payments.Payments.map((x) => {
+                return paymentManager
+                  .paymentRefounded(x, result.id)
+              }))
+              .then(() => resolve(result))
+              .catch(error => reject(error))
+            })
+            .catch(error => reject(error))
+        })
         .catch(error => reject(error));
     });
   }

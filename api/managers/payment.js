@@ -28,8 +28,7 @@ const create = (payerIdx, beneficiaryIdx, amountPayerx, amountBeneficiaryx) => {
 const getRefounds = (user, refoundedx = false) => {
   return new Promise((resolve, reject) => {
   db.Payments
-    .find({ beneficiaryId: user, refounded: refoundedx})
-    .lean()
+    .find({ beneficiaryId: user, refounded: refoundedx, payed: true})
     .exec((err, Payments) => {
       if (err) { return reject({ code: 1, message: err.message }); }
       if (Payments == null) { return reject({ code: 2, message: 'You don\'t have any refound' }); }
@@ -64,6 +63,20 @@ const paymentPayed = (payment, paymentId) => {
       resolve({ visit: updatedPayment });
     });
   })
-}
+};
 
-module.exports = { create, getRefounds, getPayments, paymentPayed};
+const paymentRefounded = (payment, paymentId) => {
+  console.log(payment);
+  return new Promise ((resolve, reject) => {
+    payment.refounded = true;
+    payment.idRefound = paymentId
+    payment.save((saveErr, updatedPayment) => {
+      if (saveErr) { return reject({ code: 1, saveErr }); }
+      if (updatedPayment === null) { return reject({ code: 2, message: 'Failed to update payment' }); }
+
+      resolve({ visit: updatedPayment });
+    });
+  })
+};
+
+module.exports = { create, getRefounds, getPayments, paymentPayed, paymentRefounded};
