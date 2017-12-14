@@ -1,11 +1,10 @@
 'use strict';
 
-const Promise = require('bluebird')
+const Promise = require('bluebird');
 const paymentService = require('../payment-service');
-const paymentManager = require('../managers/payment')
+const paymentManager = require('../managers/payment');
 const userManager = require('../managers/user');
 const visitManager = require('../managers/visit');
-const _ = require('lodash');
 
 
 class Payment {
@@ -65,7 +64,7 @@ class Payment {
           .then((visits) => {
             payments.forEach((payment, index) => {
               const visit = visits[index].visit;
-              payment.description = visit.about.title;
+              payment.description = visit.about ? visit.about.title : 'Advert deleted';
             });
 
             resolve({ Payments: payments });

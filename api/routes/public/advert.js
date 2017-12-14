@@ -22,4 +22,23 @@ router.get('/:id', (req, res) => {
     .catch(error => res.status(500).send(error));
 });
 
+router.get('/:id/image/:hook', (req, res) => {
+  advertHandler.downloadImageByHook(req.params.id, req.params.hook)
+    .then(result => res.status(200).sendFile(result))
+    .catch(error => res.status(500).send(error));
+});
+
+router.get('/:id/image', (req, res) => {
+  advertHandler.downloadImage(req.params.id)
+    .then(result => res.status(200).sendFile(result))
+    .catch(error => res.status(500).send(error));
+});
+
+router.get('/:id/imageHooks', (req, res) => {
+  advertHandler.getImageHooks(req.params.id)
+    .then(result => res.status(200).send(result))
+    .catch(error => res.status(500).send(error));
+});
+
+
 module.exports = router;

@@ -122,7 +122,7 @@ router.get('/pay', (req, res) => {
 
   paymentHandler.getAllPayments(user._id)
     .then(payments => res.status(200).send(payments))
-    .catch(err => res.status(400).send(err));
+    .catch(err => {console.log(err);res.status(400).send(err)});
 });
 
 

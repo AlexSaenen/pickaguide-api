@@ -34,6 +34,23 @@ class Advert {
     return advertManager.find(advertId);
   }
 
+  static downloadImage(advertId) {
+    return advertManager.find(advertId)
+    .then(result => uploadService.downloadImage(result.advert._fsIds[0]));
+  }
+
+  static downloadImageByHook(advertId, hook) {
+    return uploadService.downloadImage(hook);
+  }
+
+  static getImageHooks(advertId) {
+    return new Promise((resolve, reject) => {
+      advertManager.find(advertId)
+      .then(result => resolve(result.advert._fsIds))
+      .catch(error => reject(error));
+    });
+  }
+
   static findAll() {
     return new Promise((resolve, reject) => {
       advertManager.findAll()

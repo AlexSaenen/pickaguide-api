@@ -52,7 +52,7 @@ router.post('/', (req, res) => {
     if (err) return res.status(400).send({ code: 1, message: 'The mimetype is not valid must be jpeg|jpg|png|gif' });
     advertHandler.create(req.user.userId, JSON.parse(req.body.proposalForm), req.files)
     .then(result => res.status(200).send(result))
-    .catch(error => {console.log(error);res.status(500).send(error)});
+    .catch(error => res.status(500).send(error));
   });
 });
 

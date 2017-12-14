@@ -257,16 +257,28 @@ const updateRate = (userId) => {
           .exec((err, visits) => {
             if (err) { return reject({ code: 2, message: err.message }); }
 
-            const averageRate = visits.reduce((sum, visit) => {
+            let notIndicated = 0;
+
+            let averageRate = visits.reduce((sum, visit) => {
               const toAdd = (String(visit.by) === userId ? visit.guideRate : visit.visitorRate);
-              return sum + toAdd;
-            }, 0) / visits.length;
+              if (toAdd === null) {
+                notIndicated += 1;
+              }
+
+              return sum + (toAdd || 0);
+            }, 0) / (visits.length - notIndicated);
+
+            if (isNaN(averageRate)) {
+              averageRate = null;
+            }
+
             resolve(averageRate);
           });
       });
     })
     .then((rate) => {
       return new Promise((resolve, reject) => {
+        console.log('user', rate);
         db.Users.findByIdAndUpdate(userId, { 'profile.rate': rate })
           .exec((err) => {
             if (err) { return reject({ code: 3, message: err.message }); }

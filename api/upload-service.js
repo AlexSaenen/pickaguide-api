@@ -41,8 +41,10 @@ exports.downloadImage = (idImage) => {
   return new Promise((resolve, reject) => {
     const gfs = Grid(db.conn.db);
 
-    gfs.files.find({ _id: idImage }).toArray((err, files) => {
-      if (files.length === 0 || err) return reject({ code: 1, message: err });
+    gfs.files.find({ _id: db.ObjectId(idImage) }).toArray((err, files) => {
+      if (files.length === 0 || err) {
+        return reject({ code: 1, message: err });
+      }
 
       const name = `${idImage}_${Date.now()}.${mime.extension(files[0].contentType)}`;
       const fsWriteStream = fs.createWriteStream(path.join(path.join(__dirname, '/../assets/'), name));

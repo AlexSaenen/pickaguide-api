@@ -312,7 +312,11 @@ const updateRate = (visitId) => {
           .exec((err, visits) => {
             if (err) { return reject({ code: 2, message: err.message }); }
 
-            const averageRate = visits.reduce((sum, visit) => sum + visit.visitorRate, 0) / visits.length;
+            let averageRate = null;
+
+            if (visits.length !== 0) {
+              averageRate = visits.reduce((sum, visit) => sum + visit.visitorRate, 0) / visits.length;
+            }
             resolve(averageRate);
           });
       })
