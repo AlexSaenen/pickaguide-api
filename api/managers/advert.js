@@ -124,18 +124,23 @@ const find = (advertId) => {
         if (err) { return reject({ code: 1, message: err.message }); }
         if (advert == null) { return reject({ code: 2, message: 'Advert not found' }); }
 
-        if (advert.owner) {
-          const ownerId = advert.owner._id;
-          advert.owner = advert.owner.profile;
-          advert.owner._id = ownerId;
-          advert.owner.displayName = displayName(advert.owner);
-          delete advert.owner.firstName;
-          delete advert.owner.lastName;
-        } else {
-          advert.owner = { displayName: 'Deleted user' };
-        }
+        geocoder.reverse({ lat: advert.location.coordinates[1], lon: advert.location.coordinates[0] })
+          .then((res) => {
+            advert.location = `${res[0].streetNumber} ${res[0].streetName}`;
 
-        resolve({ advert });
+            if (advert.owner) {
+              const ownerId = advert.owner._id;
+              advert.owner = advert.owner.profile;
+              advert.owner._id = ownerId;
+              advert.owner.displayName = displayName(advert.owner);
+              delete advert.owner.firstName;
+              delete advert.owner.lastName;
+            } else {
+              advert.owner = { displayName: 'Deleted user' };
+            }
+
+            resolve({ advert });
+          });
       });
   });
 };
@@ -257,7 +262,7 @@ const findOwner = (advertId) => {
   });
 };
 
-const update = (userId, advertId, advertBody) => {
+const update = (userId, advertId, advertBody, files) => {
   return new Promise((resolve, reject) => {
     db.Adverts
       .findOne({ _id: advertId, owner: userId })
@@ -266,27 +271,46 @@ const update = (userId, advertId, advertBody) => {
         if (err) { return reject({ code: 1, message: err.message }); }
         if (advert === null) { return reject({ code: 2, message: 'Cannot find advert' }); }
 
-        const mergedAdvert = _.merge(advert, advertBody);
-
-        mergedAdvert.save((saveErr, updatedAdvert) => {
-          if (saveErr) {
-            let message;
-            if (saveErr.code === 11000) { message = 'This advert already exists'; } else { message = 'Invalid update'; }
-            return reject({ code: 3, message });
+        return transformAdressToCoordinates(advertBody)
+        .then((coordinatesTransformed) => {
+          if (coordinatesTransformed === 'address not found') {
+            coordinatesTransformed = [0, 0];
           }
 
-          if (updatedAdvert === null) { return reject({ code: 4, message: 'Failed to update advert' }); }
+          const updatedFiles = (files.length > 0 ? files : advert._fsIds);
+          const cover = updatedFiles.splice(advertBody.coverIndex, 1);
+          updatedFiles.splice(0, 0, cover[0]);
 
-          const jsonAdvert = JSON.parse(JSON.stringify(updatedAdvert));
+          delete advertBody.coverIndex;
+          delete advertBody.location;
+          const mergedAdvert = _.merge(advert, advertBody);
 
-          if (jsonAdvert.owner) {
-            jsonAdvert.owner.displayName = displayName(jsonAdvert.owner.profile);
-            delete jsonAdvert.owner.profile;
-          } else {
-            jsonAdvert.owner = { displayName: 'Deleted user' };
-          }
+          mergedAdvert._fsIds = updatedFiles;
+          mergedAdvert.location.coordinates = coordinatesTransformed;
 
-          resolve({ advert: jsonAdvert });
+          capitalize(mergedAdvert);
+
+
+          mergedAdvert.save((saveErr, updatedAdvert) => {
+            if (saveErr) {
+              let message;
+              if (saveErr.code === 11000) { message = 'This advert already exists'; } else { message = 'Invalid update'; }
+              return reject({ code: 3, message });
+            }
+
+            if (updatedAdvert === null) { return reject({ code: 4, message: 'Failed to update advert' }); }
+
+            const jsonAdvert = JSON.parse(JSON.stringify(updatedAdvert));
+
+            if (jsonAdvert.owner) {
+              jsonAdvert.owner.displayName = displayName(jsonAdvert.owner.profile);
+              delete jsonAdvert.owner.profile;
+            } else {
+              jsonAdvert.owner = { displayName: 'Deleted user' };
+            }
+
+            resolve({ advert: jsonAdvert });
+          });
         });
       });
   });

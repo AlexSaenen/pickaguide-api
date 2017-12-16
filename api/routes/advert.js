@@ -75,9 +75,18 @@ router.post('/:id/visit', (req, res) => {
 });
 
 router.put('/:id', (req, res) => {
-  advertHandler.update(req.user.userId, req.params.id, req.body)
-    .then(result => res.status(200).send(result))
-    .catch(error => res.status(500).send(error));
+  filesUpload(req, res, (err) => {
+    if (err) return res.status(400).send({ code: 1, message: 'The mimetype is not valid must be jpeg|jpg|png|gif' });
+    let form = req.body.proposalForm;
+
+    if (typeof form === 'string') {
+      form = JSON.parse(form);
+    }
+
+    advertHandler.update(req.user.userId, req.params.id, form, req.files)
+      .then(result => res.status(200).send(result))
+      .catch(error => res.status(500).send(error));
+  });
 });
 
 router.delete('/:id', (req, res) => {

@@ -121,8 +121,17 @@ class Advert {
     });
   }
 
-  static update(userId, advertId, advertBody) {
-    return advertManager.update(userId, advertId, advertBody);
+  static update(userId, advertId, advertBody, reqFiles = []) {
+    return new Promise((resolve, reject) => {
+      if (reqFiles.some(file => file.size > uploadService.maxFileSize().size)) {
+        return reject({ code: 1, message: `File size exceeds ${uploadService.maxFileSize().label}` });
+      }
+
+      Promise.mapSeries(reqFiles, file => uploadService.uploadImage(file.path, file.originalname, file.mimetype))
+      .then(values => advertManager.update(userId, advertId, advertBody, values))
+      .then(advert => resolve(advert))
+      .catch(err => reject(err));
+    });
   }
 
   static toggle(userId, advertId) {
