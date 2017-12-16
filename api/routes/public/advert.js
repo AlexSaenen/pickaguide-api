@@ -1,4 +1,5 @@
 const express = require('express');
+const fs = require('fs');
 const advertHandler = require('../../handlers/advert').Advert;
 
 const router = express.Router();
@@ -24,13 +25,29 @@ router.get('/:id', (req, res) => {
 
 router.get('/:id/image/:hook', (req, res) => {
   advertHandler.downloadImageByHook(req.params.id, req.params.hook)
-    .then(result => res.status(200).sendFile(result))
+    .then((result) => {
+      res.status(200).sendFile(result, (err) => {
+        if (err) console.log('Sending file failed');
+
+        fs.unlink(result, (unlinkError) => {
+          if (unlinkError) console.log('Cleaning up file failed');
+        });
+      });
+    })
     .catch(error => res.status(500).send(error));
 });
 
 router.get('/:id/image', (req, res) => {
   advertHandler.downloadImage(req.params.id)
-    .then(result => res.status(200).sendFile(result))
+    .then((result) => {
+      res.status(200).sendFile(result, (err) => {
+        if (err) console.log('Sending file failed');
+
+        fs.unlink(result, (unlinkError) => {
+          if (unlinkError) console.log('Cleaning up file failed');
+        });
+      });
+    })
     .catch(error => res.status(500).send(error));
 });
 
