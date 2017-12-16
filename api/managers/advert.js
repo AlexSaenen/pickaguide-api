@@ -48,7 +48,11 @@ const add = (creator, fields, files) => {
         coordinatesTransformed = [0, 0];
       }
 
+      const cover = files.splice(fields.coverIndex, 1);
+      files.splice(0, 0, cover[0]);
       fields._fsIds = files;
+
+      delete fields.coverIndex;
 
       if (fields.photoUrl === undefined) {
         fields.photoUrl = '';
