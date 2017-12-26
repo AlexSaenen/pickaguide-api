@@ -94,13 +94,10 @@ class Payment {
     return new Promise((resolve, reject) => {
       paymentManager.getRefounds(user, false)
         .then((payments) => {
-          console.log(payments);
           const totalAmount = payments.Payments.reduce((sum, x) => {
             return sum + x.amountBeneficiary;
           }, 0);
-          if (totalAmount <= 0)
-            reject("no payment to refound")
-          console.log(totalAmount);
+          if (totalAmount <= 0) reject('no payment to refound');
           paymentService.createRefound(user, body, totalAmount)
             .then((result) => {
               Promise.all(payments.Payments.map((x) => {

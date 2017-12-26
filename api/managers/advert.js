@@ -27,6 +27,7 @@ const transformAdressToCoordinates = (fields) => {
     if (fields.location) {
       address = `${fields.location}, ${fields.city}, ${fields.country}`;
     }
+
     geocoder.geocode(address)
       .then((res) => {
         if (res.length === 0) {

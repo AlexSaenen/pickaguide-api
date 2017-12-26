@@ -3,7 +3,6 @@ const notificationHandler = require('../handlers/notification').Notification;
 
 const router = express.Router();
 
-// TODO with infiniteScroll
 router.get('/', (req, res) => {
   notificationHandler.findAllFrom(req.user.userId)
     .then(result => res.status(200).send(result))
