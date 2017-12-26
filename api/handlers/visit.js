@@ -206,13 +206,18 @@ class Visit {
   static accept(userId, visitId, reqBody) {
     return new Promise((resolve, reject) => {
       visitManager.accept(userId, visitId, reqBody)
-        .then(result => resolve(result))
-        .catch(error => reject(error))
-        .then(() => visitManager.getCreator(visitId))
-        .then(creator => notifManager.create(creator, {
-          title: 'Your visit was accepted !',
-          body: 'accepted to be guide in one of your visits, you will be exploring the city soon !',
-        }, userId));
+        .then((result) => {
+          return userManager.find(result.visit.by, 'profile.phone account.email', false)
+          .then((creator) => {
+            result.contact = { phone: creator.profile.phone, email: creator.account.email };
+            resolve(result);
+          })
+          .then(() => notifManager.create(result.visit.by, {
+            title: 'Your visit was accepted !',
+            body: 'accepted to be guide in one of your visits, you will be exploring the city soon !',
+          }, userId));
+        })
+        .catch(error => reject(error));
     });
   }
 

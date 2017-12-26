@@ -59,6 +59,18 @@ class Profile extends User {
     });
   }
 
+  static update(userId, reqBody) {
+    return new Promise((resolve, reject) => {
+      super.update(userId, reqBody)
+      .then((user) => {
+        const objectUser = user.toObject();
+        objectUser.profile.hasAvatar = (user.profile._fsId !== null);
+        resolve(objectUser);
+      })
+      .catch(reject);
+    });
+  }
+
   static search(searchTerms) {
     return new Promise((resolve, reject) => {
       super.findByTerms(searchTerms)
