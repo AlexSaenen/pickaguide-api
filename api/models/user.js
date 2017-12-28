@@ -12,7 +12,7 @@ const userSchema = new Schema({
     token: { type: String, index: true },
     resetPasswordToken: { type: String, index: true },
     paymentId: { type: String, default: null },
-    stripeId: { type: String, default: null},
+    stripeId: { type: String, default: null },
   },
   profile: {
     firstName: { type: String, required: true },
