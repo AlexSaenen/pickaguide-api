@@ -125,23 +125,28 @@ const find = (advertId) => {
         if (err) { return reject({ code: 1, message: err.message }); }
         if (advert == null) { return reject({ code: 2, message: 'Advert not found' }); }
 
+        const formatAndResolve = () => {
+          if (advert.owner) {
+            const ownerId = advert.owner._id;
+            advert.owner = advert.owner.profile;
+            advert.owner._id = ownerId;
+            advert.owner.displayName = displayName(advert.owner);
+            delete advert.owner.firstName;
+            delete advert.owner.lastName;
+          } else {
+            advert.owner = { displayName: 'Deleted user' };
+          }
+
+          resolve({ advert });
+        };
+
         geocoder.reverse({ lat: advert.location.coordinates[1], lon: advert.location.coordinates[0] })
           .then((res) => {
             advert.location = `${res[0].streetNumber} ${res[0].streetName}`;
 
-            if (advert.owner) {
-              const ownerId = advert.owner._id;
-              advert.owner = advert.owner.profile;
-              advert.owner._id = ownerId;
-              advert.owner.displayName = displayName(advert.owner);
-              delete advert.owner.firstName;
-              delete advert.owner.lastName;
-            } else {
-              advert.owner = { displayName: 'Deleted user' };
-            }
-
-            resolve({ advert });
-          });
+            formatAndResolve();
+          })
+          .catch(formatAndResolve);
       });
   });
 };
