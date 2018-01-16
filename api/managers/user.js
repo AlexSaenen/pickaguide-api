@@ -278,7 +278,6 @@ const updateRate = (userId) => {
     })
     .then((rate) => {
       return new Promise((resolve, reject) => {
-        console.log('user', rate);
         db.Users.findByIdAndUpdate(userId, { 'profile.rate': rate })
           .exec((err) => {
             if (err) { return reject({ code: 3, message: err.message }); }

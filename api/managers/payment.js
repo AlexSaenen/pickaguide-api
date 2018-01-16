@@ -66,7 +66,6 @@ const paymentPayed = (payment, paymentId) => {
 };
 
 const paymentRefounded = (payment, paymentId) => {
-  console.log(payment);
   return new Promise ((resolve, reject) => {
     payment.refounded = true;
     payment.idRefound = paymentId
