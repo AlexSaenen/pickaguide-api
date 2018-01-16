@@ -25,7 +25,6 @@ const advertSchema = new Schema({
       default: [0, 0],
     },
   },
-  // occupied: [{ from: { type: Date, required: true }, to: { type: Date, required: true } }],
 
   _fsIds: [{ type: Schema.Types.ObjectId, ref: 'fs.files', default: null }],
   rate: { type: Number, default: null },
