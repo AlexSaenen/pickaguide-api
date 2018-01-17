@@ -142,7 +142,7 @@ const find = (advertId) => {
 
         geocoder.reverse({ lat: advert.location.coordinates[1], lon: advert.location.coordinates[0] })
           .then((res) => {
-            advert.location = `${res[0].streetNumber} ${res[0].streetName}`;
+            advert.location = `${res[0].streetNumber || ''} ${res[0].streetName || ''}`.trim();
 
             formatAndResolve();
           })
