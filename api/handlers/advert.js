@@ -31,7 +31,17 @@ class Advert {
   }
 
   static find(advertId) {
-    return advertManager.find(advertId);
+    return new Promise((resolve, reject) => {
+      advertManager.find(advertId)
+        .then((result) => {
+          return visitManager.getUpcomingVisits(advertId)
+            .then((visits) => {
+              result.advert.upcoming = visits;
+              resolve(result);
+            });
+        })
+        .catch(reject);
+    });
   }
 
   static downloadImage(advertId) {

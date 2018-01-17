@@ -27,6 +27,32 @@ const update = (userId, visitId, files) => {
   });
 };
 
+const getUpcomingVisits = (advertId) => {
+  const now = Date.now();
+
+  return new Promise((resolve, reject) => {
+    db.Visits
+     .find({
+       about: String(advertId),
+       hasEnded: false,
+       when: {
+         $gt: now,
+       },
+     }, 'when status numberVisitors')
+     .sort('when')
+     .lean()
+     .exec((err, visits) => {
+       if (err) { return reject({ code: 1, message: err.message }); }
+
+       const concernedVisits = visits
+         .filter(visit => visit.status.slice(-1).pop().label === 'accepted')
+         .map(visit => ({ when: visit.when, numberVisitors: visit.numberVisitors }));
+
+       resolve(concernedVisits);
+     });
+  });
+};
+
 const isForGuide = (visitId, userId) => {
   return new Promise((resolve, reject) => {
     db.Visits
@@ -430,4 +456,4 @@ const review = (userId, visitId, reqBody) => {
 };
 
 
-module.exports = { update, create, getCreator, getGuide, countAmountForAdvert, find, findAllFrom, findToReview, findAllFor, findAsGuide, findAsVisitor, cancel, cancelAll, deny, denyAll, finish, accept, review };
+module.exports = { getUpcomingVisits, update, create, getCreator, getGuide, countAmountForAdvert, find, findAllFrom, findToReview, findAllFor, findAsGuide, findAsVisitor, cancel, cancelAll, deny, denyAll, finish, accept, review };
