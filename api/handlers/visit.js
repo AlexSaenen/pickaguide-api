@@ -1,14 +1,29 @@
 'use strict';
 
+const Promise = require('bluebird');
 const visitManager = require('../managers/visit');
 const advertManager = require('../managers/advert');
 const userManager = require('../managers/user');
 const notifManager = require('../managers/notification');
 const displayName = require('../managers/profile').displayName;
+const uploadService = require('../upload-service');
 const _ = require('lodash');
 
 
 class Visit {
+
+  static update(userId, visitId, reqFiles = []) {
+    return new Promise((resolve, reject) => {
+      if (reqFiles.some(file => file.size > uploadService.maxFileSize().size)) {
+        return reject({ code: 1, message: `File size exceeds ${uploadService.maxFileSize().label}` });
+      }
+
+      Promise.mapSeries(reqFiles, file => uploadService.uploadImage(file.path, file.originalname, file.mimetype))
+      .then(values => visitManager.update(userId, visitId, values))
+      .then(advert => resolve(advert))
+      .catch(err => reject(err));
+    });
+  }
 
   static create(by, about, reqBody) {
     return new Promise((resolve, reject) => {
@@ -32,6 +47,18 @@ class Visit {
             }, by));
         })
         .catch(err => reject(err));
+    });
+  }
+
+  static downloadImageByHook(visitId, hook) {
+    return uploadService.downloadImage(hook);
+  }
+
+  static getImageHooks(visitId) {
+    return new Promise((resolve, reject) => {
+      visitManager.find(visitId)
+        .then(result => resolve(result.visit._fsIds))
+        .catch(error => reject(error));
     });
   }
 

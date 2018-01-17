@@ -5,7 +5,7 @@ const displayName = require('./profile').displayName;
 
 const options = {
   provider: 'google',
-  apiKey: 'AIzaSyBE5bc1-R4JKw8qENkfQQg9VBM8sZ2GMlY',
+  apiKey: 'AIzaSyACkNXafinptVjPmvhMxa-pK-qkORjIhwo',
 };
 
 const geocoder = NodeGeocoder(options);

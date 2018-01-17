@@ -3,6 +3,30 @@ const _ = require('lodash');
 const displayName = require('./profile').displayName;
 
 
+const update = (userId, visitId, files) => {
+  return new Promise((resolve, reject) => {
+    db.Visits
+      .findOne({ _id: visitId, by: userId })
+      .exec((err, visit) => {
+        if (err) { return reject({ code: 1, message: err.message }); }
+        if (visit === null) { return reject({ code: 2, message: 'Cannot find visit' }); }
+
+        const updatedFiles = (files.length > 0 ? files : visit._fsIds);
+        visit._fsIds = updatedFiles;
+
+        visit.save((saveErr, updatedVisit) => {
+          if (saveErr) {
+            return reject({ code: 3, message: saveErr.message });
+          }
+
+          if (updatedVisit === null) { return reject({ code: 4, message: 'Failed to update advert' }); }
+
+          resolve({ visit: updatedVisit });
+        });
+      });
+  });
+};
+
 const isForGuide = (visitId, userId) => {
   return new Promise((resolve, reject) => {
     db.Visits
@@ -406,4 +430,4 @@ const review = (userId, visitId, reqBody) => {
 };
 
 
-module.exports = { create, getCreator, getGuide, countAmountForAdvert, find, findAllFrom, findToReview, findAllFor, findAsGuide, findAsVisitor, cancel, cancelAll, deny, denyAll, finish, accept, review };
+module.exports = { update, create, getCreator, getGuide, countAmountForAdvert, find, findAllFrom, findToReview, findAllFor, findAsGuide, findAsVisitor, cancel, cancelAll, deny, denyAll, finish, accept, review };
