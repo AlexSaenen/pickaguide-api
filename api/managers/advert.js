@@ -7,7 +7,7 @@ const matchingService = require('../matching-service');
 
 const options = {
   provider: 'google',
-  apiKey: 'AIzaSyACkNXafinptVjPmvhMxa-pK-qkORjIhwo',
+  apiKey: 'AIzaSyB92WFR0hua0cfkOSqsbn5V3QyXpA-mItM',
 };
 
 const geocoder = NodeGeocoder(options);
