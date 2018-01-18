@@ -5,6 +5,7 @@ const uploadService = require('../upload-service');
 const profileManager = require('../managers/profile');
 const userManager = require('../managers/user');
 const ObjectId = require('../database').ObjectId;
+const matchingService = require('../matching-service');
 
 
 class Profile extends User {
@@ -71,19 +72,35 @@ class Profile extends User {
     });
   }
 
-  static search(searchTerms) {
+  static search(searchTerms, userId) {
     return new Promise((resolve, reject) => {
       super.findByTerms(searchTerms)
         .then((users) => {
-          const displayableProfiles = users.map((user) => {
-            const profile = user.profile;
-            const names = { first: profile.firstName, last: profile.lastName };
-            profileManager.formatProfile(user.profile);
-            profile.displayName = `${names.first} ${names.last.charAt(0)}.`;
-            return profile;
-          });
+          if (userId) {
+            userManager.find(userId, 'profile.interests')
+            .then(user => matchingService.matchUsers(user.profile.interests, users))
+            .then((sorted) => {
+              const displayableProfiles = sorted.map((user) => {
+                const profile = user.profile;
+                const names = { first: profile.firstName, last: profile.lastName };
+                profileManager.formatProfile(user.profile);
+                profile.displayName = `${names.first} ${names.last.charAt(0)}.`;
+                return profile;
+              });
 
-          resolve({ profiles: displayableProfiles, ids: users.map(user => user._id) });
+              resolve({ profiles: displayableProfiles, ids: sorted.map(user => user._id) });
+            });
+          } else {
+            const displayableProfiles = users.map((user) => {
+              const profile = user.profile;
+              const names = { first: profile.firstName, last: profile.lastName };
+              profileManager.formatProfile(user.profile);
+              profile.displayName = `${names.first} ${names.last.charAt(0)}.`;
+              return profile;
+            });
+
+            resolve({ profiles: displayableProfiles, ids: users.map(user => user._id) });
+          }
         })
         .catch(err => reject(err));
     });

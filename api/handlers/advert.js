@@ -61,9 +61,9 @@ class Advert {
     });
   }
 
-  static findAll() {
+  static findAll(userId) {
     return new Promise((resolve, reject) => {
-      advertManager.findAll()
+      advertManager.findAll(userId)
       .then(adverts =>
         Promise.all(
           adverts.map((advert) => {
@@ -80,9 +80,9 @@ class Advert {
     });
   }
 
-  static findMain() {
+  static findMain(userId) {
     return new Promise((resolve, reject) => {
-      advertManager.findMain()
+      advertManager.findMain(userId)
       .then(adverts =>
         Promise.all(
           adverts.map((advert) => {
@@ -99,10 +99,10 @@ class Advert {
     });
   }
 
-  static search(terms) {
+  static search(terms, userId) {
     return new Promise((resolve, reject) => {
       const search = () => {
-        if (!terms || terms.length === 0) { return advertManager.findAll(); }
+        if (!terms || terms.length === 0) { return advertManager.findAll(userId); }
 
         const regexes = terms.trim().split(' ').filter(term => term.length > 2).map(term => new RegExp(term, 'i'));
         const regexSearch = [];

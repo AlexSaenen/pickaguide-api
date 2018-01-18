@@ -2,6 +2,8 @@ const NodeGeocoder = require('node-geocoder');
 const db = require('../database');
 const _ = require('lodash');
 const displayName = require('./profile').displayName;
+const userManager = require('./user');
+const matchingService = require('../matching-service');
 
 const options = {
   provider: 'google',
@@ -151,7 +153,7 @@ const find = (advertId) => {
   });
 };
 
-const findAll = () => {
+const findAll = (userId) => {
   return new Promise((resolve, reject) => {
     db.Adverts
       .find({ active: true })
@@ -160,19 +162,34 @@ const findAll = () => {
       .exec((err, adverts) => {
         if (err) { return reject({ code: 1, message: err.message }); }
 
-        adverts.forEach((advert) => {
-          if (advert.owner) {
-            advert.ownerId = advert.owner._id;
-            advert.owner = displayName(advert.owner.profile);
-          }
-        });
+        if (userId) {
+          userManager.find(userId, 'profile.interests')
+          .then(user => matchingService.matchAdverts(user.profile.interests, adverts))
+          .then((sorted) => {
+            sorted.forEach((advert) => {
+              if (advert.owner) {
+                advert.ownerId = advert.owner._id;
+                advert.owner = displayName(advert.owner.profile);
+              }
+            });
 
-        resolve(adverts);
+            resolve(sorted);
+          });
+        } else {
+          adverts.forEach((advert) => {
+            if (advert.owner) {
+              advert.ownerId = advert.owner._id;
+              advert.owner = displayName(advert.owner.profile);
+            }
+          });
+
+          resolve(adverts);
+        }
       });
   });
 };
 
-const findMain = () => {
+const findMain = (userId) => {
   return new Promise((resolve, reject) => {
     db.Adverts
       .find({ active: true })
@@ -182,14 +199,29 @@ const findMain = () => {
       .exec((err, adverts) => {
         if (err) { return reject({ code: 1, message: err.message }); }
 
-        adverts.forEach((advert) => {
-          if (advert.owner) {
-            advert.ownerId = advert.owner._id;
-            advert.owner = displayName(advert.owner.profile);
-          }
-        });
+        if (userId) {
+          userManager.find(userId, 'profile.interests')
+          .then(user => matchingService.matchAdverts(user.profile.interests, adverts))
+          .then((sorted) => {
+            sorted.forEach((advert) => {
+              if (advert.owner) {
+                advert.ownerId = advert.owner._id;
+                advert.owner = displayName(advert.owner.profile);
+              }
+            });
 
-        resolve(adverts);
+            resolve(sorted);
+          });
+        } else {
+          adverts.forEach((advert) => {
+            if (advert.owner) {
+              advert.ownerId = advert.owner._id;
+              advert.owner = displayName(advert.owner.profile);
+            }
+          });
+
+          resolve(adverts);
+        }
       });
   });
 };

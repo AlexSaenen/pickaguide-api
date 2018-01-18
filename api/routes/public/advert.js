@@ -5,10 +5,22 @@ const advertHandler = require('../../handlers/advert').Advert;
 const router = express.Router();
 
 
+router.get('/forMe/:userId', (req, res) => {
+  advertHandler.findAll(req.params.userId)
+    .then(result => res.status(200).send({ adverts: result }))
+    .catch(error => res.status(500).send(error));
+});
+
 router.get('/', (req, res) => {
   advertHandler.findAll()
     .then(result => res.status(200).send({ adverts: result }))
     .catch(error => res.status(500).send(error));
+});
+
+router.get('/main/:userId', (req, res) => {
+  advertHandler.findMain(req.params.userId)
+  .then(result => res.status(200).send({ adverts: result }))
+  .catch(error => res.status(500).send(error));
 });
 
 router.get('/main', (req, res) => {
