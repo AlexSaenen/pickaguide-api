@@ -3,10 +3,12 @@
 const Promise = require('bluebird');
 const visitManager = require('../managers/visit');
 const advertManager = require('../managers/advert');
+const paymentManager = require('../managers/payment');
 const userManager = require('../managers/user');
 const notifManager = require('../managers/notification');
 const displayName = require('../managers/profile').displayName;
 const uploadService = require('../upload-service');
+const rateService = require('../rate-service');
 const _ = require('lodash');
 
 
@@ -169,16 +171,29 @@ class Visit {
             .then((users) => {
               const userHash = _.map(users, '_id').map(String);
 
-              visits.forEach((visit) => {
-                if (visit.about) {
-                  const index = userHash.indexOf(String(visit.about.owner));
+              return Promise.mapSeries(visits, (visit) => {
+                return new Promise((resolveVisit, rejectVisit) => {
+                  if (visit.about) {
+                    const index = userHash.indexOf(String(visit.about.owner));
 
-                  visit.about.ownerName = (index !== -1 ? displayName(users[index].profile) : 'User deleted');
-                }
+                    visit.about.ownerName = (index !== -1 ? displayName(users[index].profile) : 'User deleted');
+
+                    visitManager.findAllOf(visit.about._id)
+                      .then(otherVisits => paymentManager.getAveragePrice(otherVisits.map(otherVisit => otherVisit._id)))
+                      .then((price) => {
+                        visit.averagePrice = price;
+                        resolveVisit(visit);
+                      })
+                      .catch(rejectVisit);
+                  } else {
+                    resolveVisit(visit);
+                  }
+                });
+              })
+              .then((treatedVisits) => {
+                results.myVisits = treatedVisits;
+                return visitManager.findToReview(userId, 'guide');
               });
-
-              results.myVisits = visits;
-              return visitManager.findToReview(userId, 'guide');
             });
         })
         .then((visits) => {
@@ -271,8 +286,23 @@ class Visit {
 
   static review(userId, visitId, reqBody) {
     return new Promise((resolve, reject) => {
+      let systemRate;
       visitManager
-        .review(userId, visitId, reqBody)
+        .find(visitId)
+        .then(result => visitManager.findAllOf(result.visit.about ? result.visit.about._id : ''))
+        .then((visits) => {
+          return userManager.find(userId, 'profile.rate')
+          .then((user) => {
+            return paymentManager.getAmounts(visits.map(el => el._id))
+            .then((prices) => {
+              return paymentManager.getMyAmount(visitId)
+              .then((price) => {
+                systemRate = rateService.getSystemRating(prices, user.profile.rate || 3, price);
+              });
+            });
+          });
+        })
+        .then(() => visitManager.review(userId, visitId, reqBody, systemRate))
         .then(() => userManager.updateRate(userId))
         .then(() => advertManager.updateRate(visitId))
         .then(() => Visit.findToReview(userId))

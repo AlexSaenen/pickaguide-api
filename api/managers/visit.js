@@ -431,7 +431,7 @@ const accept = (userId, visitId, reqBody) => {
   }, 'waiting', 'accepted');
 };
 
-const review = (userId, visitId, reqBody) => {
+const review = (userId, visitId, reqBody, systemRate) => {
   return new Promise((resolve, reject) => {
     if (userId === reqBody.for) { return reject({ code: 3, message: 'Cannot rate yourself' }); }
 
@@ -443,6 +443,7 @@ const review = (userId, visitId, reqBody) => {
           visit.guideRate = parseInt(reqBody.rate, 10);
         } else if (visit.about === null || String(visit.about.owner) === reqBody.for) {
           visit.visitorRate = parseInt(reqBody.rate, 10);
+          visit.systemRate = systemRate;
         }
 
         visit.save((saveErr, updatedVisit) => {
@@ -455,5 +456,18 @@ const review = (userId, visitId, reqBody) => {
   });
 };
 
+const findAllOf = (advertId) => {
+  return new Promise((resolve, reject) => {
+    db.Visits
+      .find({ about: String(advertId) }, '_id by')
+      .lean()
+      .exec((err, visits) => {
+        if (err) { return reject({ code: 1, message: err.message }); }
 
-module.exports = { getUpcomingVisits, update, create, getCreator, getGuide, countAmountForAdvert, find, findAllFrom, findToReview, findAllFor, findAsGuide, findAsVisitor, cancel, cancelAll, deny, denyAll, finish, accept, review };
+        resolve(visits);
+      });
+  });
+};
+
+
+module.exports = { findAllOf, getUpcomingVisits, update, create, getCreator, getGuide, countAmountForAdvert, find, findAllFrom, findToReview, findAllFor, findAsGuide, findAsVisitor, cancel, cancelAll, deny, denyAll, finish, accept, review };

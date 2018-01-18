@@ -37,6 +37,30 @@ const getRefounds = (user, refoundedx = false) => {
   });
 };
 
+const getAveragePrice = (visitIds) => {
+  return new Promise((resolve, reject) => {
+    db.Payments
+      .find({
+        idVisit: {
+          $in: visitIds.map(String),
+        },
+      }, 'amountPayer')
+      .lean()
+      .exec((err, payments) => {
+        if (err) { return reject({ code: 1, message: err.message }); }
+        let averagePrice;
+
+        if (payments.length > 0) {
+          averagePrice = payments.reduce((sum, payment) => {
+            return sum + payment.amountPayer;
+          }, 0) / payments.length;
+        }
+
+        return resolve(averagePrice);
+      });
+  });
+};
+
 const getPayments = (user) => {
   return new Promise((resolve, reject) => {
   db.Payments
@@ -49,6 +73,41 @@ const getPayments = (user) => {
 
       resolve({ Payments });
     });
+  });
+};
+
+const getAmounts = (visitIds) => {
+  return new Promise((resolve, reject) => {
+    db.Payments
+      .find({
+        idVisit: {
+          $in: visitIds.map(String),
+        },
+      }, 'amountPayer')
+      .lean()
+      .exec((err, payments) => {
+        if (err) { return reject({ code: 1, message: err.message }); }
+
+        return resolve(payments.map(payment => payment.amountPayer));
+      });
+  });
+};
+
+const getMyAmount = (visitId) => {
+  return new Promise((resolve, reject) => {
+    db.Payments
+      .find({
+        idVisit: String(visitId),
+      }, 'amountPayer')
+      .lean()
+      .exec((err, payments) => {
+        if (err) { return reject({ code: 1, message: err.message }); }
+
+        const amounts = payments.map(payment => payment.amountPayer);
+        const amount = amounts.reduce((sum, price) => sum + price, 0);
+
+        return resolve(amount);
+      });
   });
 };
 
@@ -78,4 +137,4 @@ const paymentRefounded = (payment, paymentId) => {
   })
 };
 
-module.exports = { create, getRefounds, getPayments, paymentPayed, paymentRefounded};
+module.exports = { getAmounts, getMyAmount, getAveragePrice, create, getRefounds, getPayments, paymentPayed, paymentRefounded };

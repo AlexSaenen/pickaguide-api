@@ -17,6 +17,7 @@ const visitSchema = new Schema({
   special: { type: String, default: null },
   guideRate: { type: Number, default: null },
   visitorRate: { type: Number, default: null },
+  systemRate: { type: Number, default: null },
   hasEnded: { type: Boolean, default: false },
   _fsIds: [{ type: Schema.Types.ObjectId, ref: 'fs.files', default: null }],
 }).index({ by: 1, about: 1, when: 1 }, { unique: true });

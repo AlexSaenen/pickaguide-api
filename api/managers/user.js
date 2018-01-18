@@ -252,7 +252,7 @@ const updateRate = (userId) => {
                 $ne: null,
               },
             }],
-          }, 'by visitorRate guideRate')
+          }, 'by visitorRate guideRate systemRate')
           .lean()
           .exec((err, visits) => {
             if (err) { return reject({ code: 2, message: err.message }); }
@@ -260,7 +260,13 @@ const updateRate = (userId) => {
             let notIndicated = 0;
 
             let averageRate = visits.reduce((sum, visit) => {
-              const toAdd = (String(visit.by) === userId ? visit.guideRate : visit.visitorRate);
+              let toAdd = (String(visit.by) === userId ? visit.guideRate : visit.visitorRate);
+
+              if (String(visit.by) === userId && visit.systemRate !== null) {
+                toAdd += visit.systemRate;
+                notIndicated -= 1;
+              }
+
               if (toAdd === null) {
                 notIndicated += 1;
               }
