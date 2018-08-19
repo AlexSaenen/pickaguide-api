@@ -36,14 +36,14 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - "3e:be:05:27:97:c4:1c:8e:6b:0e:a5:ed:2e:bf:aa:4f"
-      - run: ssh root@82.223.82.41 "bash -ic deploy-web-staging"
+      - run: ssh root@82.223.82.41 "bash -ic deploy-pickaguide-web-staging"
   production:
     machine: true
     steps:
       - add_ssh_keys:
           fingerprints:
             - "3e:be:05:27:97:c4:1c:8e:6b:0e:a5:ed:2e:bf:aa:4f"
-      - run: ssh root@82.223.82.41 "bash -ic deploy-web-production"
+      - run: ssh root@82.223.82.41 "bash -ic deploy-pickaguide-web-production"
 
 workflows:
   version: 2
